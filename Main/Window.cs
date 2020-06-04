@@ -17,6 +17,9 @@ namespace Yahtzee.Main
         public delegate void Tick(double deltaTime);
         public event Tick OnTick;
 
+        public delegate void Resize(int width, int height);
+        public event Resize OnResize;
+
         private double lastFrame = 0.0f;
         private double deltaTime = 0.0f;
         private double currentFrame = 0.0f;
@@ -45,13 +48,17 @@ namespace Yahtzee.Main
 
 
             glfw.MakeContextCurrent(window);
-            //glfw.SetWindowSizeCallback(window, OnResize);
+            glfw.SetWindowSizeCallback(window, OnWindowResize);
             //glfw.SetCursorPosCallback(window, MouseInput);
             //glfw.SetScrollCallback(window, ScrollInput);
             glfw.SetInputMode(window, CursorStateAttribute.Cursor, CursorModeValue.CursorDisabled);
 
             return true;
         }
+
+        private void OnWindowResize(WindowHandle* window, int width, int height)
+            => OnResize?.Invoke(width, height);
+        
 
         public void StartLoop()
         {

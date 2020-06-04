@@ -9,14 +9,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resource\Shaders\default.frag" />
+    <None Remove="Resource\Shaders\default.vert" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resource\Shaders\default.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\default.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
     <PackageReference Include="GlmSharp" Version="0.9.8" />
     <PackageReference Include="Silk.NET" Version="1.2.1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Resource\Shaders\" />
   </ItemGroup>
 
 </Project>

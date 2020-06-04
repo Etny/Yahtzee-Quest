@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
+using GlmSharp;
 
 namespace Yahtzee.Render
 {
     abstract class Light
     {
-        public Vector3 Ambient = new Vector3(0.05f, 0.05f, 0.05f);
-        public Vector3 Diffuse = new Vector3(0.8f, 0.8f, 0.8f);
-        public Vector3 Specular = new Vector3(1.0f, 1.0f, 1.0f);
+        public vec3 Ambient = new vec3(0.05f, 0.05f, 0.05f);
+        public vec3 Diffuse = new vec3(0.8f, 0.8f, 0.8f);
+        public vec3 Specular = new vec3(1.0f, 1.0f, 1.0f);
 
         public Light() { }
 
-        public Light(Vector3 ambient, Vector3 diffuse, Vector3 specular)
+        public Light(vec3 ambient, vec3 diffuse, vec3 specular)
         {
             Ambient = ambient;
             Diffuse = diffuse;
@@ -31,14 +32,14 @@ namespace Yahtzee.Render
 
     class DirectionalLight : Light
     {
-        public Vector3 Direction;
+        public vec3 Direction;
 
-        public DirectionalLight(Vector3 direction) : base()
+        public DirectionalLight(vec3 direction) : base()
         {
             Direction = direction;
         }
 
-        public DirectionalLight(Vector3 direction, Vector3 ambient, Vector3 diffuse, Vector3 specular) : base(ambient, diffuse, specular)
+        public DirectionalLight(vec3 direction, vec3 ambient, vec3 diffuse, vec3 specular) : base(ambient, diffuse, specular)
         {
             Direction = direction;
         }
@@ -55,14 +56,14 @@ namespace Yahtzee.Render
 
     class PointLight : Light
     {
-        public Vector3 Position;
+        public vec3 Position;
         public float Constant = 1, Linear = .09f, Quadratic = .032f;
 
-        public PointLight(Vector3 position) : base()
+        public PointLight(vec3 position) : base()
         {
             Position = position;
         }
-        public PointLight(Vector3 position, float constant, float linear, float quadratic) : base()
+        public PointLight(vec3 position, float constant, float linear, float quadratic) : base()
         {
             Position = position;
 
@@ -71,11 +72,11 @@ namespace Yahtzee.Render
             Quadratic = quadratic;
         }
 
-        public PointLight(Vector3 position, Vector3 ambient, Vector3 diffuse, Vector3 specular) : base(ambient, diffuse, specular)
+        public PointLight(vec3 position, vec3 ambient, vec3 diffuse, vec3 specular) : base(ambient, diffuse, specular)
         {
             Position = position;
         }
-        public PointLight(Vector3 position, float constant, float linear, float quadratic, Vector3 ambient, Vector3 diffuse, Vector3 specular) : base(ambient, diffuse, specular)
+        public PointLight(vec3 position, float constant, float linear, float quadratic, vec3 ambient, vec3 diffuse, vec3 specular) : base(ambient, diffuse, specular)
         {
             Position = position;
 
@@ -99,14 +100,14 @@ namespace Yahtzee.Render
 
     class SpotLight : Light
     {
-        public Vector3 Position;
-        public Vector3 Direction = new Vector3(0, 0, 1);
+        public vec3 Position;
+        public vec3 Direction = new vec3(0, 0, 1);
         public float Cutoff = .5f, OuterCutoff = .6f;
         public float Constant = 1, Linear = 1, Quadratic = 1;
 
-        public SpotLight(Vector3 position, float cutoff, float outerCutoff) : this(position, cutoff, outerCutoff, 1, 0.09f, 0.032f) { }
+        public SpotLight(vec3 position, float cutoff, float outerCutoff) : this(position, cutoff, outerCutoff, 1, 0.09f, 0.032f) { }
 
-        public SpotLight(Vector3 position, float cutoff, float outerCutoff, float constant, float linear, float quadratic) : base()
+        public SpotLight(vec3 position, float cutoff, float outerCutoff, float constant, float linear, float quadratic) : base()
         {
             Position = position;
 
@@ -118,9 +119,9 @@ namespace Yahtzee.Render
             Quadratic = quadratic;
         }
 
-        public SpotLight(Vector3 position, float cutoff, float outerCutoff, Vector3 ambient, Vector3 diffuse, Vector3 specular) : this(position, cutoff, outerCutoff, 1, 0.09f, 0.032f, ambient, diffuse, specular) { }
+        public SpotLight(vec3 position, float cutoff, float outerCutoff, vec3 ambient, vec3 diffuse, vec3 specular) : this(position, cutoff, outerCutoff, 1, 0.09f, 0.032f, ambient, diffuse, specular) { }
 
-        public SpotLight(Vector3 position, float cutoff, float outerCutoff, float constant, float linear, float quadratic, Vector3 ambient, Vector3 diffuse, Vector3 specular) : base(ambient, diffuse, specular)
+        public SpotLight(vec3 position, float cutoff, float outerCutoff, float constant, float linear, float quadratic, vec3 ambient, vec3 diffuse, vec3 specular) : base(ambient, diffuse, specular)
         {
             Position = position;
 

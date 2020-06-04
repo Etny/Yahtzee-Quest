@@ -17,9 +17,9 @@ namespace Yahtzee.Render
 
         private uint VAO, VBO, EBO;
 
-        public Mesh(GL gl, Vertex[] vertices, uint[] indices, Texture[] textures)
+        public Mesh(Vertex[] vertices, uint[] indices, Texture[] textures)
         {
-            this.gl = gl;
+            this.gl = GL.GetApi();
 
             this.Vertices = vertices;
             this.Indices = indices;

@@ -1,9 +1,11 @@
-﻿using Silk.NET.OpenGL;
+﻿using GlmSharp;
+using Silk.NET.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Text;
+
 
 namespace Yahtzee.Render
 {
@@ -13,41 +15,22 @@ namespace Yahtzee.Render
 
         private GL gl;
 
-        public Shader(GL gl, string vertexPath, string fragmentPath)
+        public Shader(string shaderPath) : this(shaderPath, null, shaderPath) { }
+        public Shader(string vertexPath, string fragmentPath) : this(vertexPath, null, fragmentPath) { }
+
+        public Shader(string vertexPath, string geometryPath, string fragmentPath)
         {
-            this.gl = gl;
-
-            uint vert = 0, frag = 0;
-
-            LoadShader(ref vert, ShaderType.VertexShader, "Resource/Shaders/" + vertexPath);
-            LoadShader(ref frag, ShaderType.FragmentShader, "Resource/Shaders/" + fragmentPath);
-
-            ID = gl.CreateProgram();
-            gl.AttachShader(ID, vert);
-            gl.AttachShader(ID, frag);
-            gl.LinkProgram(ID);
-
-            string log = gl.GetProgramInfoLog(ID);
-            if (!string.IsNullOrWhiteSpace(log))
-                Console.WriteLine($"Shader program link error: {log}");
-
-            gl.DeleteShader(vert);
-            gl.DeleteShader(frag);
-        }
-
-        public Shader(GL gl, string vertexPath, string geometryPath, string fragmentPath)
-        {
-            this.gl = gl;
+            this.gl = GL.GetApi();
 
             uint vert = 0, geom = 0, frag = 0;
 
-            LoadShader(ref vert, ShaderType.VertexShader, "Resource/Shaders/"+vertexPath);
-            LoadShader(ref geom, ShaderType.GeometryShader, "Resource/Shaders/" + geometryPath);
-            LoadShader(ref frag, ShaderType.FragmentShader, "Resource/Shaders/" + fragmentPath);
+            LoadShader(ref vert, ShaderType.VertexShader, $"Resource/Shaders/{vertexPath}.vert");
+            if(geometryPath != null) LoadShader(ref geom, ShaderType.GeometryShader, $"Resource/Shaders/{geometryPath}.geom");
+            LoadShader(ref frag, ShaderType.FragmentShader, $"Resource/Shaders/{fragmentPath}.frag");
 
             ID = gl.CreateProgram();
             gl.AttachShader(ID, vert);
-            gl.AttachShader(ID, geom);
+            if (geometryPath != null) gl.AttachShader(ID, geom);
             gl.AttachShader(ID, frag);
             gl.LinkProgram(ID);
 
@@ -56,8 +39,11 @@ namespace Yahtzee.Render
                 Console.WriteLine($"Shader program link error: {log}");
 
             gl.DeleteShader(vert);
-            gl.DeleteShader(geom);
+            if (geometryPath != null) gl.DeleteShader(geom);
             gl.DeleteShader(frag);
+
+            if ((GLEnum)gl.GetUniformBlockIndex(ID, "Matrices") != GLEnum.InvalidIndex)
+                gl.UniformBlockBinding(ID, gl.GetUniformBlockIndex(ID, "Matrices"), 0);
         }
 
         private void LoadShader(ref uint shader, ShaderType type, string path)
@@ -94,28 +80,28 @@ namespace Yahtzee.Render
             gl.Uniform1(gl.GetUniformLocation(ID, uniform), i);
         }
 
-        public void SetVec2(string uniform, Vector2 vec2)
+        public void SetVec2(string uniform, vec2 vec)
         {
             Use();
-            gl.Uniform2(gl.GetUniformLocation(ID, uniform), vec2);
+            gl.Uniform2(gl.GetUniformLocation(ID, uniform), vec.x, vec.y);
         }
 
-        public void SetVec3(string uniform, Vector3 vec3)
+        public void SetVec3(string uniform, vec3 vec)
         {
             Use();
-            gl.Uniform3(gl.GetUniformLocation(ID, uniform), vec3);
+            gl.Uniform3(gl.GetUniformLocation(ID, uniform), vec.x, vec.y, vec.z);
         }
 
         public void SetVec3(string uniform, float x, float y, float z)
-            => SetVec3(uniform, new Vector3(x, y, z));
+            => SetVec3(uniform, new vec3(x, y, z));
 
-        public void SetVec4(string uniform, Vector4 vec4)
+        public void SetVec4(string uniform, vec4 vec)
         {
             Use();
-            gl.Uniform4(gl.GetUniformLocation(ID, uniform), vec4);
+            gl.Uniform4(gl.GetUniformLocation(ID, uniform), vec.x, vec.y, vec.z, vec.w);
         }
 
-        public unsafe void SetMat4(string uniform, GlmSharp.mat4 mat4)
+        public unsafe void SetMat4(string uniform, mat4 mat4)
         {
             Use();
             gl.UniformMatrix4(gl.GetUniformLocation(ID, uniform), 1, false, (float*)&mat4);

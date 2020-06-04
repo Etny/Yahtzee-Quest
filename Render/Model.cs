@@ -17,9 +17,9 @@ namespace Yahtzee.Render
 
         private string directory;
 
-        public Model(GL gl, string filePath)
+        public Model(string filePath)
         {
-            this.gl = gl;
+            this.gl = GL.GetApi();
 
             loadModel(filePath);
         }
@@ -114,7 +114,7 @@ namespace Yahtzee.Render
             else
                 textures = new Texture[0];
 
-            return new Mesh(gl, vertices.ToArray(), indices.ToArray(), textures);
+            return new Mesh(vertices.ToArray(), indices.ToArray(), textures);
         }
 
         private Texture[] loadMaterialTextures(ai.Material material, ai.TextureType type, TextureType textureType)
