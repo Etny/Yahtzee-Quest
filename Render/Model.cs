@@ -21,7 +21,7 @@ namespace Yahtzee.Render
         {
             this.gl = GL.GetApi();
 
-            loadModel(filePath);
+            loadModel("Resource/Models/"+filePath);
         }
 
         private void loadModel(string path)

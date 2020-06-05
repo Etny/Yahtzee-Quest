@@ -25,17 +25,26 @@ namespace Yahtzee.Render
             defaultShader = new Shader("default");
 
             Camera = new Camera();
+
+            gl.Enable(EnableCap.DepthTest);
+
+            Entities.Add(new Entity("Backpack/backpack.obj"));
         }
 
         public void Render()
         {
+            gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit));
+
             defaultShader.Use();
             Camera.SetMatrices();
             RenderScene(defaultShader);
         }
 
         public void Update(double deltaTime)
-           => Entities.ForEach(e => e.Update(deltaTime));
+        {
+            Camera.Update(deltaTime);
+            Entities.ForEach(e => e.Update(deltaTime));
+        }
 
         private void RenderScene(Shader shader)
             => Entities.ForEach(e => e.Draw(shader));

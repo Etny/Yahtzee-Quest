@@ -1,4 +1,5 @@
 ﻿using GlmSharp;
+using Silk.NET.GLFW;
 using Silk.NET.OpenGL;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,7 @@ namespace Yahtzee.Render
             gl = GL.GetApi();
 
             Program.Window.OnResize += OnResize;
+            Program.Window.OnCursorMove += OnCursorMove;
 
             matricesBuffer = gl.CreateBuffer();
             gl.BindBuffer(BufferTargetARB.UniformBuffer, matricesBuffer);
@@ -35,7 +37,7 @@ namespace Yahtzee.Render
             gl.BindBufferBase(BufferTargetARB.UniformBuffer, 0, matricesBuffer);
 
             Size windowSize = Program.Window.GetSize();
-            mat4 projectionMatrix = mat4.PerspectiveFov(Fov, windowSize.Width, windowSize.Height, .1f, 1000f);
+            mat4 projectionMatrix = mat4.PerspectiveFov(Util.ToRadians(Fov), windowSize.Width, windowSize.Height, .1f, 1000f);
             gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, (uint)sizeof(mat4), &projectionMatrix);
         }
 
@@ -61,6 +63,38 @@ namespace Yahtzee.Render
             Pitch = Util.ToDegrees((float)-Math.Asin(dir.x));
         }
 
+
+        private void OnCursorMove(double x, double y, double deltaX, double deltaY)
+        {
+            float sensitivity = 0.2f;
+            deltaX *= sensitivity;
+            deltaY *= -sensitivity;
+
+            Yaw += (float)deltaX;
+            Pitch += (float)deltaY;
+
+            if (Pitch > 89f)
+                Pitch = 89f;
+            if (Pitch < -89f)
+                Pitch = -89f;
+        }
+
+        public void Update(double deltaTime)
+        {
+            float camSpeed = (float)(2.5f * deltaTime);
+            var input = Program.InputManager;
+
+            if (input.IsPressed(Keys.W))
+                Position += GetDirection() * camSpeed;
+            if (input.IsPressed(Keys.S))
+                Position -= GetDirection() * camSpeed;
+            if (input.IsPressed(Keys.A))
+                Position -= vec3.Cross(GetDirection(), Up).Normalized * camSpeed;
+            if (input.IsPressed(Keys.D))
+                Position += vec3.Cross(GetDirection(), Up).Normalized * camSpeed;
+            if (input.IsPressed(Keys.G))
+                Console.WriteLine($"Dir: {GetDirection()}, Pos: {Position}, Yaw: {Yaw}, Pitch: {Pitch}");
+        }
 
         private void OnResize(int width, int height)
         {

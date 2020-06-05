@@ -14,7 +14,7 @@ namespace Yahtzee.Render
         public Texture[] Textures;
 
         private GL gl;
-
+        
         private uint VAO, VBO, EBO;
 
         public Mesh(Vertex[] vertices, uint[] indices, Texture[] textures)

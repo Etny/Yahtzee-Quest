@@ -20,6 +20,14 @@ namespace Yahtzee.Main
         public delegate void Resize(int width, int height);
         public event Resize OnResize;
 
+        private bool firstMove = true;
+        private double lastX = -1, lastY = -1;
+        public delegate void CursorMove(double x, double y, double deltaX, double deltaY);
+        public event CursorMove OnCursorMove;
+
+        public delegate void Button(Keys key, InputAction action, KeyModifiers mods);
+        public event Button OnButton;
+
         private double lastFrame = 0.0f;
         private double deltaTime = 0.0f;
         private double currentFrame = 0.0f;
@@ -49,12 +57,33 @@ namespace Yahtzee.Main
 
             glfw.MakeContextCurrent(window);
             glfw.SetWindowSizeCallback(window, OnWindowResize);
-            //glfw.SetCursorPosCallback(window, MouseInput);
+            glfw.SetKeyCallback(window, OnWindowButtonPress);
+            glfw.SetCursorEnterCallback(window, OnWindowCursorEnter);
+            glfw.SetCursorPosCallback(window, OnWindowCursor);
             //glfw.SetScrollCallback(window, ScrollInput);
             glfw.SetInputMode(window, CursorStateAttribute.Cursor, CursorModeValue.CursorDisabled);
 
             return true;
         }
+
+        private void OnWindowCursorEnter(WindowHandle* window, bool entered)
+        {
+            if (!entered) firstMove = true; ;
+        }
+
+        private void OnWindowCursor(WindowHandle* window, double x, double y)
+        {
+            if (!firstMove)
+                OnCursorMove?.Invoke(x, y, x - lastX, y - lastY);
+            else
+                firstMove = false;
+            
+            lastX = x;
+            lastY = y;  
+        }
+
+        private void OnWindowButtonPress(WindowHandle* window, Keys key, int scanCode, InputAction action, KeyModifiers mods)
+            => OnButton?.Invoke(key, action, mods);
 
         private void OnWindowResize(WindowHandle* window, int width, int height)
             => OnResize?.Invoke(width, height);

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Silk.NET.GLFW;
+using System;
+using Yahtzee.Game;
 using Yahtzee.Render;
 
 namespace Yahtzee.Main
@@ -8,8 +10,7 @@ namespace Yahtzee.Main
 
         public static Window Window;
         public static Scene Scene;
-
-        private static double total;
+        public static InputManager InputManager;
 
         static void Main(string[] args)
         {
@@ -17,10 +18,20 @@ namespace Yahtzee.Main
             if (!Window.OpenWindow("Yahtzee Quest", new System.Drawing.Size(1280, 720)))
                 return;
 
+            InputManager = new InputManager();
+
             Scene = new Scene();
 
             Window.OnTick += Tick;
+            Window.OnButton += OnButton;
             Window.StartLoop();
+        }
+
+
+        private static void OnButton(Keys key, InputAction action, KeyModifiers mods)
+        {
+            if (key == Keys.Escape)
+                Window.Close();
         }
 
         private static void Tick(double deltaTime)
@@ -28,11 +39,10 @@ namespace Yahtzee.Main
             Scene.Update(deltaTime);
             Scene.Render();
 
-            total += deltaTime;
-            if (total >= 5) Window.Close();
-
             Window.EndRender();
         }
+
+
 
     }
 }
