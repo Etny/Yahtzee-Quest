@@ -50,11 +50,12 @@ namespace Yahtzee.Render
             return new vec3(x, y, z).Normalized;
         }
 
-        public void SetMatrices()
+        public void SetData(Shader shader)
         {
             mat4 viewMat = LookAt();
             gl.BindBuffer(BufferTargetARB.UniformBuffer, matricesBuffer);
             gl.BufferSubData(BufferTargetARB.UniformBuffer, sizeof(mat4), (uint)sizeof(mat4), &viewMat);
+            shader.SetVec3("viewPos", Position);
         }
 
         public void SetDirection(vec3 dir)

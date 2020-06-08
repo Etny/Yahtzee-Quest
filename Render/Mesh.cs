@@ -11,13 +11,13 @@ namespace Yahtzee.Render
     {
         public Vertex[] Vertices;
         public uint[] Indices;
-        public Texture[] Textures;
+        public ImageTexture[] Textures;
 
         private GL gl;
         
         private uint VAO, VBO, EBO;
 
-        public Mesh(Vertex[] vertices, uint[] indices, Texture[] textures)
+        public Mesh(Vertex[] vertices, uint[] indices, ImageTexture[] textures)
         {
             this.gl = GL.GetApi();
 

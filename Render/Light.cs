@@ -39,11 +39,6 @@ namespace Yahtzee.Render
             Direction = direction;
         }
 
-        public DirectionalLight(vec3 direction, vec3 ambient, vec3 diffuse, vec3 specular) : base(ambient, diffuse, specular)
-        {
-            Direction = direction;
-        }
-
         public override void SetValues(Shader shader, int index)
         {
             string name = "dirLights[" + index + "]";
@@ -64,19 +59,6 @@ namespace Yahtzee.Render
             Position = position;
         }
         public PointLight(vec3 position, float constant, float linear, float quadratic) : base()
-        {
-            Position = position;
-
-            Constant = constant;
-            Linear = linear;
-            Quadratic = quadratic;
-        }
-
-        public PointLight(vec3 position, vec3 ambient, vec3 diffuse, vec3 specular) : base(ambient, diffuse, specular)
-        {
-            Position = position;
-        }
-        public PointLight(vec3 position, float constant, float linear, float quadratic, vec3 ambient, vec3 diffuse, vec3 specular) : base(ambient, diffuse, specular)
         {
             Position = position;
 
@@ -111,22 +93,8 @@ namespace Yahtzee.Render
         {
             Position = position;
 
-            Cutoff = cutoff;
-            OuterCutoff = outerCutoff;
-
-            Constant = constant;
-            Linear = linear;
-            Quadratic = quadratic;
-        }
-
-        public SpotLight(vec3 position, float cutoff, float outerCutoff, vec3 ambient, vec3 diffuse, vec3 specular) : this(position, cutoff, outerCutoff, 1, 0.09f, 0.032f, ambient, diffuse, specular) { }
-
-        public SpotLight(vec3 position, float cutoff, float outerCutoff, float constant, float linear, float quadratic, vec3 ambient, vec3 diffuse, vec3 specular) : base(ambient, diffuse, specular)
-        {
-            Position = position;
-
-            Cutoff = cutoff;
-            OuterCutoff = outerCutoff;
+            Cutoff = (float)Math.Cos(cutoff);
+            OuterCutoff = (float)Math.Cos(outerCutoff);
 
             Constant = constant;
             Linear = linear;

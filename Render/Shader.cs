@@ -9,20 +9,17 @@ using System.Text;
 
 namespace Yahtzee.Render
 {
-    class Shader
+    class Shader : GLObject
     {
-        public uint ID { get; private set; }
-
-        private GL gl;
-
         public Shader(string shaderPath) : this(shaderPath, null, shaderPath) { }
         public Shader(string vertexPath, string fragmentPath) : this(vertexPath, null, fragmentPath) { }
 
-        public Shader(string vertexPath, string geometryPath, string fragmentPath)
+        public Shader(string vertexPath, string geometryPath, string fragmentPath) : base()
         {
-            this.gl = GL.GetApi();
-
             uint vert = 0, geom = 0, frag = 0;
+
+            if (geometryPath != null && !File.Exists($"Resource/Shaders/{geometryPath}.geom"))
+                geometryPath = null;
 
             LoadShader(ref vert, ShaderType.VertexShader, $"Resource/Shaders/{vertexPath}.vert");
             if(geometryPath != null) LoadShader(ref geom, ShaderType.GeometryShader, $"Resource/Shaders/{geometryPath}.geom");
@@ -57,10 +54,11 @@ namespace Yahtzee.Render
                 Console.WriteLine($"Shader compile error when compiling shader at {path} of type {type}: {log}");
         }
 
-        public void Use()
-        {
-            gl.UseProgram(ID);
-        }
+        public override void Use() 
+            => gl.UseProgram(ID);
+
+        public override void Dispose()
+            => gl.DeleteProgram(ID);
 
         public void SetFloat(string uniform, float f)
         {
@@ -106,7 +104,6 @@ namespace Yahtzee.Render
             Use();
             gl.UniformMatrix4(gl.GetUniformLocation(ID, uniform), 1, false, (float*)&mat4);
         }
-
 
     }
 }

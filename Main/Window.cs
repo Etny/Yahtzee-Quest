@@ -99,6 +99,8 @@ namespace Yahtzee.Main
                 deltaTime = (currentFrame - lastFrame) / glfw.GetTimerFrequency();
                 lastFrame = currentFrame;
 
+                //Console.WriteLine($"FPS: {1f / deltaTime}");
+
                 if (OnTick == null) break;
                 OnTick.Invoke(deltaTime);
             }
@@ -112,10 +114,19 @@ namespace Yahtzee.Main
             glfw.PollEvents();
         }
 
+        public void SetVSync(bool vsync)
+        {
+            glfw.SwapInterval(vsync ? 1 : 0);
+        }
 
         public void Close()
             => glfw.SetWindowShouldClose(window, true);
-        
+
+
+        public void GetSize(out int width, out int height)
+        {
+            glfw.GetWindowSize(window, out width, out height);
+        }
 
         public Size GetSize()
         {

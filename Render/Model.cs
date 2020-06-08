@@ -13,7 +13,7 @@ namespace Yahtzee.Render
         private GL gl;
 
         private List<Mesh> meshes;
-        private List<Texture> loadedTextures;
+        private List<ImageTexture> loadedTextures;
 
         private string directory;
 
@@ -37,7 +37,7 @@ namespace Yahtzee.Render
             }
 
             directory = path.Substring(0, path.LastIndexOf("/") + 1);
-            loadedTextures = new List<Texture>();
+            loadedTextures = new List<ImageTexture>();
             meshes = new List<Mesh>();
 
             proccessNode(scene.RootNode, scene);
@@ -61,7 +61,7 @@ namespace Yahtzee.Render
             //uint[] indices = new uint[mesh.FaceCount * 3];
             List<Vertex> vertices = new List<Vertex>();
             List<uint> indices = new List<uint>();
-            Texture[] textures;
+            ImageTexture[] textures;
 
             for (int i = 0; i < mesh.VertexCount; i++)
             {
@@ -98,28 +98,28 @@ namespace Yahtzee.Render
             {
                 ai.Material material = scene.Materials[mesh.MaterialIndex];
 
-                List<Texture> tempTextures = new List<Texture>();
+                List<ImageTexture> tempTextures = new List<ImageTexture>();
 
-                Texture[] diffuse = loadMaterialTextures(material, ai.TextureType.Diffuse, TextureType.Diffuse);
+                ImageTexture[] diffuse = loadMaterialTextures(material, ai.TextureType.Diffuse, TextureType.Diffuse);
                 tempTextures.AddRange(diffuse);
 
-                Texture[] specular = loadMaterialTextures(material, ai.TextureType.Specular, TextureType.Specular);
+                ImageTexture[] specular = loadMaterialTextures(material, ai.TextureType.Specular, TextureType.Specular);
                 tempTextures.AddRange(specular);
 
-                Texture[] normal = loadMaterialTextures(material, ai.TextureType.Height, TextureType.Normal);
+                ImageTexture[] normal = loadMaterialTextures(material, ai.TextureType.Height, TextureType.Normal);
                 tempTextures.AddRange(normal);
 
                 textures = tempTextures.ToArray();
             }
             else
-                textures = new Texture[0];
+                textures = new ImageTexture[0];
 
             return new Mesh(vertices.ToArray(), indices.ToArray(), textures);
         }
 
-        private Texture[] loadMaterialTextures(ai.Material material, ai.TextureType type, TextureType textureType)
+        private ImageTexture[] loadMaterialTextures(ai.Material material, ai.TextureType type, TextureType textureType)
         {
-            Texture[] textures = new Texture[material.GetMaterialTextureCount(type)];
+            ImageTexture[] textures = new ImageTexture[material.GetMaterialTextureCount(type)];
 
             for (int i = 0; i < textures.Length; i++)
             {
@@ -128,15 +128,15 @@ namespace Yahtzee.Render
 
                 string path = directory + slot.FilePath;
 
-                Texture texture;
+                ImageTexture texture;
 
-                Texture loaded = loadedTextures.Find(x => x.path == path);
+                ImageTexture loaded = loadedTextures.Find(x => x.path == path);
 
                 if (loaded != null)
                     texture = loaded;
                 else
                 {
-                    texture = new Texture(gl, path, textureType);
+                    texture = new ImageTexture(gl, path, textureType);
                     loadedTextures.Add(texture);
                     Console.WriteLine($"Texture file path: {path}");
                 }
