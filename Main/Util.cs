@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Silk.NET.OpenGL;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,5 +14,7 @@ namespace Yahtzee.Main
         public static float ToDegrees(float rad)
             => (float)(rad / Math.PI) * 180;
 
+        public static void GLClear()
+            => GL.GetApi().Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit));
     }
 }

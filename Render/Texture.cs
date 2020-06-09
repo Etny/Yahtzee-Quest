@@ -28,6 +28,7 @@ namespace Yahtzee.Render
 
         public void BindToUnit(int unit)
         {
+            gl.BindTexture(TextureTarget.Texture2D, 0);
             gl.ActiveTexture(TextureUnit.Texture0 + unit);
             Use();
         }

@@ -13,6 +13,7 @@ namespace Yahtzee.Main
         public static Window Window;
         public static Scene Scene;
         public static InputManager InputManager;
+        public static PostProcessManager PostProcessManager;
 
         private static GL gl;
 
@@ -30,8 +31,13 @@ namespace Yahtzee.Main
             SetupGL();
 
             InputManager = new InputManager();
-
+            PostProcessManager = new PostProcessManager();
             Scene = new Scene();
+
+            PostProcessManager.AddPostProcessShader("testShader");
+            PostProcessManager.AddPostProcessShader("testShader1");
+            PostProcessManager.AddPostProcessShader("gammaCorrect");
+
 
             Window.StartLoop();
         }
@@ -50,7 +56,7 @@ namespace Yahtzee.Main
         private static void Tick(double deltaTime)
         {
             Scene.Update(deltaTime);
-            Scene.Render();
+            PostProcessManager.RenderPostProcess(Scene.Render());
 
             Window.EndRender();
         }

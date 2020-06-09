@@ -4,6 +4,7 @@ using System.Text;
 using ai = Assimp;
 using System.Numerics;
 using Silk.NET.OpenGL;
+using GlmSharp;
 
 namespace Yahtzee.Render
 {
@@ -68,24 +69,24 @@ namespace Yahtzee.Render
                 Vertex v = new Vertex();
 
                 ai.Vector3D mvp = mesh.Vertices[i];
-                v.Position = new Vector3(mvp.X, mvp.Y, mvp.Z);
+                v.Position = new vec3(mvp.X, mvp.Y, mvp.Z);
 
                 ai.Vector3D mvn = mesh.Normals[i];
-                v.Normal = new Vector3(mvn.X, mvn.Y, mvn.Z);
+                v.Normal = new vec3(mvn.X, mvn.Y, mvn.Z);
 
                 ai.Vector3D mvt = mesh.Tangents[i];
-                v.Tangent = new Vector3(mvt.X, mvt.Y, mvt.Z);
+                v.Tangent = new vec3(mvt.X, mvt.Y, mvt.Z);
 
                 ai.Vector3D mvb = mesh.BiTangents[i];
-                v.Bitangent = new Vector3(mvb.X, mvb.Y, mvb.Z);
+                v.Bitangent = new vec3(mvb.X, mvb.Y, mvb.Z);
 
                 if (mesh.TextureCoordinateChannelCount > 0)
                 {
                     ai.Vector3D mvc = mesh.TextureCoordinateChannels[0][i];
-                    v.TexCoords = new Vector2(mvc.X, mvc.Y);
+                    v.TexCoords = new vec2(mvc.X, mvc.Y);
                 }
                 else
-                    v.TexCoords = new Vector2(0, 0);
+                    v.TexCoords = new vec2(0, 0);
 
                 vertices.Add(v);
             }

@@ -33,6 +33,7 @@ namespace Yahtzee.Render
             var windowSize = Program.Window.GetSize();
             renderFrameBuffer = new FrameBuffer();
             renderFrameBuffer.CreateTexture((uint)windowSize.Width, (uint)windowSize.Height);
+            renderFrameBuffer.CreateRenderBuffer((uint)windowSize.Width, (uint)windowSize.Height);
             Program.Window.OnResize += OnResize;
 
             Camera = new Camera();
@@ -42,16 +43,19 @@ namespace Yahtzee.Render
             Entities.Add(new Entity("Backpack/backpack.obj"));
         }
 
-        public void Render()
+        public FrameBuffer Render()
         {
-            gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit));
-
+            renderFrameBuffer.Use();
+            Util.GLClear();
             gl.CullFace(CullFaceMode.Back);
+
 
             defaultShader.Use();
             Camera.SetData(defaultShader);
             setLightingData();
             RenderScene(defaultShader);
+
+            return renderFrameBuffer;
         }
 
         private void setLightingData()

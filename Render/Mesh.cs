@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
+using GlmSharp;
 
 namespace Yahtzee.Render
 {
@@ -28,10 +29,12 @@ namespace Yahtzee.Render
             setupMesh();
         }
 
+        public Mesh(Vertex[] vertices) : this(vertices, null, new ImageTexture[0]) { }
+
         private unsafe void setupMesh()
         {
             VBO = gl.GenBuffer();
-            EBO = gl.GenBuffer();
+            if(Indices != null) EBO = gl.GenBuffer();
             VAO = gl.GenVertexArray();
 
             gl.BindVertexArray(VAO);
@@ -40,9 +43,12 @@ namespace Yahtzee.Render
             fixed (void* i = &Vertices[0])
                 gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(Vertices.Length * sizeof(Vertex)), i, BufferUsageARB.StaticDraw);
 
-            gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, EBO);
-            fixed (void* i = &Indices[0])
-                gl.BufferData(BufferTargetARB.ElementArrayBuffer, (uint)(Indices.Length * sizeof(uint)), i, BufferUsageARB.StaticDraw);
+            if (Indices != null)
+            {
+                gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, EBO);
+                fixed (void* i = &Indices[0])
+                    gl.BufferData(BufferTargetARB.ElementArrayBuffer, (uint)(Indices.Length * sizeof(uint)), i, BufferUsageARB.StaticDraw);
+            }
 
             gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)0);
             gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, (uint)sizeof(Vertex), (void*)(3 * sizeof(float)));
@@ -88,16 +94,17 @@ namespace Yahtzee.Render
             gl.ActiveTexture(TextureUnit.Texture0);
 
             gl.BindVertexArray(VAO);
-            gl.DrawElements(PrimitiveType.Triangles, (uint)Indices.Length, DrawElementsType.UnsignedInt, (void*)0);
+            if (Indices != null) gl.DrawElements(PrimitiveType.Triangles, (uint)Indices.Length, DrawElementsType.UnsignedInt, (void*)0);
+            else gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)Vertices.Length);
         }
     }
 
     struct Vertex
     {
-        public Vector3 Position;
-        public Vector3 Normal;
-        public Vector2 TexCoords;
-        public Vector3 Tangent;
-        public Vector3 Bitangent;
+        public vec3 Position;
+        public vec3 Normal;
+        public vec2 TexCoords;
+        public vec3 Tangent;
+        public vec3 Bitangent;
     }
 }
