@@ -14,6 +14,7 @@ namespace Yahtzee.Main
         public static Scene Scene;
         public static InputManager InputManager;
         public static PostProcessManager PostProcessManager;
+        public static Settings Settings;
 
         private static GL gl;
 
@@ -33,11 +34,9 @@ namespace Yahtzee.Main
             InputManager = new InputManager();
             PostProcessManager = new PostProcessManager();
             Scene = new Scene();
+            Settings = new Settings();
 
-            PostProcessManager.AddPostProcessShader("testShader");
-            PostProcessManager.AddPostProcessShader("testShader1");
             PostProcessManager.AddPostProcessShader("gammaCorrect");
-
 
             Window.StartLoop();
         }

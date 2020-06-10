@@ -24,16 +24,17 @@ namespace Yahtzee.Render
         private List<Shader> postProcessShaders = new List<Shader>();
         private Shader defaultShader;
 
-        private FrameBuffer destintation, source, test;
+        private Texture texture1, texture2;
+        private FrameBuffer postProBuffer;
 
         public PostProcessManager()
         {
             screenQuad = new ScreenMesh(quadVertices);
 
             System.Drawing.Size windowSize = Program.Window.GetSize();
-            source = new FrameBuffer();
-            destintation = new FrameBuffer(windowSize.Width, windowSize.Height);
-            test = new FrameBuffer(windowSize.Width, windowSize.Height);
+            texture1 = new Texture((uint)windowSize.Width, (uint)windowSize.Height);
+            texture2 = new Texture((uint)windowSize.Width, (uint)windowSize.Height);
+            postProBuffer = new FrameBuffer();
 
             defaultShader = new Shader("PostProcess/postPro", "PostProcess/postProDefault");
             defaultShader.SetInt("screen", 0);
@@ -50,8 +51,8 @@ namespace Yahtzee.Render
                 return;
             }
 
-            source = renderBuffer;
-            destintation = test;
+            var destination = texture2;
+            var source = renderBuffer.BoundTexture;
 
             for(int i = 0; i < postProcessShaders.Count; i++)
             {
@@ -59,27 +60,41 @@ namespace Yahtzee.Render
                 bool lastShader = i >= postProcessShaders.Count - 1;
 
                 if (!lastShader)
-                    destintation.Use();
+                {
+                    postProBuffer.Use();
+                    postProBuffer.BindTexture(destination);
+                }
                 else
                     FrameBuffer.UseDefault();
 
                 Util.GLClear();
-                source.BoundTexture.BindToUnit(0);
+                source.BindToUnit(0);
                 screenQuad.Draw(shader);
 
                 if (lastShader)
                     break;
 
-                var temp = source;
-                destintation = source;
+                if (i == 0)
+                    source = texture1;
+
+                var temp = destination;
+                destination = source;
                 source = temp;
             }
         }
 
-        public void AddPostProcessShader(string fragmentPath)
+        public Shader AddPostProcessShader(string fragmentPath)
         {
             Shader shader = new Shader("PostProcess/postPro", "PostProcess/" + fragmentPath);
+            shader.SetInt("screen", 0);
             postProcessShaders.Add(shader);
+            return shader;
+        }
+
+        public void RemovePostProcessShader(Shader shader)
+        {
+            postProcessShaders.Remove(shader);
+            shader.Dispose();
         }
 
         // I hate this solution, but it will do for now

@@ -22,8 +22,6 @@
     <None Remove="Resource\Shaders\PostProcess\gammaCorrect.frag" />
     <None Remove="Resource\Shaders\PostProcess\postPro.vert" />
     <None Remove="Resource\Shaders\PostProcess\postProDefault.frag" />
-    <None Remove="Resource\Shaders\PostProcess\testShader.frag" />
-    <None Remove="Resource\Shaders\PostProcess\testShader1.frag" />
   </ItemGroup>
 
   <ItemGroup>
@@ -64,12 +62,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\postProDefault.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resource\Shaders\PostProcess\testShader1.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resource\Shaders\PostProcess\testShader.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

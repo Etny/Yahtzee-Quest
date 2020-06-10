@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using GlmSharp;
+using Yahtzee.Main;
 
 namespace Yahtzee.Render
 {
@@ -11,6 +12,9 @@ namespace Yahtzee.Render
         public vec3 Ambient = new vec3(0.05f, 0.05f, 0.05f);
         public vec3 Diffuse = new vec3(0.8f, 0.8f, 0.8f);
         public vec3 Specular = new vec3(1.0f, 1.0f, 1.0f);
+
+        public Texture ShadowMap { get; protected set; } = null;
+        public bool ShadowsEnabled { get; protected set; } = false;
 
         public Light() { }
 
@@ -22,6 +26,23 @@ namespace Yahtzee.Render
         }
 
         public abstract void SetValues(Shader shader, int index);
+
+        public virtual void SetShadowsEnabled(bool shadows)
+        {
+            ShadowsEnabled = shadows;
+
+            if (!shadows)
+            {
+                ShadowMap.Dispose();
+                ShadowMap = null;
+            }
+            else
+                CreateShadowMap();
+            
+        }
+
+        protected abstract void CreateShadowMap();
+
         protected virtual void SetColorValues(Shader shader, string name)
         {
             shader.SetVec3(name + ".color.ambient", Ambient);
@@ -46,6 +67,12 @@ namespace Yahtzee.Render
             base.SetColorValues(shader, name);
 
             shader.SetVec3(name + ".direction", Direction);
+        }
+
+        protected override void CreateShadowMap()
+        {
+            Program.Settings.GetShadowMapSize(out int width, out int height);
+            ShadowMap = new DepthTexture(width, height);
         }
     }
 
@@ -114,6 +141,12 @@ namespace Yahtzee.Render
             shader.SetFloat(name + ".constant", Constant);
             shader.SetFloat(name + ".linear", Linear);
             shader.SetFloat(name + ".quadratic", Quadratic);
+        }
+
+        protected override void CreateShadowMap()
+        {
+            Program.Settings.GetShadowMapSize(out int width, out int height);
+            ShadowMap = new DepthTexture(width, height);
         }
     }
 }
