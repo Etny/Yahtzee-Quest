@@ -30,7 +30,7 @@ namespace Yahtzee.Render
         public virtual void SetShadowsEnabled(bool shadows)
         {
             ShadowsEnabled = shadows;
-
+            
             if (!shadows)
             {
                 ShadowMap.Dispose();
@@ -38,8 +38,9 @@ namespace Yahtzee.Render
             }
             else
                 CreateShadowMap();
-            
         }
+
+        public abstract void SetLightspaceMatrix(FrameBuffer fb, Shader depthShader);
 
         protected abstract void CreateShadowMap();
 
@@ -67,12 +68,25 @@ namespace Yahtzee.Render
             base.SetColorValues(shader, name);
 
             shader.SetVec3(name + ".direction", Direction);
+            mat4 Projection = mat4.Ortho(-10, 10, -10, 10, .1f, 15);
+            mat4 LookAt = mat4.LookAt(new vec3(0, 0, 10), new vec3(0), new vec3(0, 1, 0));
+            shader.SetMat4(name + ".lightSpace", Projection * LookAt);
+            shader.SetInt(name + ".shadowMap", 12);
+            ShadowMap.BindToUnit(12);
         }
 
         protected override void CreateShadowMap()
         {
             Program.Settings.GetShadowMapSize(out int width, out int height);
             ShadowMap = new DepthTexture(width, height);
+        }
+
+        public override void SetLightspaceMatrix(FrameBuffer fb, Shader shader)
+        {
+            fb.BindTexture(ShadowMap, Silk.NET.OpenGL.GLEnum.DepthAttachment);
+            mat4 Projection = mat4.Ortho(-10, 10, -10, 10, .1f, 15);
+            mat4 LookAt = mat4.LookAt(new vec3(0, 0, 10), new vec3(0), new vec3(0, 1, 0));
+            shader.SetMat4("lightSpace", Projection * LookAt);
         }
     }
 
@@ -104,6 +118,16 @@ namespace Yahtzee.Render
             shader.SetFloat(name + ".constant", Constant);
             shader.SetFloat(name + ".linear", Linear);
             shader.SetFloat(name + ".quadratic", Quadratic);
+        }
+
+        //TODO: Add Cubemap Support
+        protected override void CreateShadowMap()
+        {
+            throw new NotImplementedException();
+        }
+        public override void SetLightspaceMatrix(FrameBuffer fb, Shader shader)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -147,6 +171,10 @@ namespace Yahtzee.Render
         {
             Program.Settings.GetShadowMapSize(out int width, out int height);
             ShadowMap = new DepthTexture(width, height);
+        }
+        public override void SetLightspaceMatrix(FrameBuffer fb, Shader shader)
+        {
+            throw new NotImplementedException();
         }
     }
 }

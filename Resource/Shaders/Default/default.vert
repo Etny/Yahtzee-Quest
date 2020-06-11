@@ -52,6 +52,8 @@ struct SpotLight
 struct DirLight
 {
 	vec3 direction;
+	sampler2D shadowMap;
+	mat4 lightSpace;
 
 	LightColor color;
 };

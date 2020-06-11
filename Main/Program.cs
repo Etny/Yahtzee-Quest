@@ -20,6 +20,8 @@ namespace Yahtzee.Main
 
         static void Main(string[] args)
         {
+            Settings = new Settings();
+
             Window = new Window();
             if (!Window.OpenWindow("Yahtzee Quest", new Size(1280, 720)))
                 return;
@@ -34,7 +36,6 @@ namespace Yahtzee.Main
             InputManager = new InputManager();
             PostProcessManager = new PostProcessManager();
             Scene = new Scene();
-            Settings = new Settings();
 
             PostProcessManager.AddPostProcessShader("gammaCorrect");
 

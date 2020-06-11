@@ -35,6 +35,8 @@ struct SpotLight
 struct DirLight
 {
 	vec3 direction;
+	sampler2D shadowMap;
+	mat4 lightSpace;
 
 	LightColor color;
 };
@@ -82,6 +84,7 @@ vec3 CalcLight(vec3 lightDir, LightColor color, vec3 normal, vec3 viewDir, float
 vec3 CalcPointLight(int index, vec3 normal, vec3 viewDir);
 vec3 CalcSpotLight(int index, vec3 normal, vec3 viewDir);
 vec3 CalcDirLight(int index, vec3 normal, vec3 viewDir);  
+float CalcShadow(vec4 fragPosLightSpace, sampler2D shadowMap);
 
 void main()
 {
@@ -105,6 +108,19 @@ void main()
 
 	FragColor = vec4(Result, 1.0);
 }
+
+float CalcShadow(vec4 fragPosLightSpace, sampler2D shadowMap)
+{
+    vec3 lightSpacePos = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    vec3 projectedFragPos = lightSpacePos * 0.5 + 0.5;
+
+    float closestDepth = texture(shadowMap, projectedFragPos.xy).r; 
+    float currentDepth = projectedFragPos.z;
+
+    float shadow = currentDepth - .005 > closestDepth ? 1.0 : 0.0;
+
+    return 1 - shadow;
+}  
 
 
 vec3 CalcLight(vec3 lightDir, LightColor color, vec3 normal, vec3 viewDir, float attenuation, float intensity, float shadow)
@@ -147,5 +163,6 @@ vec3 CalcSpotLight(int index, vec3 normal, vec3 viewDir)
 
 vec3 CalcDirLight(int index, vec3 normal, vec3 viewDir)
 {
-	return CalcLight(normalize(-tangentLights.dirLightDir[index]), dirLights[index].color, normal, viewDir, 1.0, 1.0, 1);
+	float shadow = CalcShadow(dirLights[index].lightSpace * vec4(fs_in.FragPos, 1.0), dirLights[index].shadowMap);
+	return CalcLight(normalize(-tangentLights.dirLightDir[index]), dirLights[index].color, normal, viewDir, 1.0, 1.0, shadow);
 }

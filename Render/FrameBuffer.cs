@@ -49,7 +49,6 @@ namespace Yahtzee.Render
 
             BoundTexture = texture;
             gl.FramebufferTexture(GLEnum.Framebuffer, attachment, texture.ID, 0);
-            //gl.FramebufferTexture2D(GLEnum.Framebuffer, attachment, GLEnum.Texture2D, texture.ID, 0);
         }
 
         public void BindRenderBuffer(RenderBuffer buffer) => BindRenderBuffer(buffer, RenderBufferConfiguration.Full);

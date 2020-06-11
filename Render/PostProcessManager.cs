@@ -40,19 +40,19 @@ namespace Yahtzee.Render
             defaultShader.SetInt("screen", 0);
         }
 
-        public void RenderPostProcess(FrameBuffer renderBuffer)
+        public void RenderPostProcess(Texture renderTexture)
         {
             if(postProcessShaders.Count <= 0)
             {
                 FrameBuffer.UseDefault();
                 Util.GLClear();
-                renderBuffer.BoundTexture.BindToUnit(0);
+                renderTexture.BindToUnit(0);
                 screenQuad.Draw(defaultShader);
                 return;
             }
 
             var destination = texture2;
-            var source = renderBuffer.BoundTexture;
+            var source = renderTexture;
 
             for(int i = 0; i < postProcessShaders.Count; i++)
             {
