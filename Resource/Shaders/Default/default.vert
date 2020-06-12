@@ -46,12 +46,17 @@ struct SpotLight
     float linear;
     float quadratic;  
 
+	bool shadowsEnabled;
+	sampler2D shadowMap;
+	mat4 lightSpace;
+
 	LightColor color;
 };
 
 struct DirLight
 {
 	vec3 direction;
+	bool shadowsEnabled;
 	sampler2D shadowMap;
 	mat4 lightSpace;
 

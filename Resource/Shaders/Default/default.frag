@@ -29,12 +29,17 @@ struct SpotLight
     float linear;
     float quadratic;  
 
+	bool shadowsEnabled;
+	sampler2D shadowMap;
+	mat4 lightSpace;
+
 	LightColor color;
 };
 
 struct DirLight
 {
 	vec3 direction;
+	bool shadowsEnabled;
 	sampler2D shadowMap;
 	mat4 lightSpace;
 
@@ -61,6 +66,9 @@ uniform int pointLightCount;
 uniform int spotLightCount;
 uniform int dirLightCount;
 
+uniform float lightNearPlane;
+uniform float lightFarPlane;
+
 in VS_TAGENTLIGHTS{
 	vec3 pointLightPos[MaxLights];
 	vec3 spotLightPos[MaxLights];
@@ -84,7 +92,8 @@ vec3 CalcLight(vec3 lightDir, LightColor color, vec3 normal, vec3 viewDir, float
 vec3 CalcPointLight(int index, vec3 normal, vec3 viewDir);
 vec3 CalcSpotLight(int index, vec3 normal, vec3 viewDir);
 vec3 CalcDirLight(int index, vec3 normal, vec3 viewDir);  
-float CalcShadow(vec4 fragPosLightSpace, sampler2D shadowMap);
+float CalcShadow(vec4 fragPosLightSpace, sampler2D shadowMap, bool linearizeDepth);
+float LinearizeLightSpaceDepth(float depth);
 
 void main()
 {
@@ -107,9 +116,11 @@ void main()
 	}
 
 	FragColor = vec4(Result, 1.0);
+
+	//FragColor = vec4(vec3(CalcShadow(spotLights[0].lightSpace * vec4(fs_in.FragPos, 1.0), spotLights[0].shadowMap)), 1.0);
 }
 
-float CalcShadow(vec4 fragPosLightSpace, sampler2D shadowMap)
+float CalcShadow(vec4 fragPosLightSpace, sampler2D shadowMap, bool linearizeDepth)
 {
     vec3 lightSpacePos = fragPosLightSpace.xyz / fragPosLightSpace.w;
     vec3 projectedFragPos = lightSpacePos * 0.5 + 0.5;
@@ -117,10 +128,24 @@ float CalcShadow(vec4 fragPosLightSpace, sampler2D shadowMap)
     float closestDepth = texture(shadowMap, projectedFragPos.xy).r; 
     float currentDepth = projectedFragPos.z;
 
+	if(linearizeDepth)
+	{
+		closestDepth = LinearizeLightSpaceDepth(closestDepth);
+		currentDepth = LinearizeLightSpaceDepth(currentDepth);
+	}
+
     float shadow = currentDepth - .005 > closestDepth ? 1.0 : 0.0;
 
+
+	//return closestDepth;
     return 1 - shadow;
-}  
+}
+
+float LinearizeLightSpaceDepth(float depth)
+{
+    float z = depth * 2.0 - 1.0;
+    return (2.0 * lightNearPlane * lightFarPlane) / (lightFarPlane + lightNearPlane - z * (lightFarPlane - lightNearPlane));
+}
 
 
 vec3 CalcLight(vec3 lightDir, LightColor color, vec3 normal, vec3 viewDir, float attenuation, float intensity, float shadow)
@@ -148,21 +173,28 @@ vec3 CalcPointLight(int index, vec3 normal, vec3 viewDir)
 
 vec3 CalcSpotLight(int index, vec3 normal, vec3 viewDir)
 {
-	SpotLight light = spotLights[index];
-
 	float distance = length(tangentLights.spotLightPos[index] - fs_in.TangentFragPos);
-	float attenuation = 1 / (light.constant + (light.linear * distance) + (light.quadratic * pow(distance, 2)));
+	float attenuation = 1 / (spotLights[index].constant + (spotLights[index].linear * distance) + (spotLights[index].quadratic * pow(distance, 2)));
 
 	vec3 lightDir = normalize(tangentLights.spotLightPos[index] - fs_in.TangentFragPos);
 	float theta = dot(lightDir, normalize(-tangentLights.spotLightDir[index]));
-	float epsilon = light.cutoff - light.outerCutoff;
-	float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
+	float epsilon = spotLights[index].cutoff - spotLights[index].outerCutoff;
+	float intensity = clamp((theta - spotLights[index].outerCutoff) / epsilon, 0.0, 1.0);
 
-	return CalcLight(lightDir, light.color, normal, viewDir, attenuation, intensity, 1);
+	float shadow = 1;
+
+	if(spotLights[index].shadowsEnabled) 
+		shadow = CalcShadow(spotLights[index].lightSpace * vec4(fs_in.FragPos, 1.0), spotLights[index].shadowMap, true);
+
+	return CalcLight(lightDir, spotLights[index].color, normal, viewDir, attenuation, intensity, shadow);
 }
 
 vec3 CalcDirLight(int index, vec3 normal, vec3 viewDir)
 {
-	float shadow = CalcShadow(dirLights[index].lightSpace * vec4(fs_in.FragPos, 1.0), dirLights[index].shadowMap);
+	float shadow = 1;
+
+	if(dirLights[index].shadowsEnabled) 
+		shadow = CalcShadow(dirLights[index].lightSpace * vec4(fs_in.FragPos, 1.0), dirLights[index].shadowMap, false);
+
 	return CalcLight(normalize(-tangentLights.dirLightDir[index]), dirLights[index].color, normal, viewDir, 1.0, 1.0, shadow);
 }

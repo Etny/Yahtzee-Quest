@@ -14,7 +14,9 @@ namespace Yahtzee.Render
         public vec3 Specular = new vec3(1.0f, 1.0f, 1.0f);
 
         public Texture ShadowMap { get; protected set; } = null;
+        public mat4 LightSpace { get; protected set; } = mat4.AllNaN;
         public bool ShadowsEnabled { get; protected set; } = false;
+
 
         public Light() { }
 
@@ -30,19 +32,34 @@ namespace Yahtzee.Render
         public virtual void SetShadowsEnabled(bool shadows)
         {
             ShadowsEnabled = shadows;
-            
+
             if (!shadows)
             {
                 ShadowMap.Dispose();
                 ShadowMap = null;
             }
             else
+            {
                 CreateShadowMap();
+                CalculateLightSpace();
+            }
         }
 
-        public abstract void SetLightspaceMatrix(FrameBuffer fb, Shader depthShader);
+        public virtual void SetLightspaceMatrix(FrameBuffer fb, Shader depthShader)
+        {
+            if (!ShadowsEnabled) return;
 
-        protected abstract void CreateShadowMap();
+            fb.BindTexture(ShadowMap, Silk.NET.OpenGL.GLEnum.DepthAttachment);
+            depthShader.SetMat4("lightSpace", LightSpace);
+        }
+
+        protected virtual void CreateShadowMap()
+        {
+            Program.Settings.GetShadowMapSize(out int width, out int height);
+            ShadowMap = new DepthTexture(width, height);
+        }
+
+        protected abstract void CalculateLightSpace();
 
         protected virtual void SetColorValues(Shader shader, string name)
         {
@@ -50,11 +67,32 @@ namespace Yahtzee.Render
             shader.SetVec3(name + ".color.diffuse", Diffuse);
             shader.SetVec3(name + ".color.specular", Specular);
         }
+
+        protected virtual void SetShadowValues(Shader shader, string name)
+        {
+            shader.SetBool(name + ".shadowsEnabled", ShadowsEnabled);
+
+            if (!ShadowsEnabled) return;
+
+            shader.SetMat4(name + ".lightSpace", LightSpace);
+            shader.SetInt(name + ".shadowMap", 12);
+            ShadowMap.BindToUnit(12);
+        }
     }
 
     class DirectionalLight : Light
     {
-        public vec3 Direction;
+        public vec3 Direction { 
+            get { return _direction; }
+
+            set 
+            {
+                _direction = value;
+                if (ShadowsEnabled) CalculateLightSpace();
+            } 
+        }
+
+        private vec3 _direction;
 
         public DirectionalLight(vec3 direction) : base()
         {
@@ -66,27 +104,18 @@ namespace Yahtzee.Render
             string name = "dirLights[" + index + "]";
 
             base.SetColorValues(shader, name);
+            base.SetShadowValues(shader, name);
 
             shader.SetVec3(name + ".direction", Direction);
-            mat4 Projection = mat4.Ortho(-10, 10, -10, 10, .1f, 15);
-            mat4 LookAt = mat4.LookAt(new vec3(0, 0, 10), new vec3(0), new vec3(0, 1, 0));
-            shader.SetMat4(name + ".lightSpace", Projection * LookAt);
-            shader.SetInt(name + ".shadowMap", 12);
-            ShadowMap.BindToUnit(12);
         }
 
-        protected override void CreateShadowMap()
+        protected override void CalculateLightSpace()
         {
-            Program.Settings.GetShadowMapSize(out int width, out int height);
-            ShadowMap = new DepthTexture(width, height);
-        }
+            Program.Settings.GetLightRange(out float near, out float far);
 
-        public override void SetLightspaceMatrix(FrameBuffer fb, Shader shader)
-        {
-            fb.BindTexture(ShadowMap, Silk.NET.OpenGL.GLEnum.DepthAttachment);
-            mat4 Projection = mat4.Ortho(-10, 10, -10, 10, .1f, 15);
-            mat4 LookAt = mat4.LookAt(new vec3(0, 0, 10), new vec3(0), new vec3(0, 1, 0));
-            shader.SetMat4("lightSpace", Projection * LookAt);
+            mat4 Projection = mat4.Ortho(-10, 10, -10, 10, near, far);
+            mat4 LookAt = mat4.LookAt(Direction * -10, new vec3(0), new vec3(0, 1, 0));
+            LightSpace = Projection * LookAt;
         }
     }
 
@@ -125,7 +154,13 @@ namespace Yahtzee.Render
         {
             throw new NotImplementedException();
         }
+
         public override void SetLightspaceMatrix(FrameBuffer fb, Shader shader)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void CalculateLightSpace()
         {
             throw new NotImplementedException();
         }
@@ -133,8 +168,30 @@ namespace Yahtzee.Render
 
     class SpotLight : Light
     {
-        public vec3 Position;
-        public vec3 Direction = new vec3(0, 0, 1);
+        public vec3 Position
+        {
+            get { return _position; }
+
+            set
+            {
+                _position = value;
+                if (ShadowsEnabled) CalculateLightSpace();
+            }
+        }
+        public vec3 Direction
+        {
+            get { return _direction; }
+
+            set
+            {
+                _direction = value;
+                if (ShadowsEnabled) CalculateLightSpace();
+            }
+        }
+
+        private vec3 _position;
+        private vec3 _direction = new vec3(0, 0, 1);
+
         public float Cutoff = .5f, OuterCutoff = .6f;
         public float Constant = 1, Linear = 1, Quadratic = 1;
 
@@ -142,7 +199,7 @@ namespace Yahtzee.Render
 
         public SpotLight(vec3 position, float cutoff, float outerCutoff, float constant, float linear, float quadratic) : base()
         {
-            Position = position;
+            _position = position;
 
             Cutoff = (float)Math.Cos(cutoff);
             OuterCutoff = (float)Math.Cos(outerCutoff);
@@ -157,6 +214,7 @@ namespace Yahtzee.Render
             string name = "spotLights[" + index + "]";
 
             base.SetColorValues(shader, name);
+            base.SetShadowValues(shader, name);
 
             shader.SetVec3(name + ".position", Position);
             shader.SetVec3(name + ".direction", Direction);
@@ -167,14 +225,21 @@ namespace Yahtzee.Render
             shader.SetFloat(name + ".quadratic", Quadratic);
         }
 
-        protected override void CreateShadowMap()
+        public void SetPositionAndDirection(vec3 position, vec3 direction)
+        {
+            _position = position;
+            _direction = direction;
+            if(ShadowsEnabled) CalculateLightSpace();
+        }
+
+        protected override void CalculateLightSpace()
         {
             Program.Settings.GetShadowMapSize(out int width, out int height);
-            ShadowMap = new DepthTexture(width, height);
-        }
-        public override void SetLightspaceMatrix(FrameBuffer fb, Shader shader)
-        {
-            throw new NotImplementedException();
+            Program.Settings.GetLightRange(out float near, out float far);
+
+            mat4 Projection = mat4.PerspectiveFov(OuterCutoff, width, height, near, far);
+            mat4 LookAt = mat4.LookAt(Position, Position + Direction, new vec3(0, 1, 0));
+            LightSpace = Projection * LookAt;
         }
     }
 }

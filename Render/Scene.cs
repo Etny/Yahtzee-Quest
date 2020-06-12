@@ -28,14 +28,18 @@ namespace Yahtzee.Render
         {
             gl = GL.GetApi();
 
+            Program.Settings.GetLightRange(out float near, out float far);
+            Program.Window.GetSize(out int windowWidth, out int windowHeight);
+
             defaultShader = new Shader("Default/default");
             defaultShader.SetFloat("material.shininess", 32.0f);
+            defaultShader.SetFloat("lightNearPlane", near);
+            defaultShader.SetFloat("lightFarPlane", far);
 
             lightingShader = new Shader("Lighting/lightingShader", "Lighting/lightingShaderOrtho");
 
-            var windowSize = Program.Window.GetSize();
-            renderFrameBuffer = new FrameBuffer(windowSize.Width, windowSize.Height);
-            renderFrameBuffer.CreateRenderBuffer((uint)windowSize.Width, (uint)windowSize.Height);
+            renderFrameBuffer = new FrameBuffer(windowWidth, windowHeight);
+            renderFrameBuffer.CreateRenderBuffer((uint)windowWidth, (uint)windowHeight);
             Program.Window.OnResize += OnResize;
 
             lightingFrameBuffer = new FrameBuffer();
@@ -45,8 +49,10 @@ namespace Yahtzee.Render
 
             Camera = new Camera();
             flashLight = new SpotLight(Camera.Position, Util.ToRadians(25), Util.ToRadians(30));
-            //Lights.Add(flashLight);
-            var sun = new DirectionalLight(new vec3(0.65854764f, -0.5150382f, -0.54868096f));
+            flashLight.SetShadowsEnabled(true);
+            Lights.Add(flashLight);
+            //var sun = new DirectionalLight(new vec3(0.65854764f, -0.5150382f, -0.54868096f));
+            SpotLight sun = new SpotLight(Camera.Position, Util.ToRadians(15), Util.ToRadians(20)) { Direction = Camera.GetDirection() };
             sun.SetShadowsEnabled(true);
             Lights.Add(sun);
             Entities.Add(new Entity("Backpack/backpack.obj"));
@@ -60,6 +66,8 @@ namespace Yahtzee.Render
 
             foreach (Light l in Lights)
             {
+                //lightingShader.SetFloat("farPlane", 50);
+                //lightingShader.SetVec3("lightPos", ((SpotLight)l).Position);
                 l.SetLightspaceMatrix(lightingFrameBuffer, lightingShader);
                 Util.GLClear();
                 RenderScene(lightingShader);
@@ -82,28 +90,27 @@ namespace Yahtzee.Render
 
         private void setLightingData()
         {
-            int pointLights = -1, dirLights = -1, spotLights = -1;
+            int pointLights = 0, dirLights = 0, spotLights = 0;
             
             foreach(Light light in Lights)
             {
                 if (light is PointLight)
-                    light.SetValues(defaultShader, ++pointLights);
+                    light.SetValues(defaultShader, pointLights++);
                 else if (light is DirectionalLight)
-                    light.SetValues(defaultShader, ++dirLights);
+                    light.SetValues(defaultShader, dirLights++);
                 else if (light is SpotLight)
-                    light.SetValues(defaultShader, ++spotLights);
+                    light.SetValues(defaultShader, spotLights++);
             }
 
-            defaultShader.SetInt("pointLightCount", pointLights + 1);
-            defaultShader.SetInt("dirLightCount", dirLights+1);
-            defaultShader.SetInt("spotLightCount", spotLights+1);
+            defaultShader.SetInt("pointLightCount", pointLights);
+            defaultShader.SetInt("dirLightCount", dirLights);
+            defaultShader.SetInt("spotLightCount", spotLights);
         }
 
         public void Update(double deltaTime)
         {
             Camera.Update(deltaTime);
-            flashLight.Position = Camera.Position;
-            flashLight.Direction = Camera.GetDirection();
+            flashLight.SetPositionAndDirection(Camera.Position, Camera.GetDirection());
             Entities.ForEach(e => e.Update(deltaTime));
         }
 

@@ -21,6 +21,7 @@
     <None Remove="Resource\Shaders\default.vert" />
     <None Remove="Resource\Shaders\Lighting\lightingShader.vert" />
     <None Remove="Resource\Shaders\Lighting\lightingShaderOrtho.frag" />
+    <None Remove="Resource\Shaders\Lighting\lightingShaderPersp.frag" />
     <None Remove="Resource\Shaders\PostProcess\gammaCorrect.frag" />
     <None Remove="Resource\Shaders\PostProcess\postPro.vert" />
     <None Remove="Resource\Shaders\PostProcess\postProDefault.frag" />
@@ -61,6 +62,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\Lighting\lightingShaderOrtho.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\Lighting\lightingShaderPersp.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\gammaCorrect.frag">
