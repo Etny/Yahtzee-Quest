@@ -2,11 +2,11 @@
 struct Material
 {
 	sampler2D texture_diffuse1;
-	sampler2D texture_diffuse2;
+	//sampler2D texture_diffuse2;
 	sampler2D texture_specular1;
-	sampler2D texture_specular2;
+	//sampler2D texture_specular2;
 	sampler2D texture_normal1;
-	sampler2D texture_normal2;
+	//sampler2D texture_normal2;
 
 	float shininess;
 };
@@ -30,7 +30,7 @@ struct SpotLight
     float quadratic;  
 
 	bool shadowsEnabled;
-	sampler2D shadowMap;
+	//sampler2D shadowMap;
 	mat4 lightSpace;
 
 	LightColor color;
@@ -62,12 +62,17 @@ uniform Material material;
 
 const int MaxLights = 4;
 
+uniform sampler2D spotLightShadowMaps[MaxLights];
+
 uniform int pointLightCount;
 uniform int spotLightCount;
 uniform int dirLightCount;
 
 uniform float lightNearPlane;
 uniform float lightFarPlane;
+
+uniform sampler2D shadowMap8;
+uniform sampler2D shadowMap9;
 
 in VS_TAGENTLIGHTS{
 	vec3 pointLightPos[MaxLights];
@@ -92,7 +97,7 @@ vec3 CalcLight(vec3 lightDir, LightColor color, vec3 normal, vec3 viewDir, float
 vec3 CalcPointLight(int index, vec3 normal, vec3 viewDir);
 vec3 CalcSpotLight(int index, vec3 normal, vec3 viewDir);
 vec3 CalcDirLight(int index, vec3 normal, vec3 viewDir);  
-float CalcShadow(vec4 fragPosLightSpace, sampler2D shadowMap, bool linearizeDepth);
+float CalcShadow(vec4 fragPosLightSpace, in sampler2D shadowMap, bool linearizeDepth);
 float LinearizeLightSpaceDepth(float depth);
 
 void main()
@@ -120,7 +125,8 @@ void main()
 	//FragColor = vec4(vec3(CalcShadow(spotLights[0].lightSpace * vec4(fs_in.FragPos, 1.0), spotLights[0].shadowMap)), 1.0);
 }
 
-float CalcShadow(vec4 fragPosLightSpace, sampler2D shadowMap, bool linearizeDepth)
+
+float CalcShadow(vec4 fragPosLightSpace, in sampler2D shadowMap, bool linearizeDepth)
 {
     vec3 lightSpacePos = fragPosLightSpace.xyz / fragPosLightSpace.w;
     vec3 projectedFragPos = lightSpacePos * 0.5 + 0.5;
@@ -183,10 +189,16 @@ vec3 CalcSpotLight(int index, vec3 normal, vec3 viewDir)
 
 	float shadow = 1;
 
-	if(spotLights[index].shadowsEnabled) 
-		shadow = CalcShadow(spotLights[index].lightSpace * vec4(fs_in.FragPos, 1.0), spotLights[index].shadowMap, true);
+	LightColor l = spotLights[index].color;
 
-	return CalcLight(lightDir, spotLights[index].color, normal, viewDir, attenuation, intensity, shadow);
+	if(spotLights[index].shadowsEnabled) 
+		if(index == 0){
+			shadow = CalcShadow(spotLights[index].lightSpace * vec4(fs_in.FragPos, 1.0), shadowMap8, true);
+		}else{
+			shadow = CalcShadow(spotLights[index].lightSpace * vec4(fs_in.FragPos, 1.0), shadowMap9, true);
+		}
+
+	return CalcLight(lightDir, l, normal, viewDir, attenuation, intensity, shadow);
 }
 
 vec3 CalcDirLight(int index, vec3 normal, vec3 viewDir)

@@ -47,7 +47,7 @@ struct SpotLight
     float quadratic;  
 
 	bool shadowsEnabled;
-	sampler2D shadowMap;
+	//sampler2D shadowMap;
 	mat4 lightSpace;
 
 	LightColor color;

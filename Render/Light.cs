@@ -27,7 +27,7 @@ namespace Yahtzee.Render
             Specular = specular;
         }
 
-        public abstract void SetValues(Shader shader, int index);
+        public abstract void SetValues(Shader shader, int index, ref int shadowMapUnit);
 
         public virtual void SetShadowsEnabled(bool shadows)
         {
@@ -47,8 +47,6 @@ namespace Yahtzee.Render
 
         public virtual void SetLightspaceMatrix(FrameBuffer fb, Shader depthShader)
         {
-            if (!ShadowsEnabled) return;
-
             fb.BindTexture(ShadowMap, Silk.NET.OpenGL.GLEnum.DepthAttachment);
             depthShader.SetMat4("lightSpace", LightSpace);
         }
@@ -68,15 +66,19 @@ namespace Yahtzee.Render
             shader.SetVec3(name + ".color.specular", Specular);
         }
 
-        protected virtual void SetShadowValues(Shader shader, string name)
+        protected virtual void SetShadowValues(Shader shader, string name, ref int shadowMapUnit)
         {
             shader.SetBool(name + ".shadowsEnabled", ShadowsEnabled);
 
             if (!ShadowsEnabled) return;
 
             shader.SetMat4(name + ".lightSpace", LightSpace);
-            shader.SetInt(name + ".shadowMap", 12);
-            ShadowMap.BindToUnit(12);
+            shader.SetInt("shadowMap"+shadowMapUnit, shadowMapUnit);
+            ShadowMap.BindToUnit(shadowMapUnit);
+            //Console.WriteLine(name + " binding to shadowMap" + shadowMapUnit);
+            shadowMapUnit += 1;
+
+            //Console.WriteLine(name + ".shadowMap bound to unit " + (shadowMapUnit - 1));
         }
     }
 
@@ -99,12 +101,12 @@ namespace Yahtzee.Render
             Direction = direction;
         }
 
-        public override void SetValues(Shader shader, int index)
+        public override void SetValues(Shader shader, int index, ref int shadowMapUnit)
         {
             string name = "dirLights[" + index + "]";
 
             base.SetColorValues(shader, name);
-            base.SetShadowValues(shader, name);
+            base.SetShadowValues(shader, name, ref shadowMapUnit);
 
             shader.SetVec3(name + ".direction", Direction);
         }
@@ -137,7 +139,7 @@ namespace Yahtzee.Render
             Quadratic = quadratic;
         }
 
-        public override void SetValues(Shader shader, int index)
+        public override void SetValues(Shader shader, int index, ref int shadowMapUnit)
         {
             string name = "pointLights[" + index + "]";
 
@@ -209,12 +211,16 @@ namespace Yahtzee.Render
             Quadratic = quadratic;
         }
 
-        public override void SetValues(Shader shader, int index)
+        public override void SetValues(Shader shader, int index, ref int shadowMapUnit)
         {
             string name = "spotLights[" + index + "]";
 
+            shader.SetInt("spotLightShadowMaps[" + index + "]", shadowMapUnit);
+
+          //  Console.WriteLine(index + " bound to " + shadowMapUnit);
+
             base.SetColorValues(shader, name);
-            base.SetShadowValues(shader, name);
+            base.SetShadowValues(shader, name, ref shadowMapUnit);
 
             shader.SetVec3(name + ".position", Position);
             shader.SetVec3(name + ".direction", Direction);
