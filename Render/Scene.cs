@@ -68,8 +68,6 @@ namespace Yahtzee.Render
             foreach (Light l in Lights)
             {
                 if (!l.ShadowsEnabled) continue;
-                //lightingShader.SetFloat("farPlane", 50);
-                //lightingShader.SetVec3("lightPos", ((SpotLight)l).Position);
                 l.SetLightspaceMatrix(lightingFrameBuffer, lightingShader);
                 Util.GLClear();
                 RenderScene(lightingShader);
@@ -108,8 +106,6 @@ namespace Yahtzee.Render
             defaultShader.SetInt("pointLightCount", pointLights);
             defaultShader.SetInt("dirLightCount", dirLights);
             defaultShader.SetInt("spotLightCount", spotLights);
-
-            //Console.WriteLine(spotLights);
         }
 
         public void Update(double deltaTime)

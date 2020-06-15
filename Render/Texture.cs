@@ -12,6 +12,11 @@ namespace Yahtzee.Render
 {
     unsafe class Texture : GLObject
     {
+
+        private static uint[] boundTextures = new uint[16];
+
+        public int BoundTextureUnit { get; protected set; } = -1;
+
         public Texture() : base()
         {
             ID = gl.GenTexture();
@@ -28,9 +33,15 @@ namespace Yahtzee.Render
 
         public void BindToUnit(int unit)
         {
-            gl.BindTexture(TextureTarget.Texture2D, 0);
+            //if (boundTextures[unit] == ID)
+            //    return;
+
             gl.ActiveTexture(TextureUnit.Texture0 + unit);
             Use();
+            gl.ActiveTexture(TextureUnit.Texture30);
+            gl.BindTexture(TextureTarget.Texture2D, 0);
+
+            //boundTextures[unit] = ID;
         }
 
         public override void Use()

@@ -7,11 +7,9 @@ namespace Yahtzee.Render
 {
     unsafe class DepthTexture : Texture
     {
-
-        public DepthTexture() : base() { }
-
         public DepthTexture(int width, int height) : base()
         {
+            gl.BindTexture(TextureTarget.Texture2D, ID);
             gl.TexImage2D(TextureTarget.Texture2D, 0, (int)InternalFormat.DepthComponent, (uint)width, (uint)height, 0, PixelFormat.DepthComponent, PixelType.Float, null);
             
             gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);

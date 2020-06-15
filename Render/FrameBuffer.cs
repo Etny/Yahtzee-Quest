@@ -17,7 +17,13 @@ namespace Yahtzee.Render
         public FrameBuffer() : base() { ID = gl.GenFramebuffer(); }
         public FrameBuffer(int width, int height) : this() { CreateTexture((uint)width, (uint)height); }
         public override void Use() => gl.BindFramebuffer(FramebufferTarget.Framebuffer, ID);
-        public override void Dispose() => gl.DeleteFramebuffer(ID);
+        public override void Dispose()
+        {
+            if (createdTexture) BoundTexture.Dispose();
+            if (createdRenderBuffer) BoundRenderBuffer.Dispose();
+
+            gl.DeleteFramebuffer(ID);
+        }
 
         public void CreateRenderBuffer(uint width, uint height, RenderBufferConfiguration config)
         {
@@ -48,6 +54,7 @@ namespace Yahtzee.Render
             }
 
             BoundTexture = texture;
+            gl.FramebufferTexture(GLEnum.Framebuffer, attachment, 0, 0);
             gl.FramebufferTexture(GLEnum.Framebuffer, attachment, texture.ID, 0);
         }
 

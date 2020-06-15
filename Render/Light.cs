@@ -73,12 +73,9 @@ namespace Yahtzee.Render
             if (!ShadowsEnabled) return;
 
             shader.SetMat4(name + ".lightSpace", LightSpace);
-            shader.SetInt("shadowMap"+shadowMapUnit, shadowMapUnit);
+            shader.SetInt(name + ".shadowMap", shadowMapUnit);
             ShadowMap.BindToUnit(shadowMapUnit);
-            //Console.WriteLine(name + " binding to shadowMap" + shadowMapUnit);
             shadowMapUnit += 1;
-
-            //Console.WriteLine(name + ".shadowMap bound to unit " + (shadowMapUnit - 1));
         }
     }
 
@@ -214,10 +211,6 @@ namespace Yahtzee.Render
         public override void SetValues(Shader shader, int index, ref int shadowMapUnit)
         {
             string name = "spotLights[" + index + "]";
-
-            shader.SetInt("spotLightShadowMaps[" + index + "]", shadowMapUnit);
-
-          //  Console.WriteLine(index + " bound to " + shadowMapUnit);
 
             base.SetColorValues(shader, name);
             base.SetShadowValues(shader, name, ref shadowMapUnit);
