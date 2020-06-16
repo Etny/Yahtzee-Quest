@@ -5,6 +5,8 @@ using System.Text;
 
 namespace Yahtzee.Render
 {
+    public delegate uint GLCreator();
+
     abstract class GLObject : IDisposable
     {
         public uint ID { get; protected set; }
@@ -12,6 +14,8 @@ namespace Yahtzee.Render
         protected GL gl;
 
         public GLObject() { gl = GL.GetApi(); }
+        
+        public GLObject(GLCreator creator) : this() { ID = creator(); }
 
         public abstract void Use();
 

@@ -5,6 +5,8 @@ using System.Text;
 using Yahtzee.Game;
 using Yahtzee.Main;
 using GlmSharp;
+using Yahtzee.Render.Textures;
+
 
 namespace Yahtzee.Render
 {
@@ -50,12 +52,12 @@ namespace Yahtzee.Render
             Camera = new Camera();
             //flashLight = new SpotLight(Camera.Position, Util.ToRadians(25), Util.ToRadians(30));
             flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRadians(25), Util.ToRadians(30)) { Direction = new vec3(0, -1, 1) };
-            flashLight.SetShadowsEnabled(true);
+            //flashLight.SetShadowsEnabled(true);
             Lights.Add(flashLight);
             //var sun = new DirectionalLight(new vec3(0.65854764f, -0.5150382f, -0.54868096f));
-            SpotLight sun = new SpotLight(Camera.Position, Util.ToRadians(15), Util.ToRadians(20)) { Direction = Camera.GetDirection() };
-            sun.SetShadowsEnabled(true);
-            Lights.Add(sun);
+            var sun = new PointLight(new vec3(0, 0, 1.5f));
+            // sun.SetShadowsEnabled(true);
+            //Lights.Add(sun);
             Entities.Add(new Entity("Backpack/backpack.obj"));
         }
 
@@ -68,9 +70,7 @@ namespace Yahtzee.Render
             foreach (Light l in Lights)
             {
                 if (!l.ShadowsEnabled) continue;
-                l.SetLightspaceMatrix(lightingFrameBuffer, lightingShader);
-                Util.GLClear();
-                RenderScene(lightingShader);
+                l.CalculateShadows(lightingFrameBuffer, lightingShader, RenderScene);
             }
 
             Program.Window.GetSize(out int windowWidth, out int windowHeight);
@@ -111,7 +111,7 @@ namespace Yahtzee.Render
         public void Update(double deltaTime)
         {
             Camera.Update(deltaTime);
-            //flashLight.SetPositionAndDirection(Camera.Position + new vec3(.5f, 0, 0), Camera.GetDirection());
+            flashLight.SetPositionAndDirection(Camera.Position + new vec3(.5f, 0, 0), Camera.GetDirection());
             Entities.ForEach(e => e.Update(deltaTime));
         }
 

@@ -32,6 +32,8 @@ struct PointLight {
     float linear;
     float quadratic;  
 
+	bool shadowsEnabled;
+
     LightColor color;
 };  
 
@@ -57,7 +59,7 @@ struct DirLight
 {
 	vec3 direction;
 	bool shadowsEnabled;
-	sampler2D shadowMap;
+	//sampler2D shadowMap;
 	mat4 lightSpace;
 
 	LightColor color;
@@ -74,7 +76,6 @@ out VS_TAGENTLIGHTS{
 	vec3 dirLightDir[MaxLights];
 } tangentLights;
 
-//uniform mat4 lightSpace;
 uniform mat4 model;
 uniform vec3 viewPos;
 
@@ -90,9 +91,7 @@ void main()
 {
 	gl_Position = projection * view * model * vec4(aPos, 1.0);
 	vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
-	//vs_out.Normal = mat3(transpose(inverse(model))) * aNormal;
 	vs_out.TexCoords = vec2(aTexCoords.x, aTexCoords.y);
-	//FragPosLightSpace = lightSpace * vec4(FragPos, 1);
 
 	vec3 T = normalize(vec3(model * vec4(aTangent, 0.0)));
 	vec3 B = normalize(vec3(model * vec4(aBitangent, 0.0)));
@@ -107,7 +106,6 @@ void main()
 	for(int i = 0; i < pointLightCount; ++i)
 		tangentLights.pointLightPos[i] = TBN * pointLights[i].position;
 	
-
 	for(int i = 0; i < spotLightCount; ++i)
 	{
 		tangentLights.spotLightPos[i] = TBN * spotLights[i].position;

@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using GlmSharp;
+using Silk.NET.OpenGL;
 using Yahtzee.Main;
+using Yahtzee.Render.Textures;
 
 namespace Yahtzee.Render
 {
+    delegate void SceneRender(Shader shader);
+
     abstract class Light
     {
         public vec3 Ambient = new vec3(0.05f, 0.05f, 0.05f);
@@ -45,10 +49,12 @@ namespace Yahtzee.Render
             }
         }
 
-        public virtual void SetLightspaceMatrix(FrameBuffer fb, Shader depthShader)
+        public virtual void CalculateShadows(FrameBuffer fb, Shader depthShader, SceneRender render)
         {
-            fb.BindTexture(ShadowMap, Silk.NET.OpenGL.GLEnum.DepthAttachment);
+            fb.BindTexture(ShadowMap, GLEnum.DepthAttachment);
             depthShader.SetMat4("lightSpace", LightSpace);
+            Util.GLClear();
+            render(depthShader);
         }
 
         protected virtual void CreateShadowMap()
@@ -123,6 +129,8 @@ namespace Yahtzee.Render
         public vec3 Position;
         public float Constant = 1, Linear = .09f, Quadratic = .032f;
 
+        private mat4[] CubeLookAts = null;
+
         public PointLight(vec3 position) : base()
         {
             Position = position;
@@ -141,6 +149,7 @@ namespace Yahtzee.Render
             string name = "pointLights[" + index + "]";
 
             base.SetColorValues(shader, name);
+            base.SetShadowValues(shader, name, ref shadowMapUnit);
 
             shader.SetVec3(name + ".position", Position);
             shader.SetFloat(name + ".constant", Constant);
@@ -148,20 +157,37 @@ namespace Yahtzee.Render
             shader.SetFloat(name + ".quadratic", Quadratic);
         }
 
-        //TODO: Add Cubemap Support
         protected override void CreateShadowMap()
         {
-            throw new NotImplementedException();
+            Program.Settings.GetShadowMapSize(out int width, out int height);
+            ShadowMap = new CubeMap(width, height, InternalFormat.DepthComponent, PixelFormat.DepthComponent, PixelType.Float);
         }
 
-        public override void SetLightspaceMatrix(FrameBuffer fb, Shader shader)
+        public override void CalculateShadows(FrameBuffer fb, Shader shader, SceneRender render)
         {
-            throw new NotImplementedException();
+            for(int i = 0; i < 6; i++)
+            {
+                fb.BindTexture(ShadowMap, GLEnum.DepthAttachment, GLEnum.TextureCubeMapPositiveX + i);
+                shader.SetMat4("lightSpace", LightSpace * CubeLookAts[i]);
+                Util.GLClear();
+                render(shader);
+            }
         }
 
         protected override void CalculateLightSpace()
         {
-            throw new NotImplementedException();
+            if(CubeLookAts == null) CubeLookAts = new mat4[6];
+            CubeLookAts[0] = mat4.LookAt(Position, Position + new vec3(1, 0, 0), new vec3(0, -1, 0));
+            CubeLookAts[1] = mat4.LookAt(Position, Position + new vec3(-1, 0, 0), new vec3(0, -1, 0));
+            CubeLookAts[2] = mat4.LookAt(Position, Position + new vec3(0, 1, 0), new vec3(0, 0, 1));
+            CubeLookAts[3] = mat4.LookAt(Position, Position + new vec3(0, -1, 0), new vec3(0, 0, -1));
+            CubeLookAts[4] = mat4.LookAt(Position, Position + new vec3(0, 0, 1), new vec3(0, -1, 0));
+            CubeLookAts[5] = mat4.LookAt(Position, Position + new vec3(0, 0, -1), new vec3(0, -1, 0));
+
+            Program.Settings.GetShadowMapSize(out int width, out int height);
+            Program.Settings.GetLightRange(out float near, out float far);
+
+            LightSpace = mat4.Perspective(Util.ToRadians(90), width / height, far, near);
         }
     }
 

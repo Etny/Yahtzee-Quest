@@ -5,6 +5,8 @@ using ai = Assimp;
 using System.Numerics;
 using Silk.NET.OpenGL;
 using GlmSharp;
+using Yahtzee.Render.Textures;
+
 
 namespace Yahtzee.Render
 {

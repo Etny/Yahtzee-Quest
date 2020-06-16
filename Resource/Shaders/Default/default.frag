@@ -40,7 +40,7 @@ struct DirLight
 {
 	vec3 direction;
 	bool shadowsEnabled;
-	sampler2D shadowMap;
+	//sampler2D shadowMap;
 	mat4 lightSpace;
 
 	LightColor color;
@@ -53,6 +53,8 @@ struct PointLight {
     float linear;
     float quadratic;  
 
+	bool shadowsEnabled;
+
     LightColor color;
 };  
 
@@ -61,6 +63,8 @@ out vec4 FragColor;
 uniform Material material;
 
 const int MaxLights = 4;
+
+uniform samplerCube shadowCube;
 
 uniform int pointLightCount;
 uniform int spotLightCount;
@@ -93,20 +97,16 @@ vec3 CalcPointLight(int index, vec3 normal, vec3 viewDir);
 vec3 CalcSpotLight(int index, vec3 normal, vec3 viewDir);
 vec3 CalcDirLight(int index, vec3 normal, vec3 viewDir);  
 float CalcShadow(vec4 fragPosLightSpace, in sampler2D shadowMap, bool linearizeDepth);
+float CalcShadowFromCube(vec3 fragPos, vec3 lightPos, int index);
 float LinearizeLightSpaceDepth(float depth);
-
-vec3 testVec;
 
 void main()
 {
-	FragColor = vec4(.6);
-
 	vec3 normal = texture(material.texture_normal1, fs_in.TexCoords).rgb;
 	normal = normalize(normal * 2.0 - 1.0);
 	vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
 
 	vec3 Result = vec3(0.0);
-	testVec = vec3(0.0);
 	
 	for(int i = 0; i < pointLightCount; ++i)
 		Result += CalcPointLight(i, normal, viewDir);
@@ -114,17 +114,10 @@ void main()
 	for(int i = 0; i < dirLightCount; ++i)
 		Result += CalcDirLight(i, normal, viewDir);
 
-	for(int i = 0; i < spotLightCount; ++i){
+	for(int i = 0; i < spotLightCount; ++i)
 		Result += CalcSpotLight(i, normal, viewDir);
-	}
-
+	
 	FragColor = vec4(Result, 1.0);
-
-	//float f1 = CalcShadow(spotLights[0].lightSpace * vec4(fs_in.FragPos, 1.0), shadowMap8, true);
-
-	//FragColor = vec4(vec3(f1 + .1), 1.0);
-
-	//FragColor = vec4(vec3(CalcShadow(spotLights[0].lightSpace * vec4(fs_in.FragPos, 1.0), spotLights[0].shadowMap)), 1.0);
 }
 
 
@@ -144,9 +137,13 @@ float CalcShadow(vec4 fragPosLightSpace, in sampler2D shadowMap, bool linearizeD
 
     float shadow = currentDepth - .005 > closestDepth ? 1.0 : 0.0;
 
-
-	//return closestDepth;
     return 1 - shadow;
+}
+
+float CalcShadowFromCube(vec3 fragPos, vec3 lightPos, int index)
+{
+	vec4 test = textureCube(shadowCube, fragPos);
+	return 1;
 }
 
 float LinearizeLightSpaceDepth(float depth)
@@ -171,12 +168,15 @@ vec3 CalcLight(vec3 lightDir, LightColor color, vec3 normal, vec3 viewDir, float
 
 vec3 CalcPointLight(int index, vec3 normal, vec3 viewDir)
 {
-	PointLight light = pointLights[index];
-
 	float distance = length(tangentLights.pointLightPos[index] - fs_in.TangentFragPos);
-	float attenuation = 1 / (light.constant + (light.linear * distance) + (light.quadratic * pow(distance, 2)));
+	float attenuation = 1 / (pointLights[index].constant + (pointLights[index].linear * distance) + (pointLights[index].quadratic * pow(distance, 2)));
 
-	return CalcLight(normalize(tangentLights.pointLightPos[index] - fs_in.TangentFragPos), light.color, normal, viewDir, attenuation, 1.0, 1);
+	float shadow = 1;
+
+	if(pointLights[index].shadowsEnabled)
+		shadow = CalcShadowFromCube(fs_in.FragPos, pointLights[index].position, index);
+
+	return CalcLight(normalize(tangentLights.pointLightPos[index] - fs_in.TangentFragPos), pointLights[index].color, normal, viewDir, attenuation, 1.0, shadow);
 }
 
 vec3 CalcSpotLight(int index, vec3 normal, vec3 viewDir)
@@ -191,20 +191,18 @@ vec3 CalcSpotLight(int index, vec3 normal, vec3 viewDir)
 
 	float shadow = 1;
 
-	LightColor l = spotLights[index].color;
-
 	if(spotLights[index].shadowsEnabled) 
 		shadow = CalcShadow(spotLights[index].lightSpace * vec4(fs_in.FragPos, 1.0), spotLights[index].shadowMap, true);
 
-	return CalcLight(lightDir, l, normal, viewDir, attenuation, intensity, shadow);
+	return CalcLight(lightDir, spotLights[index].color, normal, viewDir, attenuation, intensity, shadow);
 }
 
 vec3 CalcDirLight(int index, vec3 normal, vec3 viewDir)
 {
 	float shadow = 1;
 
-	if(dirLights[index].shadowsEnabled)
-		shadow = CalcShadow(dirLights[index].lightSpace * vec4(fs_in.FragPos, 1.0), dirLights[index].shadowMap, false);
+	//if(dirLights[index].shadowsEnabled)
+	//	shadow = CalcShadow(dirLights[index].lightSpace * vec4(fs_in.FragPos, 1.0), dirLights[index].shadowMap, false);
 
 	return CalcLight(normalize(-tangentLights.dirLightDir[index]), dirLights[index].color, normal, viewDir, 1.0, 1.0, shadow);
 }

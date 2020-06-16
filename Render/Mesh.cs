@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using GlmSharp;
+using Yahtzee.Render.Textures;
+
 
 namespace Yahtzee.Render
 {

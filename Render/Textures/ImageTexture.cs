@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Yahtzee.Render
+namespace Yahtzee.Render.Textures
 {
     class ImageTexture : Texture
     {
@@ -34,7 +34,6 @@ namespace Yahtzee.Render
             this.TextureType = type;
             this.path = imgPath;
 
-            ID = gl.GenTexture();
             gl.BindTexture(TextureTarget.Texture2D, ID);
 
             gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)GLEnum.Repeat);

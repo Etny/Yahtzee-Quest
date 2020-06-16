@@ -4,6 +4,8 @@ using System.Text;
 using Yahtzee.Main;
 using GlmSharp;
 using Silk.NET.OpenGL;
+using Yahtzee.Render.Textures;
+
 
 namespace Yahtzee.Render
 {

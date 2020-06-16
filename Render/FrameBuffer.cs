@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Yahtzee.Render.Textures;
 
 namespace Yahtzee.Render
 {
@@ -41,9 +42,7 @@ namespace Yahtzee.Render
             createdTexture = true;
         }
 
-        public void BindTexture(Texture texture) => BindTexture(texture, GLEnum.ColorAttachment0);
-
-        public void BindTexture(Texture texture, GLEnum attachment)
+        public void BindTexture(Texture texture, GLEnum attachment = GLEnum.ColorAttachment0, GLEnum target = GLEnum.Texture2D)
         {
             Use();
 
@@ -54,8 +53,7 @@ namespace Yahtzee.Render
             }
 
             BoundTexture = texture;
-            gl.FramebufferTexture(GLEnum.Framebuffer, attachment, 0, 0);
-            gl.FramebufferTexture(GLEnum.Framebuffer, attachment, texture.ID, 0);
+            gl.FramebufferTexture2D(GLEnum.Framebuffer, attachment, target, texture.ID, 0);
         }
 
         public void BindRenderBuffer(RenderBuffer buffer) => BindRenderBuffer(buffer, RenderBufferConfiguration.Full);

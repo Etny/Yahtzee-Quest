@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Yahtzee.Render
+namespace Yahtzee.Render.Textures
 {
     unsafe class DepthTexture : Texture
     {

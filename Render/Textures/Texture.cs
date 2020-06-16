@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Yahtzee.Render
+namespace Yahtzee.Render.Textures
 {
     unsafe class Texture : GLObject
     {
@@ -17,14 +17,11 @@ namespace Yahtzee.Render
 
         public int BoundTextureUnit { get; protected set; } = -1;
 
-        public Texture() : base()
-        {
-            ID = gl.GenTexture();
-            gl.BindTexture(TextureTarget.Texture2D, ID);
-        }
+        public Texture() : base() { ID = gl.GenTexture(); }
 
         public Texture(uint width, uint height) : this()
         {
+            gl.BindTexture(TextureTarget.Texture2D, ID);
             gl.TexImage2D(TextureTarget.Texture2D, 0, (int)InternalFormat.Rgb, width, height, 0, PixelFormat.Rgb, PixelType.UnsignedByte, null);
             gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
