@@ -8,7 +8,7 @@ namespace Yahtzee.Render.Textures
     unsafe class CubeMap : Texture
     {
 
-        public CubeMap() : base() { }
+        public CubeMap() : base() { textureTarget = TextureTarget.TextureCubeMap; }
 
         public CubeMap(int width, int height) : this(width, height, InternalFormat.Rgba, PixelFormat.Rgba, PixelType.UnsignedByte) { }
 

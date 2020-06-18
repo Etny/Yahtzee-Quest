@@ -15,6 +15,8 @@ namespace Yahtzee.Render.Textures
 
         private static uint[] boundTextures = new uint[16];
 
+        protected TextureTarget textureTarget = TextureTarget.Texture2D;
+
         public int BoundTextureUnit { get; protected set; } = -1;
 
         public Texture() : base() { ID = gl.GenTexture(); }
@@ -36,13 +38,13 @@ namespace Yahtzee.Render.Textures
             gl.ActiveTexture(TextureUnit.Texture0 + unit);
             Use();
             gl.ActiveTexture(TextureUnit.Texture30);
-            gl.BindTexture(TextureTarget.Texture2D, 0);
+            gl.BindTexture(textureTarget, 0);
 
             //boundTextures[unit] = ID;
         }
 
         public override void Use()
-            => gl.BindTexture(TextureTarget.Texture2D, ID);
+            => gl.BindTexture(textureTarget, ID);
 
         public override void Dispose()
             => gl.DeleteTexture(ID);

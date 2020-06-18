@@ -80,9 +80,9 @@ namespace Yahtzee.Render
                 Pitch = -89f;
         }
 
-        public void Update(double deltaTime)
+        public void Update(Time deltaTime)
         {
-            float camSpeed = (float)(2.5f * deltaTime);
+            float camSpeed = (float)(2.5f * deltaTime.Delta);
             var input = Program.InputManager;
 
             if (input.IsPressed(Keys.W))

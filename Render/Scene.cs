@@ -17,8 +17,10 @@ namespace Yahtzee.Render
 
         public Camera Camera;
         public SpotLight flashLight;
+        public PointLight testLight;
 
-        private Shader lightingShader;
+        private Shader lightingShaderOrtho;
+        private Shader lightingShaderPersp;
         private Shader defaultShader;
 
         private FrameBuffer renderFrameBuffer;
@@ -38,7 +40,9 @@ namespace Yahtzee.Render
             defaultShader.SetFloat("lightNearPlane", near);
             defaultShader.SetFloat("lightFarPlane", far);
 
-            lightingShader = new Shader("Lighting/lightingShader", "Lighting/lightingShaderOrtho");
+            lightingShaderOrtho = new Shader("Lighting/lightingShader", "Lighting/lightingShaderOrtho");
+            lightingShaderPersp = new Shader("Lighting/lightingShader", "Lighting/lightingShaderPersp");
+            lightingShaderPersp.SetFloat("farPlane", far);
 
             renderFrameBuffer = new FrameBuffer(windowWidth, windowHeight);
             renderFrameBuffer.CreateRenderBuffer((uint)windowWidth, (uint)windowHeight);
@@ -52,26 +56,18 @@ namespace Yahtzee.Render
             Camera = new Camera();
             //flashLight = new SpotLight(Camera.Position, Util.ToRadians(25), Util.ToRadians(30));
             flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRadians(25), Util.ToRadians(30)) { Direction = new vec3(0, -1, 1) };
-            //flashLight.SetShadowsEnabled(true);
+            flashLight.SetShadowsEnabled(true);
             Lights.Add(flashLight);
             //var sun = new DirectionalLight(new vec3(0.65854764f, -0.5150382f, -0.54868096f));
-            var sun = new PointLight(new vec3(0, 0, 1.5f));
-            // sun.SetShadowsEnabled(true);
-            //Lights.Add(sun);
+            testLight = new PointLight(new vec3(0, 0, 1));
+            testLight.SetShadowsEnabled(true);
+            Lights.Add(testLight);
             Entities.Add(new Entity("Backpack/backpack.obj"));
         }
 
         public Texture Render()
         {
-            Program.Settings.GetShadowMapSize(out int width, out int height);
-            gl.Viewport(0, 0, (uint)width, (uint)height);
-            lightingFrameBuffer.Use();
-
-            foreach (Light l in Lights)
-            {
-                if (!l.ShadowsEnabled) continue;
-                l.CalculateShadows(lightingFrameBuffer, lightingShader, RenderScene);
-            }
+            LightingPass();
 
             Program.Window.GetSize(out int windowWidth, out int windowHeight);
             gl.Viewport(0, 0, (uint)windowWidth, (uint)windowHeight);
@@ -86,6 +82,22 @@ namespace Yahtzee.Render
             RenderScene(defaultShader);
 
             return renderFrameBuffer.BoundTexture;
+        }
+
+        private void LightingPass()
+        {
+            Program.Settings.GetShadowMapSize(out int width, out int height);
+            gl.Viewport(0, 0, (uint)width, (uint)height);
+            lightingFrameBuffer.Use();
+
+            Shader lightingShader;
+
+            foreach (Light l in Lights)
+            {
+                if (!l.ShadowsEnabled) continue;
+                lightingShader = (l is PointLight) ? lightingShaderPersp : lightingShaderOrtho;
+                l.CalculateShadows(lightingFrameBuffer, lightingShader, RenderScene);
+            }
         }
 
         private void setLightingData()
@@ -106,12 +118,17 @@ namespace Yahtzee.Render
             defaultShader.SetInt("pointLightCount", pointLights);
             defaultShader.SetInt("dirLightCount", dirLights);
             defaultShader.SetInt("spotLightCount", spotLights);
+
+            //This is to prevent a black screen on AMD hardware 
+            while(pointLights < Program.Settings.MaxLights)
+                defaultShader.SetInt($"pointLights[{pointLights++}].shadowMap", 30);
         }
 
-        public void Update(double deltaTime)
+        public void Update(Time deltaTime)
         {
             Camera.Update(deltaTime);
-            flashLight.SetPositionAndDirection(Camera.Position + new vec3(.5f, 0, 0), Camera.GetDirection());
+            //flashLight.SetPositionAndDirection(Camera.Position + new vec3(.5f, 0, 0), Camera.GetDirection());
+            testLight.Position = new vec3(0, (float)(Math.Cos(deltaTime.Total) * 2), 1);
             Entities.ForEach(e => e.Update(deltaTime));
         }
 

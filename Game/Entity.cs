@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Yahtzee.Render;
+using Yahtzee.Main;
 using GlmSharp;
 
 namespace Yahtzee.Game
@@ -16,7 +17,7 @@ namespace Yahtzee.Game
             Model = new Model(modelPath);
         }
 
-        public void Update(double deltaTime)
+        public void Update(Time deltaTime)
         {
 
         }

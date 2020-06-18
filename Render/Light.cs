@@ -126,7 +126,19 @@ namespace Yahtzee.Render
 
     class PointLight : Light
     {
-        public vec3 Position;
+        public vec3 Position
+        {
+            get { return _position; }
+
+            set
+            {
+                _position = value;
+                if (ShadowsEnabled) CalculateLightSpace();
+            }
+        }
+
+        private vec3 _position;
+
         public float Constant = 1, Linear = .09f, Quadratic = .032f;
 
         private mat4[] CubeLookAts = null;
@@ -165,11 +177,14 @@ namespace Yahtzee.Render
 
         public override void CalculateShadows(FrameBuffer fb, Shader shader, SceneRender render)
         {
-            for(int i = 0; i < 6; i++)
+            shader.SetVec3("lightPos", Position);
+
+            for (int i = 0; i < 6; i++)
             {
-                fb.BindTexture(ShadowMap, GLEnum.DepthAttachment, GLEnum.TextureCubeMapPositiveX + i);
-                shader.SetMat4("lightSpace", LightSpace * CubeLookAts[i]);
+                GLEnum e = (GLEnum) (((int) GLEnum.TextureCubeMapPositiveX)+i);
+                fb.BindTexture(ShadowMap, GLEnum.DepthAttachment, e);
                 Util.GLClear();
+                shader.SetMat4("lightSpace", LightSpace * CubeLookAts[i]);
                 render(shader);
             }
         }
@@ -187,7 +202,7 @@ namespace Yahtzee.Render
             Program.Settings.GetShadowMapSize(out int width, out int height);
             Program.Settings.GetLightRange(out float near, out float far);
 
-            LightSpace = mat4.Perspective(Util.ToRadians(90), width / height, far, near);
+            LightSpace = mat4.Perspective(Util.ToRadians(90), width / height, near, far);
         }
     }
 

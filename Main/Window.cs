@@ -14,7 +14,7 @@ namespace Yahtzee.Main
 
         private WindowHandle* window;
 
-        public delegate void Tick(double deltaTime);
+        public delegate void Tick(Time time);
         public event Tick OnTick;
 
         public delegate void Resize(int width, int height);
@@ -102,7 +102,7 @@ namespace Yahtzee.Main
                 //Console.WriteLine($"FPS: {1f / deltaTime}");
 
                 if (OnTick == null) break;
-                OnTick.Invoke(deltaTime);
+                OnTick.Invoke(new Time(deltaTime, glfw.GetTime()));
             }
 
             glfw.Terminate();
@@ -137,7 +137,13 @@ namespace Yahtzee.Main
         private static void GlfwError(Silk.NET.GLFW.ErrorCode error, string msg)
             => Console.WriteLine($"Glfw encountered an error (code {error}): {msg}");
         
+    }
 
+    class Time
+    {
+        public readonly double Delta;
+        public readonly double Total;
 
+        public Time(double delta, double total) { Delta = delta; Total = total; }
     }
 }

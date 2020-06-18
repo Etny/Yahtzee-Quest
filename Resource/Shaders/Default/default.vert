@@ -33,6 +33,7 @@ struct PointLight {
     float quadratic;  
 
 	bool shadowsEnabled;
+	samplerCube shadowMap;
 
     LightColor color;
 };  
@@ -59,7 +60,7 @@ struct DirLight
 {
 	vec3 direction;
 	bool shadowsEnabled;
-	//sampler2D shadowMap;
+	sampler2D shadowMap;
 	mat4 lightSpace;
 
 	LightColor color;

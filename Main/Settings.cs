@@ -10,6 +10,8 @@ namespace Yahtzee.Main
         private static int ShadowWidth = 1024, ShadowHeight = 1024;
         private static float LightNear = .1f, LightFar = 1000f;
 
+        public readonly int MaxLights = 4;
+
         public System.Drawing.Size GetShadowMapSize()
             => new System.Drawing.Size(ShadowWidth, ShadowHeight);
 

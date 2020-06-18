@@ -53,7 +53,7 @@ namespace Yahtzee.Main
                 Window.Close();
         }
 
-        private static void Tick(double deltaTime)
+        private static void Tick(Time deltaTime)
         {
             Scene.Update(deltaTime);
             PostProcessManager.RenderPostProcess(Scene.Render());
