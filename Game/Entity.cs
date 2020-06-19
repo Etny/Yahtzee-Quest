@@ -1,31 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Yahtzee.Render;
-using Yahtzee.Main;
 using GlmSharp;
+using Yahtzee.Main;
+using Yahtzee.Render;
 
 namespace Yahtzee.Game
 {
-    class Entity
+    abstract class Entity
     {
+        public Transform Transform;
 
-        public Model Model;
+        public vec3 Position { get { return Transform.Translation; } set { Transform.Translation = value; } }
 
-        public Entity(string modelPath)
-        {
-            Model = new Model(modelPath);
-        }
+        public Entity() { Transform = new Transform() { Translation = vec3.Zero, Rotation = quat.Identity, Scale = 1 }; }
 
-        public void Update(Time deltaTime)
-        {
+        public virtual void Update(Time deltaTime) { }
+        public virtual void Draw(Shader shader) { }
 
-        }
-
-        public void Draw(Shader shader)
-        {
-            shader.SetMat4("model", mat4.Identity);
-            Model.Draw(shader);
-        }
     }
 }

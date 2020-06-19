@@ -181,8 +181,7 @@ namespace Yahtzee.Render
 
             for (int i = 0; i < 6; i++)
             {
-                GLEnum e = (GLEnum) (((int) GLEnum.TextureCubeMapPositiveX)+i);
-                fb.BindTexture(ShadowMap, GLEnum.DepthAttachment, e);
+                fb.BindTexture(ShadowMap, GLEnum.DepthAttachment, GLEnum.TextureCubeMapPositiveX + i);
                 Util.GLClear();
                 shader.SetMat4("lightSpace", LightSpace * CubeLookAts[i]);
                 render(shader);
@@ -202,7 +201,7 @@ namespace Yahtzee.Render
             Program.Settings.GetShadowMapSize(out int width, out int height);
             Program.Settings.GetLightRange(out float near, out float far);
 
-            LightSpace = mat4.Perspective(Util.ToRadians(90), width / height, near, far);
+            LightSpace = mat4.Perspective(Util.ToRad(90), width / height, near, far);
         }
     }
 

@@ -6,18 +6,18 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
 using System.Text;
+using Yahtzee.Game;
 using Yahtzee.Main;
 
 namespace Yahtzee.Render
 {
-    unsafe class Camera
+    unsafe class Camera : Entity
     {
-        public vec3 Position = new vec3(0.0f, 0.0f, 3.0f);
         public vec3 Front = new vec3(0.0f, 0.0f, -1.0f);
         public vec3 Up = new vec3(0.0f, 1.0f, 0.0f);
 
         public float Pitch = 0.0f;
-        public float Yaw = -90.0f;
+        public float Yaw = 0.0f;
 
         private GL gl;
         private uint matricesBuffer;
@@ -31,24 +31,20 @@ namespace Yahtzee.Render
             Program.Window.OnResize += OnResize;
             Program.Window.OnCursorMove += OnCursorMove;
 
+            Position = new vec3(0, 0, 3);
+
             matricesBuffer = gl.CreateBuffer();
             gl.BindBuffer(BufferTargetARB.UniformBuffer, matricesBuffer);
             gl.BufferData(BufferTargetARB.UniformBuffer, (uint)(2 * sizeof(mat4)), null, BufferUsageARB.StaticDraw);
             gl.BindBufferBase(BufferTargetARB.UniformBuffer, 0, matricesBuffer);
 
             Size windowSize = Program.Window.GetSize();
-            mat4 projectionMatrix = mat4.PerspectiveFov(Util.ToRadians(Fov), windowSize.Width, windowSize.Height, .1f, 1000f);
+            mat4 projectionMatrix = mat4.PerspectiveFov(Util.ToRad(Fov), windowSize.Width, windowSize.Height, .1f, 1000f);
             gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, (uint)sizeof(mat4), &projectionMatrix);
         }
 
         public mat4 LookAt() => mat4.LookAt(Position, Position + GetDirection(), Up);
-        public vec3 GetDirection()
-        {
-            float x = (float)(Math.Cos(Util.ToRadians(Yaw)) * Math.Cos(Util.ToRadians(Pitch)));
-            float y = (float)Math.Sin(Util.ToRadians(Pitch));
-            float z = (float)(Math.Sin(Util.ToRadians(Yaw)) * Math.Cos(Util.ToRadians(Pitch)));
-            return new vec3(x, y, z).Normalized;
-        }
+        public vec3 GetDirection() => Transform.Rotation * Front;
 
         public void SetData(Shader shader)
         {
@@ -58,17 +54,11 @@ namespace Yahtzee.Render
             shader.SetVec3("viewPos", Position);
         }
 
-        public void SetDirection(vec3 dir)
-        {
-            Yaw = Util.ToDegrees((float)Math.Atan2(dir.y, dir.x));
-            Pitch = Util.ToDegrees((float)-Math.Asin(dir.x));
-        }
-
 
         private void OnCursorMove(double x, double y, double deltaX, double deltaY)
         {
             float sensitivity = 0.2f;
-            deltaX *= sensitivity;
+            deltaX *= -sensitivity;
             deltaY *= -sensitivity;
 
             Yaw += (float)deltaX;
@@ -78,9 +68,11 @@ namespace Yahtzee.Render
                 Pitch = 89f;
             if (Pitch < -89f)
                 Pitch = -89f;
+
+            Transform.Rotation = quat.FromAxisAngle(Util.ToRad(Yaw), vec3.UnitY) * quat.FromAxisAngle(Util.ToRad(Pitch), vec3.UnitX);
         }
 
-        public void Update(Time deltaTime)
+        public override void Update(Time deltaTime)
         {
             float camSpeed = (float)(2.5f * deltaTime.Delta);
             var input = Program.InputManager;

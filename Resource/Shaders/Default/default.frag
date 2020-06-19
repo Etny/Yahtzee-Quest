@@ -91,8 +91,6 @@ in VS_OUT {
 	mat3 TBN;
 } fs_in;
 
-uniform vec3 viewPos;
-
 vec3 CalcLight(vec3 lightDir, LightColor color, vec3 normal, vec3 viewDir, float attenuation, float intensity, bool useShadows);
 vec3 CalcPointLight(int index, vec3 normal, vec3 viewDir);
 vec3 CalcSpotLight(int index, vec3 normal, vec3 viewDir);

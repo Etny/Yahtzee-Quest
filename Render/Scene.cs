@@ -15,7 +15,7 @@ namespace Yahtzee.Render
         List<Entity> Entities = new List<Entity>();
         List<Light> Lights = new List<Light>();
 
-        public Camera Camera;
+        public Camera CurrentCamera;
         public SpotLight flashLight;
         public PointLight testLight;
 
@@ -53,16 +53,16 @@ namespace Yahtzee.Render
             gl.DrawBuffer(DrawBufferMode.None);
             gl.ReadBuffer(ReadBufferMode.None);
 
-            Camera = new Camera();
-            //flashLight = new SpotLight(Camera.Position, Util.ToRadians(25), Util.ToRadians(30));
-            flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRadians(25), Util.ToRadians(30)) { Direction = new vec3(0, -1, 1) };
-            flashLight.SetShadowsEnabled(true);
+            CurrentCamera = new Camera();
+            Entities.Add(CurrentCamera);
+            flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRad(25), Util.ToRad(30)) { Direction = new vec3(0, -1, 1) };
+            //flashLight.SetShadowsEnabled(true);
             Lights.Add(flashLight);
             //var sun = new DirectionalLight(new vec3(0.65854764f, -0.5150382f, -0.54868096f));
             testLight = new PointLight(new vec3(0, 0, 1));
-            testLight.SetShadowsEnabled(true);
-            Lights.Add(testLight);
-            Entities.Add(new Entity("Backpack/backpack.obj"));
+            //testLight.SetShadowsEnabled(true);
+            //Lights.Add(testLight);
+            Entities.Add(new ModelEntity("Backpack/backpack.obj"));
         }
 
         public Texture Render()
@@ -77,7 +77,7 @@ namespace Yahtzee.Render
             gl.CullFace(CullFaceMode.Back);
 
             defaultShader.Use();
-            Camera.SetData(defaultShader);
+            CurrentCamera.SetData(defaultShader);
             setLightingData();
             RenderScene(defaultShader);
 
@@ -86,18 +86,15 @@ namespace Yahtzee.Render
 
         private void LightingPass()
         {
+            if (!Lights.Exists(x => x.ShadowsEnabled))
+                return;
+
             Program.Settings.GetShadowMapSize(out int width, out int height);
             gl.Viewport(0, 0, (uint)width, (uint)height);
             lightingFrameBuffer.Use();
 
-            Shader lightingShader;
-
-            foreach (Light l in Lights)
-            {
-                if (!l.ShadowsEnabled) continue;
-                lightingShader = (l is PointLight) ? lightingShaderPersp : lightingShaderOrtho;
-                l.CalculateShadows(lightingFrameBuffer, lightingShader, RenderScene);
-            }
+            foreach (Light l in Lights.FindAll(x => x.ShadowsEnabled))
+                l.CalculateShadows(lightingFrameBuffer, l is PointLight ? lightingShaderPersp : lightingShaderOrtho, RenderScene);
         }
 
         private void setLightingData()
@@ -126,9 +123,10 @@ namespace Yahtzee.Render
 
         public void Update(Time deltaTime)
         {
-            Camera.Update(deltaTime);
-            //flashLight.SetPositionAndDirection(Camera.Position + new vec3(.5f, 0, 0), Camera.GetDirection());
-            testLight.Position = new vec3(0, (float)(Math.Cos(deltaTime.Total) * 2), 1);
+            flashLight.Position = CurrentCamera.Position;
+            flashLight.Direction = CurrentCamera.GetDirection();
+            //flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
+            //testLight.Position = new vec3(0, (float)(Math.Cos(deltaTime.Total) * 2), 1);
             Entities.ForEach(e => e.Update(deltaTime));
         }
 
@@ -136,6 +134,9 @@ namespace Yahtzee.Render
             => Entities.ForEach(e => e.Draw(shader));
 
         private void OnResize(int width, int height)
-            => renderFrameBuffer.CreateTexture((uint)width, (uint)height);
+        {
+            renderFrameBuffer.CreateTexture((uint)width, (uint)height);
+            renderFrameBuffer.CreateRenderBuffer((uint)width, (uint)height);
+        }
     }
 }
