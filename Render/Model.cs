@@ -15,7 +15,7 @@ namespace Yahtzee.Render
 
         private GL gl;
 
-        private List<Mesh> meshes;
+        public List<Mesh> Meshes;
         private List<ImageTexture> loadedTextures;
 
         private string directory;
@@ -41,7 +41,7 @@ namespace Yahtzee.Render
 
             directory = path.Substring(0, path.LastIndexOf("/") + 1);
             loadedTextures = new List<ImageTexture>();
-            meshes = new List<Mesh>();
+            Meshes = new List<Mesh>();
 
             proccessNode(scene.RootNode, scene);
         }
@@ -51,7 +51,7 @@ namespace Yahtzee.Render
             foreach (int index in node.MeshIndices)
             {
                 ai.Mesh mesh = scene.Meshes[index];
-                meshes.Add(proccessMesh(mesh, scene));
+                Meshes.Add(proccessMesh(mesh, scene));
             }
 
             foreach (ai.Node child in node.Children)
@@ -155,7 +155,7 @@ namespace Yahtzee.Render
             // meshes[0].Draw(shader);
             // return;
 
-            foreach (Mesh mesh in meshes)
+            foreach (Mesh mesh in Meshes)
                 mesh.Draw(shader);
         }
     }

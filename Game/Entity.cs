@@ -13,7 +13,7 @@ namespace Yahtzee.Game
 
         public vec3 Position { get { return Transform.Translation; } set { Transform.Translation = value; } }
 
-        public Entity() { Transform = new Transform() { Translation = vec3.Zero, Rotation = quat.Identity, Scale = 1 }; }
+        public Entity() { Transform = new Transform() { Translation = vec3.Zero, Rotation = quat.Identity, Scale = new vec3(1) }; }
 
         public virtual void Update(Time deltaTime) { }
         public virtual void Draw(Shader shader) { }

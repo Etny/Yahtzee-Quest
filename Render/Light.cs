@@ -101,7 +101,7 @@ namespace Yahtzee.Render
 
         public DirectionalLight(vec3 direction) : base()
         {
-            Direction = direction;
+            Direction = direction.Normalized;
         }
 
         public override void SetValues(Shader shader, int index, ref int shadowMapUnit)

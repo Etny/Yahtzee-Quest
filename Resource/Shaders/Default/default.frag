@@ -1,10 +1,17 @@
 ﻿#version 330 core
 struct Material
 {
+	bool usingDiffuseMap;
+	vec3 diffuseColor;
 	sampler2D texture_diffuse1;
 	//sampler2D texture_diffuse2;
+
+	bool usingSpecularMap;
+	float specularComponent;
 	sampler2D texture_specular1;
 	//sampler2D texture_specular2;
+
+	bool usingNormalMap;
 	sampler2D texture_normal1;
 	//sampler2D texture_normal2;
 
@@ -99,10 +106,29 @@ float CalcShadow(vec4 fragPosLightSpace, in sampler2D shadowMap, bool linearizeD
 float CalcShadowFromCube(vec3 fragPos, vec3 lightPos, in samplerCube shadowMap);
 float LinearizeLightSpaceDepth(float depth);
 
+vec3 Diffuse;
+vec3 Specular;
+
 void main()
 {
-	vec3 normal = texture(material.texture_normal1, fs_in.TexCoords).rgb;
-	normal = normalize(normal * 2.0 - 1.0);
+	vec3 normal;
+	if(material.usingNormalMap){
+		normal = texture(material.texture_normal1, fs_in.TexCoords).rgb;
+		normal = normalize(normal * 2.0 - 1.0);
+	}else{
+		normal = vec3(0, 0, 1);
+	}
+
+	if(material.usingDiffuseMap)
+		Diffuse = vec3(texture(material.texture_diffuse1, fs_in.TexCoords));
+	else
+		Diffuse = vec3(material.diffuseColor);
+
+	if(material.usingSpecularMap)
+		Specular = vec3(texture(material.texture_specular1, fs_in.TexCoords));
+	else
+		Specular = vec3(material.specularComponent);
+
 	vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
 
 	vec3 Result = vec3(0.0);
@@ -156,17 +182,14 @@ float LinearizeLightSpaceDepth(float depth)
     return (2.0 * lightNearPlane * lightFarPlane) / (lightFarPlane + lightNearPlane - z * (lightFarPlane - lightNearPlane));
 }
 
-
 vec3 CalcLight(vec3 lightDir, LightColor color, vec3 normal, vec3 viewDir, float attenuation, float intensity, float shadow)
 {
 	float diff = max(dot(normal, lightDir), 0.0);
 	float spec = pow(max(dot(normal, normalize(lightDir + viewDir)), 0.0), material.shininess * 3);
 
-	vec3 texel = vec3(texture(material.texture_diffuse1, fs_in.TexCoords));
-
-	vec3 ambient = color.ambient * attenuation * texel;
-	vec3 diffuse = color.diffuse * intensity * attenuation * diff * texel;
-	vec3 specular = color.specular * spec * vec3(texture(material.texture_specular1, fs_in.TexCoords)) * intensity * attenuation;
+	vec3 ambient = color.ambient * attenuation * Diffuse;
+	vec3 diffuse = color.diffuse * intensity * attenuation * diff * Diffuse;
+	vec3 specular = color.specular * spec * Specular * intensity * attenuation;
 	return vec3(ambient + (shadow * diffuse) + (shadow * specular));
 }
 

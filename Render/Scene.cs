@@ -17,7 +17,7 @@ namespace Yahtzee.Render
 
         public Camera CurrentCamera;
         public SpotLight flashLight;
-        public PointLight testLight;
+        public DirectionalLight testLight;
 
         private Shader lightingShaderOrtho;
         private Shader lightingShaderPersp;
@@ -57,12 +57,21 @@ namespace Yahtzee.Render
             Entities.Add(CurrentCamera);
             flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRad(25), Util.ToRad(30)) { Direction = new vec3(0, -1, 1) };
             //flashLight.SetShadowsEnabled(true);
-            Lights.Add(flashLight);
-            //var sun = new DirectionalLight(new vec3(0.65854764f, -0.5150382f, -0.54868096f));
-            testLight = new PointLight(new vec3(0, 0, 1));
-            //testLight.SetShadowsEnabled(true);
-            //Lights.Add(testLight);
+            //Lights.Add(flashLight);
+            testLight = new DirectionalLight(new vec3(0, -1, 1));
+            //testLight = new DirectionalLight(new vec3(0.65854764f, -0.5150382f, -0.54868096f));
+            testLight.SetShadowsEnabled(true);
+            Lights.Add(testLight);
+            ModelEntity e = new ModelEntity("Basic/Cube.obj");
+            e.Transform.Scale = new vec3(10, 0.1f, 10);
+            e.Transform.Translation = new vec3(0, -3, 0);
+            Entities.Add(e);
             Entities.Add(new ModelEntity("Backpack/backpack.obj"));
+
+
+            CurrentCamera.Position = testLight.Direction * -10;
+            var angle = Math.Atan2(testLight.Direction.x, testLight.Direction.y);
+            CurrentCamera.Transform.Rotation = new quat(0, (float)(1 * Math.Sin(angle / 2)), 0, (float)Math.Cos(angle / 2));
         }
 
         public Texture Render()
@@ -122,12 +131,10 @@ namespace Yahtzee.Render
         }
 
         public void Update(Time deltaTime)
-        {
-            flashLight.Position = CurrentCamera.Position;
-            flashLight.Direction = CurrentCamera.GetDirection();
-            //flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
-            //testLight.Position = new vec3(0, (float)(Math.Cos(deltaTime.Total) * 2), 1);
+        { 
             Entities.ForEach(e => e.Update(deltaTime));
+            flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
+            //testLight.Position = new vec3(0, (float)(Math.Cos(deltaTime.Total) * 2), 1);
         }
 
         private void RenderScene(Shader shader)

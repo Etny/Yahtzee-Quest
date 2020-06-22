@@ -18,12 +18,12 @@ namespace Yahtzee.Render
 
         private GL gl;
         
-        private uint VAO, VBO, EBO;
+        protected uint VAO, VBO, EBO;
 
-        public Mesh(Vertex[] vertices, uint[] indices, ImageTexture[] textures)
+        public Mesh() { this.gl = GL.GetApi(); }
+
+        public Mesh(Vertex[] vertices, uint[] indices, ImageTexture[] textures) : this()
         {
-            this.gl = GL.GetApi();
-
             this.Vertices = vertices;
             this.Indices = indices;
             this.Textures = textures;
@@ -33,7 +33,7 @@ namespace Yahtzee.Render
 
         public Mesh(Vertex[] vertices) : this(vertices, null, new ImageTexture[0]) { }
 
-        private unsafe void setupMesh()
+        protected virtual unsafe void setupMesh()
         {
             VBO = gl.GenBuffer();
             if(Indices != null) EBO = gl.GenBuffer();
@@ -62,11 +62,16 @@ namespace Yahtzee.Render
             gl.EnableVertexAttribArray(2);
             gl.EnableVertexAttribArray(3);
             gl.EnableVertexAttribArray(4);
+        }
 
+        public virtual void AddTexture(ImageTexture texture)
+        {
+            Array.Resize<ImageTexture>(ref Textures, Textures.Length + 1);
+            Textures[Textures.Length - 1] = texture;
         }
 
 
-        public unsafe void Draw(Shader shader)
+        public virtual unsafe void Draw(Shader shader)
         {
             int diffuseNumber = 1;
             int specularNumber = 1;
@@ -93,6 +98,14 @@ namespace Yahtzee.Render
 
                 Textures[i].BindToUnit(i);
             }
+
+            shader.SetBool("material.usingDiffuseMap", diffuseNumber > 1);
+            shader.SetBool("material.usingSpecularMap", specularNumber > 1);
+            shader.SetBool("material.usingNormalMap", normalNumber > 1);
+
+            if (diffuseNumber == 1) shader.SetVec3("material.diffuseColor", new vec3(0.5f));
+            if (specularNumber == 1) shader.SetFloat("material.specularComponent", 0.5f);
+
             gl.ActiveTexture(TextureUnit.Texture0);
 
             gl.BindVertexArray(VAO);

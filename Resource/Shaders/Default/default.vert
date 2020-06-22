@@ -85,6 +85,7 @@ out VS_OUT {
 	vec2 TexCoords;
 	vec3 TangentFragPos;
 	vec3 TangentViewPos;
+	vec3 Normal;
 	mat3 TBN;
 } vs_out;
 
