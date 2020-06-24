@@ -105,6 +105,8 @@ vec3 CalcDirLight(int index, vec3 normal, vec3 viewDir);
 float CalcShadow(vec4 fragPosLightSpace, in sampler2D shadowMap, bool linearizeDepth);
 float CalcShadowFromCube(vec3 fragPos, vec3 lightPos, in samplerCube shadowMap);
 float LinearizeLightSpaceDepth(float depth);
+float SampleShadowMap(in sampler2D shadowMap, vec2 texCoords, float compare, bool linearize);
+float SampleShadowMapSmooth(in sampler2D shadowMap, vec2 texCoords, float compare, bool linearize, vec2 texelSize);
 
 vec3 Diffuse;
 vec3 Specular;
@@ -159,9 +161,40 @@ float CalcShadow(vec4 fragPosLightSpace, in sampler2D shadowMap, bool linearizeD
 		currentDepth = LinearizeLightSpaceDepth(currentDepth);
 	}
 
-    float shadow = currentDepth - .005 > closestDepth ? 0 : 1;
+	float shadow = 0.0;
+	vec2 stepSize = 1.0 /textureSize(shadowMap, 0);
 
-    return shadow;
+	for(int x = -1; x <= 1; x++)
+	{
+		for(int y = -1; y <= 1; y++)
+		{
+			vec2 pcfPos = projectedFragPos.xy + (vec2(x,y) * stepSize);
+			shadow += SampleShadowMapSmooth(shadowMap, pcfPos, currentDepth - .0015, linearizeDepth, stepSize);
+		}
+	}
+
+    return shadow / 9;
+}
+
+float SampleShadowMap(in sampler2D shadowMap, vec2 texCoords, float compare, bool linearize)
+{
+	float depth = texture(shadowMap, texCoords).r;
+	if(linearize) depth = LinearizeLightSpaceDepth(depth);
+	return compare > depth ? 0.0 : 1.0;
+}
+
+float SampleShadowMapSmooth(in sampler2D shadowMap, vec2 texCoords, float compare, bool linearize, vec2 texelSize)
+{
+	vec2 pixelCoords = texCoords / texelSize + vec2(0.5);
+	vec2 coordsFract = fract(pixelCoords);
+	vec2 basePixel = (pixelCoords - coordsFract) * texelSize;	
+
+	float blPixel = SampleShadowMap(shadowMap, basePixel, compare, linearize);
+	float brPixel = SampleShadowMap(shadowMap, basePixel + vec2(texelSize.x, 0.0), compare, linearize);
+	float tlPixel = SampleShadowMap(shadowMap, basePixel + vec2(0.0, texelSize.y), compare, linearize);
+	float trPixel = SampleShadowMap(shadowMap, basePixel + texelSize, compare, linearize);
+
+	return mix(mix(blPixel, tlPixel, coordsFract.y), mix(brPixel, trPixel, coordsFract.y), coordsFract.x);
 }
 
 float CalcShadowFromCube(vec3 fragPos, vec3 lightPos, in samplerCube shadowMap)

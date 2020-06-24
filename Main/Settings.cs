@@ -8,7 +8,7 @@ namespace Yahtzee.Main
     class Settings
     {
         private static int ShadowWidth = 1024, ShadowHeight = 1024;
-        private static float LightNear = .1f, LightFar = 1000f;
+        private static float LightNear = .1f, LightFar = 50f;
 
         public readonly int MaxLights = 4;
 

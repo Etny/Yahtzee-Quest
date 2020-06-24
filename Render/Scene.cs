@@ -18,6 +18,7 @@ namespace Yahtzee.Render
         public Camera CurrentCamera;
         public SpotLight flashLight;
         public DirectionalLight testLight;
+        public PointLight testPointLight;
 
         private Shader lightingShaderOrtho;
         private Shader lightingShaderPersp;
@@ -27,6 +28,8 @@ namespace Yahtzee.Render
         private FrameBuffer lightingFrameBuffer;
 
         private GL gl;
+
+        bool lightingDone = false;
 
         public Scene()
         {
@@ -56,22 +59,20 @@ namespace Yahtzee.Render
             CurrentCamera = new Camera();
             Entities.Add(CurrentCamera);
             flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRad(25), Util.ToRad(30)) { Direction = new vec3(0, -1, 1) };
-            //flashLight.SetShadowsEnabled(true);
-            //Lights.Add(flashLight);
-            testLight = new DirectionalLight(new vec3(0, -1, 1));
+            flashLight.SetShadowsEnabled(true);
+            Lights.Add(flashLight);
+            //testLight = new DirectionalLight(new vec3(0, -1, -1));
             //testLight = new DirectionalLight(new vec3(0.65854764f, -0.5150382f, -0.54868096f));
-            testLight.SetShadowsEnabled(true);
-            Lights.Add(testLight);
-            ModelEntity e = new ModelEntity("Basic/Cube.obj");
+            //testLight.SetShadowsEnabled(true);
+            //Lights.Add(testLight);
+            //testPointLight = new PointLight(vec3.Zero);
+            //testPointLight.SetShadowsEnabled(true);
+            //Lights.Add(testPointLight);
+
+            ModelEntity e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3, 0) };
             e.Transform.Scale = new vec3(10, 0.1f, 10);
-            e.Transform.Translation = new vec3(0, -3, 0);
             Entities.Add(e);
             Entities.Add(new ModelEntity("Backpack/backpack.obj"));
-
-
-            CurrentCamera.Position = testLight.Direction * -10;
-            var angle = Math.Atan2(testLight.Direction.x, testLight.Direction.y);
-            CurrentCamera.Transform.Rotation = new quat(0, (float)(1 * Math.Sin(angle / 2)), 0, (float)Math.Cos(angle / 2));
         }
 
         public Texture Render()
@@ -95,8 +96,13 @@ namespace Yahtzee.Render
 
         private void LightingPass()
         {
+            /*if (lightingDone) return;
+            lightingDone = true;*/
+
             if (!Lights.Exists(x => x.ShadowsEnabled))
                 return;
+
+            gl.CullFace(CullFaceMode.Front);
 
             Program.Settings.GetShadowMapSize(out int width, out int height);
             gl.Viewport(0, 0, (uint)width, (uint)height);
@@ -133,8 +139,12 @@ namespace Yahtzee.Render
         public void Update(Time deltaTime)
         { 
             Entities.ForEach(e => e.Update(deltaTime));
-            flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
+            //flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
             //testLight.Position = new vec3(0, (float)(Math.Cos(deltaTime.Total) * 2), 1);
+
+            vec3 LightPos = new vec3((float)Math.Cos(deltaTime.Total) * 2, 2, (float)Math.Sin(deltaTime.Total) * 2);
+            //testLight.Direction = (-LightPos).Normalized;
+            //testPointLight.Position = LightPos;
         }
 
         private void RenderScene(Shader shader)

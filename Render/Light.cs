@@ -119,7 +119,7 @@ namespace Yahtzee.Render
             Program.Settings.GetLightRange(out float near, out float far);
 
             mat4 Projection = mat4.Ortho(-10, 10, -10, 10, near, far);
-            mat4 LookAt = mat4.LookAt(Direction * -10, new vec3(0), new vec3(0, 1, 0));
+            mat4 LookAt = mat4.LookAt(Direction * -10, vec3.Zero, vec3.UnitY);
             LightSpace = Projection * LookAt;
         }
     }
@@ -162,6 +162,8 @@ namespace Yahtzee.Render
 
             base.SetColorValues(shader, name);
             base.SetShadowValues(shader, name, ref shadowMapUnit);
+
+            if (!ShadowsEnabled) shader.SetInt(name + ".shadowMap", 30);
 
             shader.SetVec3(name + ".position", Position);
             shader.SetFloat(name + ".constant", Constant);
