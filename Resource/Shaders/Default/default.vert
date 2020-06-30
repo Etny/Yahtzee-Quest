@@ -12,70 +12,33 @@ layout (std140) uniform Matrices
 	mat4 view;
 };
 
-uniform int pointLightCount;
-uniform int spotLightCount;
-uniform int dirLightCount;
-
 const int MaxLights = 4;
 
-struct LightColor
+struct Light
 {
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
-};
 
-struct PointLight {    
-    vec3 position;
-    
-    float constant;
-    float linear;
-    float quadratic;  
+	int type;
 
-	bool shadowsEnabled;
-	samplerCube shadowMap;
-
-    LightColor color;
-};  
-
-struct SpotLight
-{
 	vec3 position;
 	vec3 direction;
+
 	float cutoff;
 	float outerCutoff;
 
 	float constant;
     float linear;
-    float quadratic;  
+    float quadratic;
 
 	bool shadowsEnabled;
-	sampler2D shadowMap;
+	int shadowIndex;
 	mat4 lightSpace;
-
-	LightColor color;
 };
 
-struct DirLight
-{
-	vec3 direction;
-	bool shadowsEnabled;
-	sampler2D shadowMap;
-	mat4 lightSpace;
-
-	LightColor color;
-};
-
-uniform PointLight pointLights[MaxLights];
-uniform SpotLight spotLights[MaxLights];
-uniform DirLight dirLights[MaxLights];
-
-out VS_TAGENTLIGHTS{
-	vec3 pointLightPos[MaxLights];
-	vec3 spotLightPos[MaxLights];
-	vec3 spotLightDir[MaxLights];
-	vec3 dirLightDir[MaxLights];
-} tangentLights;
+uniform int lightCount;
+uniform Light Lights[MaxLights];
 
 uniform mat4 model;
 uniform vec3 viewPos;
@@ -85,9 +48,13 @@ out VS_OUT {
 	vec2 TexCoords;
 	vec3 TangentFragPos;
 	vec3 TangentViewPos;
-	vec3 Normal;
 	mat3 TBN;
 } vs_out;
+
+out TangentData{
+	vec3 tangentDir[MaxLights];
+	vec3 tangentPos[MaxLights];
+} tangentData;
 
 void main()
 {
@@ -105,16 +72,9 @@ void main()
 	vs_out.TangentFragPos = TBN * vs_out.FragPos;
 	vs_out.TangentViewPos = TBN * viewPos;
 
-	for(int i = 0; i < pointLightCount; ++i)
-		tangentLights.pointLightPos[i] = TBN * pointLights[i].position;
-	
-	for(int i = 0; i < spotLightCount; ++i)
+	for(int i = 0; i < lightCount; ++i)
 	{
-		tangentLights.spotLightPos[i] = TBN * spotLights[i].position;
-		tangentLights.spotLightDir[i] = TBN * spotLights[i].direction;
+		tangentData.tangentDir[i] = TBN * Lights[i].direction;
+		tangentData.tangentPos[i] = TBN * Lights[i].position;
 	}
-
-	for(int i = 0; i < dirLightCount; ++i)
-		tangentLights.dirLightDir[i] = TBN * dirLights[i].direction;
-	
 }

@@ -67,9 +67,9 @@ namespace Yahtzee.Render
 
         protected virtual void SetColorValues(Shader shader, string name)
         {
-            shader.SetVec3(name + ".color.ambient", Ambient);
-            shader.SetVec3(name + ".color.diffuse", Diffuse);
-            shader.SetVec3(name + ".color.specular", Specular);
+            shader.SetVec3(name + ".ambient", Ambient);
+            shader.SetVec3(name + ".diffuse", Diffuse);
+            shader.SetVec3(name + ".specular", Specular);
         }
 
         protected virtual void SetShadowValues(Shader shader, string name, ref int shadowMapUnit)
@@ -79,8 +79,9 @@ namespace Yahtzee.Render
             if (!ShadowsEnabled) return;
 
             shader.SetMat4(name + ".lightSpace", LightSpace);
-            shader.SetInt(name + ".shadowMap", shadowMapUnit);
-            ShadowMap.BindToUnit(shadowMapUnit);
+            shader.SetInt(name + ".shadowIndex", shadowMapUnit);
+            shader.SetInt("shadowMaps[" + shadowMapUnit + "]", shadowMapUnit + 8);
+            ShadowMap.BindToUnit(shadowMapUnit + 8);
             shadowMapUnit += 1;
         }
     }
@@ -106,11 +107,12 @@ namespace Yahtzee.Render
 
         public override void SetValues(Shader shader, int index, ref int shadowMapUnit)
         {
-            string name = "dirLights[" + index + "]";
+            string name = "Lights[" + index + "]";
 
             base.SetColorValues(shader, name);
             base.SetShadowValues(shader, name, ref shadowMapUnit);
 
+            shader.SetInt(name + ".type", 2);
             shader.SetVec3(name + ".direction", Direction);
         }
 
@@ -156,15 +158,29 @@ namespace Yahtzee.Render
             Quadratic = quadratic;
         }
 
+        protected override void SetShadowValues(Shader shader, string name, ref int shadowMapUnit)
+        {
+            shader.SetBool(name + ".shadowsEnabled", ShadowsEnabled);
+
+            if (!ShadowsEnabled) return;
+
+            shader.SetMat4(name + ".lightSpace", LightSpace);
+            shader.SetInt("shadowCube", shadowMapUnit + 8);
+            ShadowMap.BindToUnit(shadowMapUnit + 8);
+            shadowMapUnit += 1;
+        }
+
         public override void SetValues(Shader shader, int index, ref int shadowMapUnit)
         {
-            string name = "pointLights[" + index + "]";
+            string name = "Lights[" + index + "]";
 
             base.SetColorValues(shader, name);
-            base.SetShadowValues(shader, name, ref shadowMapUnit);
+            SetShadowValues(shader, name, ref shadowMapUnit);
 
-            if (!ShadowsEnabled) shader.SetInt(name + ".shadowMap", 30);
+            //if (!ShadowsEnabled) shader.SetInt(name + ".shadowMap", 30);
+            shader.SetBool(name + ".shadowsEnabled", ShadowsEnabled);
 
+            shader.SetInt(name + ".type", 0);
             shader.SetVec3(name + ".position", Position);
             shader.SetFloat(name + ".constant", Constant);
             shader.SetFloat(name + ".linear", Linear);
@@ -252,11 +268,12 @@ namespace Yahtzee.Render
 
         public override void SetValues(Shader shader, int index, ref int shadowMapUnit)
         {
-            string name = "spotLights[" + index + "]";
+            string name = "Lights[" + index + "]";
 
             base.SetColorValues(shader, name);
             base.SetShadowValues(shader, name, ref shadowMapUnit);
 
+            shader.SetInt(name + ".type", 1);
             shader.SetVec3(name + ".position", Position);
             shader.SetVec3(name + ".direction", Direction);
             shader.SetFloat(name + ".cutoff", Cutoff);
