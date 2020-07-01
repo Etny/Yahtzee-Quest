@@ -11,13 +11,21 @@ namespace Yahtzee.Game
     {
 
         public Model Model;
-
-        public ModelEntity(string modelPath) : base() { Model = new Model(modelPath); }
+        public CollisionMesh collision;
+        public ModelEntity(string modelPath) : base() { Model = new Model(modelPath); collision = Model.LoadCollisionMesh("Basic/CUbe.obj", this); }
 
         public override void Draw(Shader shader)
         {
+            foreach(Entity e in Program.Scene.Entities)
+            {
+                if (e == this) continue;
+                if (!(e is ModelEntity)) continue;
+                collision.CheckCollision(((ModelEntity)e).collision);
+            }
+
             shader.SetMat4("model", Transform.ModelMatrix);
-            Model.Draw(shader);
+            //Model.Draw(shader);
+            collision.DrawOutline();
         }
     }
 }

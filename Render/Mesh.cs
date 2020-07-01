@@ -16,7 +16,7 @@ namespace Yahtzee.Render
         public uint[] Indices;
         public ImageTexture[] Textures;
 
-        private GL gl;
+        protected GL gl;
         
         protected uint VAO, VBO, EBO;
 
@@ -76,6 +76,8 @@ namespace Yahtzee.Render
             int diffuseNumber = 1;
             int specularNumber = 1;
             int normalNumber = 1;
+
+            shader.Use();
 
             for (int i = 0; i < Textures.Length; i++)
             {

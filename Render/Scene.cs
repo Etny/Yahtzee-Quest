@@ -12,13 +12,14 @@ namespace Yahtzee.Render
 {
     class Scene
     {
-        List<Entity> Entities = new List<Entity>();
+        public List<Entity> Entities = new List<Entity>();
         List<Light> Lights = new List<Light>();
 
         public Camera CurrentCamera;
         public SpotLight flashLight;
         public DirectionalLight testLight;
         public PointLight testPointLight;
+        private ModelEntity Backpack;
 
         private Shader lightingShaderOrtho;
         private Shader lightingShaderPersp;
@@ -60,19 +61,20 @@ namespace Yahtzee.Render
             Entities.Add(CurrentCamera);
             flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRad(25), Util.ToRad(30)) { Direction = new vec3(0, -1, 1) };
             //flashLight.SetShadowsEnabled(true);
-            //Lights.Add(flashLight);
+            Lights.Add(flashLight);
             //testLight = new DirectionalLight(new vec3(0, -1, -1));
             //testLight = new DirectionalLight(new vec3(0.65854764f, -0.5150382f, -0.54868096f));
             //testLight.SetShadowsEnabled(true);
             //Lights.Add(testLight);
-            testPointLight = new PointLight(vec3.Zero);
-            testPointLight.SetShadowsEnabled(true);
-            Lights.Add(testPointLight);
+            //testPointLight = new PointLight(vec3.Zero);
+            //testPointLight.SetShadowsEnabled(true);
+            //Lights.Add(testPointLight);
 
             ModelEntity e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3, 0) };
             e.Transform.Scale = new vec3(10, 0.1f, 10);
             Entities.Add(e);
-            Entities.Add(new ModelEntity("Backpack/backpack.obj"));
+            Backpack = new ModelEntity("Backpack/backpack.obj");
+            Entities.Add(Backpack);
         }
 
         public Texture Render()
@@ -118,19 +120,12 @@ namespace Yahtzee.Render
             int shadowMapUnit = 0;
             
             foreach(Light light in Lights)
-            {
-                if (light is PointLight)
-                    light.SetValues(defaultShader, lights++, ref shadowMapUnit);
-                else if (light is DirectionalLight)
-                    light.SetValues(defaultShader, lights++, ref shadowMapUnit);
-                else if (light is SpotLight)
-                    light.SetValues(defaultShader, lights++, ref shadowMapUnit);
-            }
+                light.SetValues(defaultShader, lights++, ref shadowMapUnit);
 
             defaultShader.SetInt("lightCount", lights);
 
             //This is to prevent a black screen on AMD hardware 
-            if (Lights.FindAll(x => x is PointLight && x.ShadowsEnabled).Count <= 0)
+            if (!Lights.Exists(x => x is PointLight && x.ShadowsEnabled))
                 defaultShader.SetInt("shadowCube", 30);
             /*while(pointLights < Program.Settings.MaxLights)
                 defaultShader.SetInt($"pointLights[{pointLights++}].shadowMap", 30);*/
@@ -139,12 +134,15 @@ namespace Yahtzee.Render
         public void Update(Time deltaTime)
         { 
             Entities.ForEach(e => e.Update(deltaTime));
-            //flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
+            flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
             //testLight.Position = new vec3(0, (float)(Math.Cos(deltaTime.Total) * 2), 1);
 
             vec3 LightPos = new vec3((float)Math.Cos(deltaTime.Total) * 2, 2, (float)Math.Sin(deltaTime.Total) * 2);
             //testLight.Direction = (-LightPos).Normalized;
-            testPointLight.Position = LightPos;
+            //testPointLight.Position = LightPos;
+
+            vec3 PackPos = new vec3(0, ((float)Math.Cos(deltaTime.Total) * 2) - 1, 0);
+            Backpack.Position = PackPos;
         }
 
         private void RenderScene(Shader shader)

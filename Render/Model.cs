@@ -6,7 +6,7 @@ using System.Numerics;
 using Silk.NET.OpenGL;
 using GlmSharp;
 using Yahtzee.Render.Textures;
-
+using Yahtzee.Game;
 
 namespace Yahtzee.Render
 {
@@ -20,14 +20,25 @@ namespace Yahtzee.Render
 
         private string directory;
 
-        public Model(string filePath)
+        private delegate Mesh MeshLoader(ai.Mesh mesh, ai.Scene scene);
+
+        public Model(string filePath, bool collision = false)
         {
             this.gl = GL.GetApi();
 
-            loadModel("Resource/Models/"+filePath);
+            if (!collision) loadModel("Resource/Models/" + filePath, proccessMesh);
+            else loadModel("Resource/Models/" + filePath, proccessCollisionMesh);
         }
 
-        private void loadModel(string path)
+        public static CollisionMesh LoadCollisionMesh(string filePath, Entity parent)
+        {
+            var mesh = (CollisionMesh)new Model(filePath, true).Meshes[0];
+            mesh.Parent = parent;
+            return mesh;
+        }
+        
+
+        private void loadModel(string path, MeshLoader loader)
         {
             var assimp = new ai.AssimpContext();
 
@@ -43,19 +54,19 @@ namespace Yahtzee.Render
             loadedTextures = new List<ImageTexture>();
             Meshes = new List<Mesh>();
 
-            proccessNode(scene.RootNode, scene);
+            proccessNode(scene.RootNode, scene, loader);
         }
 
-        private void proccessNode(ai.Node node, ai.Scene scene)
+        private void proccessNode(ai.Node node, ai.Scene scene, MeshLoader loader)
         {
             foreach (int index in node.MeshIndices)
             {
                 ai.Mesh mesh = scene.Meshes[index];
-                Meshes.Add(proccessMesh(mesh, scene));
+                Meshes.Add(loader(mesh, scene));
             }
 
             foreach (ai.Node child in node.Children)
-                proccessNode(child, scene);
+                proccessNode(child, scene, loader);
         }
 
         private Mesh proccessMesh(ai.Mesh mesh, ai.Scene scene)
@@ -148,6 +159,28 @@ namespace Yahtzee.Render
             }
 
             return textures;
+        }
+
+        private CollisionMesh proccessCollisionMesh(ai.Mesh mesh, ai.Scene scene)
+        {
+            List<CollisionVertex> vertices = new List<CollisionVertex>();
+            List<uint> indices = new List<uint>();
+
+            for (int i = 0; i < mesh.VertexCount; i++)
+            {
+                CollisionVertex v = new CollisionVertex();
+
+                ai.Vector3D mvp = mesh.Vertices[i];
+                v.Position = new vec3(mvp.X, mvp.Y, mvp.Z);
+
+                vertices.Add(v);
+            }
+
+            for (int i = 0; i < mesh.FaceCount; i++)
+                for (int j = 0; j < mesh.Faces[i].IndexCount; j++)
+                    indices.Add((uint)mesh.Faces[i].Indices[j]);
+
+            return new CollisionMesh(vertices.ToArray(), indices.ToArray());
         }
 
         public void Draw(Shader shader)
