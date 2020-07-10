@@ -5,19 +5,20 @@ using System.Text;
 using GlmSharp;
 using Silk.NET.OpenGL;
 using Yahtzee.Game;
+using Yahtzee.Main;
 
 namespace Yahtzee.Render
 {
     class CollisionMesh : Mesh
     {
-        public CollisionVertex[] CollisionVertices;
+        public vec3[] CollisionVertices;
 
         private Shader shader;
-        public Entity Parent;
+        public ModelEntity Parent;
 
         public bool Overlapping = false;
 
-        public CollisionMesh(CollisionVertex[] vertices, uint[] indices, Entity parent = null) : base()
+        public CollisionMesh(vec3[] vertices, uint[] indices, ModelEntity parent = null) : base()
         {
             this.CollisionVertices = vertices;
             this.Indices = indices;
@@ -38,7 +39,7 @@ namespace Yahtzee.Render
 
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, VBO);
             fixed (void* i = &CollisionVertices[0])
-                gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(CollisionVertices.Length * sizeof(CollisionVertex)), i, BufferUsageARB.StaticDraw);
+                gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(CollisionVertices.Length * sizeof(vec3)), i, BufferUsageARB.StaticDraw);
 
             if (Indices != null)
             {
@@ -47,7 +48,7 @@ namespace Yahtzee.Render
                     gl.BufferData(BufferTargetARB.ElementArrayBuffer, (uint)(Indices.Length * sizeof(uint)), i, BufferUsageARB.StaticDraw);
             }
 
-            gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, (uint)sizeof(CollisionVertex), (void*)0);
+            gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, (uint)sizeof(vec3), (void*)0);
             gl.EnableVertexAttribArray(0);
         }
 
@@ -82,14 +83,8 @@ namespace Yahtzee.Render
         }
 
         public void CheckCollision(CollisionMesh mesh)
-        {
-            Overlapping = GetRectangle().IntersectsWith(mesh.GetRectangle());
+        { 
+            Overlapping = GetRectangle().IntersectsWith(mesh.GetRectangle()) && Program.PhysicsManager.GJK(Parent, mesh.Parent);
         }
-    }
-
-    struct CollisionVertex 
-    {
-        public vec3 Position;
-      
     }
 }

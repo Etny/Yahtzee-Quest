@@ -30,7 +30,7 @@ namespace Yahtzee.Render
             else loadModel("Resource/Models/" + filePath, proccessCollisionMesh);
         }
 
-        public static CollisionMesh LoadCollisionMesh(string filePath, Entity parent)
+        public static CollisionMesh LoadCollisionMesh(string filePath, ModelEntity parent)
         {
             var mesh = (CollisionMesh)new Model(filePath, true).Meshes[0];
             mesh.Parent = parent;
@@ -163,17 +163,13 @@ namespace Yahtzee.Render
 
         private CollisionMesh proccessCollisionMesh(ai.Mesh mesh, ai.Scene scene)
         {
-            List<CollisionVertex> vertices = new List<CollisionVertex>();
+            List<vec3> vertices = new List<vec3>();
             List<uint> indices = new List<uint>();
 
             for (int i = 0; i < mesh.VertexCount; i++)
             {
-                CollisionVertex v = new CollisionVertex();
-
                 ai.Vector3D mvp = mesh.Vertices[i];
-                v.Position = new vec3(mvp.X, mvp.Y, mvp.Z);
-
-                vertices.Add(v);
+                vertices.Add(new vec3(mvp.X, mvp.Y, mvp.Z));
             }
 
             for (int i = 0; i < mesh.FaceCount; i++)
