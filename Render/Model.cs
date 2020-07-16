@@ -27,7 +27,7 @@ namespace Yahtzee.Render
             this.gl = GL.GetApi();
 
             if (!collision) loadModel("Resource/Models/" + filePath, proccessMesh);
-            else loadModel("Resource/Models/" + filePath, proccessCollisionMesh);
+            else loadCollisionModel("Resource/Models/" + filePath, proccessCollisionMesh);
         }
 
         public static CollisionMesh LoadCollisionMesh(string filePath, ModelEntity parent)
@@ -52,6 +52,24 @@ namespace Yahtzee.Render
 
             directory = path.Substring(0, path.LastIndexOf("/") + 1);
             loadedTextures = new List<ImageTexture>();
+            Meshes = new List<Mesh>();
+
+            proccessNode(scene.RootNode, scene, loader);
+        }
+
+        private void loadCollisionModel(String path, MeshLoader loader)
+        {
+            var assimp = new ai.AssimpContext();
+
+            ai.Scene scene = assimp.ImportFile(path, ai.PostProcessSteps.DropNormals);
+
+            if (scene == null || scene.RootNode == null || scene.SceneFlags.HasFlag(ai.SceneFlags.Incomplete))
+            {
+                Console.WriteLine($"Assimp error when importing file \'{path}\'");
+                return;
+            }
+
+            directory = path.Substring(0, path.LastIndexOf("/") + 1);
             Meshes = new List<Mesh>();
 
             proccessNode(scene.RootNode, scene, loader);
@@ -169,7 +187,8 @@ namespace Yahtzee.Render
             for (int i = 0; i < mesh.VertexCount; i++)
             {
                 ai.Vector3D mvp = mesh.Vertices[i];
-                vertices.Add(new vec3(mvp.X, mvp.Y, mvp.Z));
+                vec3 v = new vec3(mvp.X, mvp.Y, mvp.Z);
+                /*if(!vertices.Contains(v))*/ vertices.Add(v);
             }
 
             for (int i = 0; i < mesh.FaceCount; i++)

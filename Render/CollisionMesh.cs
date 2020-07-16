@@ -13,6 +13,8 @@ namespace Yahtzee.Render
     {
         public vec3[] CollisionVertices;
 
+        public int highlight = -1;
+
         private Shader shader;
         public ModelEntity Parent;
 
@@ -24,9 +26,19 @@ namespace Yahtzee.Render
             this.Indices = indices;
             this.Parent = parent;
 
-            this.shader = new Shader("Line/line");
+            this.shader = new Shader("Debug/Line/line");
 
             setupMesh();
+
+            List<vec3> t = new List<vec3>();
+
+            /*foreach(vec3 v in CollisionVertices)
+            {
+                if (!t.Contains(v)) t.Add(v);
+                else Console.WriteLine("Dup!");
+            }
+
+            Console.WriteLine($"Count: {vertices.Length}");*/
         }
 
         protected unsafe override void setupMesh()
@@ -68,9 +80,25 @@ namespace Yahtzee.Render
             if (Indices != null) gl.DrawElements(PrimitiveType.Triangles, (uint)CollisionVertices.Length, DrawElementsType.UnsignedInt, (void*)0);
             else gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)CollisionVertices.Length);
 
+            if(highlight >= 0)
+            {
+                gl.PointSize(40);
+                shader.SetBool("overlapping", true);
+                gl.DrawArrays(PrimitiveType.Points, highlight, 1);
+            }
+
             gl.PolygonMode(GLEnum.FrontAndBack, PolygonMode.Fill);
             gl.Enable(EnableCap.CullFace);
 
+        }
+
+        public void UpdateHighlight(vec3 dir)
+        {
+            highlight = Program.PhysicsManager.SingleSupportIndex(Parent, dir);
+            //highlight++;
+            //Console.WriteLine(CollisionVertices[highlight]);
+
+            // 0.5 -0.5 0.5 breaks!
         }
 
         public RectangleF GetRectangle()
@@ -84,7 +112,7 @@ namespace Yahtzee.Render
 
         public void CheckCollision(CollisionMesh mesh)
         { 
-            Overlapping = GetRectangle().IntersectsWith(mesh.GetRectangle()) && Program.PhysicsManager.GJK(Parent, mesh.Parent);
+            Overlapping = Program.PhysicsManager.GJK(Parent, mesh.Parent);
         }
     }
 }

@@ -18,13 +18,16 @@ namespace Yahtzee.Game
         {
             foreach(Entity e in Program.Scene.Entities)
             {
+                //break;
+                //if(!collision.Overlapping) break;
+                if (Transform.Scale.x != 1) break;
                 if (e == this) continue;
                 if (!(e is ModelEntity)) continue;
                 collision.CheckCollision(((ModelEntity)e).collision);
             }
 
             shader.SetMat4("model", Transform.ModelMatrix);
-            //Model.Draw(shader);
+            Model.Draw(shader);
             collision.DrawOutline();
         }
     }

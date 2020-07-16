@@ -18,13 +18,15 @@
     <None Remove="Resource\Models\Backpack\source_attribution.txt" />
     <None Remove="Resource\Models\Backpack\specular.jpg" />
     <None Remove="Resource\Models\Cube.obj" />
+    <None Remove="Resource\Shaders\Debug\Visualizer\vis.frag" />
+    <None Remove="Resource\Shaders\Debug\Visualizer\vis.vert" />
     <None Remove="Resource\Shaders\default.frag" />
     <None Remove="Resource\Shaders\default.vert" />
     <None Remove="Resource\Shaders\Lighting\lightingShader.vert" />
     <None Remove="Resource\Shaders\Lighting\lightingShaderOrtho.frag" />
     <None Remove="Resource\Shaders\Lighting\lightingShaderPersp.frag" />
-    <None Remove="Resource\Shaders\Line\line.frag" />
-    <None Remove="Resource\Shaders\Line\line.vert" />
+    <None Remove="Resource\Shaders\Debug\Line\line.frag" />
+    <None Remove="Resource\Shaders\Debug\Line\line.vert" />
     <None Remove="Resource\Shaders\PostProcess\gammaCorrect.frag" />
     <None Remove="Resource\Shaders\PostProcess\postPro.vert" />
     <None Remove="Resource\Shaders\PostProcess\postProDefault.frag" />
@@ -58,6 +60,12 @@
     <Content Include="Resource\Models\Basic\Cube.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resource\Shaders\Debug\Visualizer\vis.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\Debug\Visualizer\vis.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resource\Shaders\Default\default.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -73,10 +81,10 @@
     <Content Include="Resource\Shaders\Lighting\lightingShaderPersp.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resource\Shaders\Line\line.frag">
+    <Content Include="Resource\Shaders\Debug\Line\line.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resource\Shaders\Line\line.vert">
+    <Content Include="Resource\Shaders\Debug\Line\line.vert">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\gammaCorrect.frag">

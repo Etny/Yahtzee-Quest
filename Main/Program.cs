@@ -1,9 +1,12 @@
-﻿using Silk.NET.GLFW;
+﻿#define DEBUG
+
+using Silk.NET.GLFW;
 using Silk.NET.OpenGL;
 using System;
 using System.Drawing;
 using Yahtzee.Game;
 using Yahtzee.Render;
+
 
 namespace Yahtzee.Main
 {
@@ -36,8 +39,8 @@ namespace Yahtzee.Main
 
             InputManager = new InputManager();
             PostProcessManager = new PostProcessManager();
-            Scene = new Scene();
             PhysicsManager = new PhysicsManager();
+            Scene = new Scene();
 
             PostProcessManager.AddPostProcessShader("gammaCorrect");
 

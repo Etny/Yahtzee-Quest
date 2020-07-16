@@ -6,7 +6,7 @@ using Yahtzee.Game;
 using Yahtzee.Main;
 using GlmSharp;
 using Yahtzee.Render.Textures;
-
+using Silk.NET.GLFW;
 
 namespace Yahtzee.Render
 {
@@ -25,6 +25,8 @@ namespace Yahtzee.Render
         private Shader lightingShaderPersp;
         private Shader defaultShader;
 
+        private PhysicsVisualizer PhysicsVisualizer;
+
         private FrameBuffer renderFrameBuffer;
         private FrameBuffer lightingFrameBuffer;
 
@@ -38,6 +40,8 @@ namespace Yahtzee.Render
 
             Program.Settings.GetLightRange(out float near, out float far);
             Program.Window.GetSize(out int windowWidth, out int windowHeight);
+
+            Program.Window.OnButton += OnButton;
 
             defaultShader = new Shader("Default/default");
             defaultShader.SetFloat("material.shininess", 32.0f);
@@ -69,12 +73,18 @@ namespace Yahtzee.Render
             //testPointLight = new PointLight(vec3.Zero);
             //testPointLight.SetShadowsEnabled(true);
             //Lights.Add(testPointLight);
-
+        
             ModelEntity e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3, 0) };
             e.Transform.Scale = new vec3(10, 0.1f, 10);
             Entities.Add(e);
-            Backpack = new ModelEntity("Backpack/backpack.obj");
+            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -2f, 0)};
             Entities.Add(Backpack);
+
+            PhysicsVisualizer = new PhysicsVisualizer(Backpack, e, Program.PhysicsManager);
+
+            Backpack.collision.Overlapping = true;
+            Backpack.Transform.RotateX(Util.ToRad(45));
+            Backpack.Transform.RotateZ(Util.ToRad(45));
         }
 
         public Texture Render()
@@ -92,6 +102,7 @@ namespace Yahtzee.Render
             CurrentCamera.SetData(defaultShader);
             setLightingData();
             RenderScene(defaultShader);
+            PhysicsVisualizer.Draw();
 
             return renderFrameBuffer.BoundTexture;
         }
@@ -141,8 +152,7 @@ namespace Yahtzee.Render
             //testLight.Direction = (-LightPos).Normalized;
             //testPointLight.Position = LightPos;
 
-            vec3 PackPos = new vec3(0, ((float)Math.Cos(deltaTime.Total) * 2) - 1, 0);
-            Backpack.Position = PackPos;
+            ///*if(Backpack.collision.Overlapping)*/ Backpack.Transform.RotateZ(Util.ToRad(deltaTime.Delta * 45));
         }
 
         private void RenderScene(Shader shader)
@@ -152,6 +162,24 @@ namespace Yahtzee.Render
         {
             renderFrameBuffer.CreateTexture((uint)width, (uint)height);
             renderFrameBuffer.CreateRenderBuffer((uint)width, (uint)height);
+        }
+
+
+
+        private void OnButton(Keys key, InputAction action, KeyModifiers mods)
+        {
+            //if (action != InputAction.Press) return;
+
+            if (key == Keys.ShiftLeft)
+                Entities.FindAll(x => x is ModelEntity).
+                    //ForEach(x => ((ModelEntity)x).collision.UpdateHighlight(CurrentCamera.GetDirection()));
+                    ForEach(x => Program.PhysicsManager.SingleSupport(((ModelEntity)x), new vec3(1.1414202f, 125.55634f, -0f)));
+
+            else if (key == Keys.ControlLeft && action == InputAction.Press)
+                PhysicsVisualizer.UpdateGJK();
+
+            else if (key == Keys.V && action == InputAction.Press)
+                Backpack.Position += new vec3(0, -.05f, 0);
         }
     }
 }
