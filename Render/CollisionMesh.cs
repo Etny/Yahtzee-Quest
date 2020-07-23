@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Text;
-using GlmSharp;
+﻿using GlmSharp;
 using Silk.NET.OpenGL;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using Yahtzee.Game;
 using Yahtzee.Main;
 
@@ -12,6 +11,7 @@ namespace Yahtzee.Render
     class CollisionMesh : Mesh
     {
         public vec3[] CollisionVertices;
+        public vec3[] DrawVertices;
 
         public int highlight = -1;
 
@@ -22,26 +22,24 @@ namespace Yahtzee.Render
 
         public CollisionMesh(vec3[] vertices, uint[] indices, ModelEntity parent = null) : base()
         {
-            this.CollisionVertices = vertices;
+            this.DrawVertices = vertices;
             this.Indices = indices;
             this.Parent = parent;
 
             this.shader = new Shader("Debug/Line/line");
 
-            setupMesh();
+            List<vec3> temp = new List<vec3>();
 
-            List<vec3> t = new List<vec3>();
+            foreach(vec3 v in vertices)
+                if (!temp.Contains(v)) temp.Add(v);
 
-            /*foreach(vec3 v in CollisionVertices)
-            {
-                if (!t.Contains(v)) t.Add(v);
-                else Console.WriteLine("Dup!");
-            }
+            CollisionVertices = temp.ToArray();
 
-            Console.WriteLine($"Count: {vertices.Length}");*/
+            setupCollisionMesh();
         }
 
-        protected unsafe override void setupMesh()
+        [Conditional("DEBUG")]
+        protected unsafe void setupCollisionMesh()
         {
             VBO = gl.GenBuffer();
             if (Indices != null) EBO = gl.GenBuffer();
@@ -50,8 +48,8 @@ namespace Yahtzee.Render
             gl.BindVertexArray(VAO);
 
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, VBO);
-            fixed (void* i = &CollisionVertices[0])
-                gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(CollisionVertices.Length * sizeof(vec3)), i, BufferUsageARB.StaticDraw);
+            fixed (void* i = &DrawVertices[0])
+                gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(DrawVertices.Length * sizeof(vec3)), i, BufferUsageARB.StaticDraw);
 
             if (Indices != null)
             {
@@ -66,6 +64,7 @@ namespace Yahtzee.Render
 
         public override unsafe void Draw(Shader shader) { }
 
+        [Conditional("DEBUG")]
         public unsafe void DrawOutline()
         {
             shader.Use();
@@ -77,8 +76,8 @@ namespace Yahtzee.Render
             gl.LineWidth(5);
 
             gl.BindVertexArray(VAO);
-            if (Indices != null) gl.DrawElements(PrimitiveType.Triangles, (uint)CollisionVertices.Length, DrawElementsType.UnsignedInt, (void*)0);
-            else gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)CollisionVertices.Length);
+            if (Indices != null) gl.DrawElements(PrimitiveType.Triangles, (uint)DrawVertices.Length, DrawElementsType.UnsignedInt, (void*)0);
+            else gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)DrawVertices.Length);
 
             if(highlight >= 0)
             {
@@ -94,11 +93,7 @@ namespace Yahtzee.Render
 
         public void UpdateHighlight(vec3 dir)
         {
-            highlight = Program.PhysicsManager.SingleSupportIndex(Parent, dir);
-            //highlight++;
-            //Console.WriteLine(CollisionVertices[highlight]);
-
-            // 0.5 -0.5 0.5 breaks!
+            highlight = Program.PhysicsManager.Collisions.SingleSupportIndex(Parent, dir);
         }
 
         public RectangleF GetRectangle()
@@ -112,7 +107,7 @@ namespace Yahtzee.Render
 
         public void CheckCollision(CollisionMesh mesh)
         { 
-            Overlapping = Program.PhysicsManager.GJK(Parent, mesh.Parent);
+            Overlapping = Program.PhysicsManager.Collisions.GJK(Parent, mesh.Parent);
         }
     }
 }

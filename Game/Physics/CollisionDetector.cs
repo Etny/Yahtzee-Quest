@@ -1,44 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Yahtzee.Render;
 using GlmSharp;
-using Yahtzee.Main;
-using System.Diagnostics;
+using Silk.NET.Vulkan;
 
-namespace Yahtzee.Game
+namespace Yahtzee.Game.Physics
 {
-    class PhysicsManager
+    class CollisionDetector
     {
+        private static float Error = 2.38418579E-07f;
 
-        public PhysicsManager()
-        {
-
-        }
 
         public bool GJK(ModelEntity m1, ModelEntity m2)
+            => GJKResult(m1, m2).Colliding;
+
+        public CollisionResult GJKResult(ModelEntity m1, ModelEntity m2)
         {
-            List<vec3> simplex = new List<vec3>();
-            simplex.Add(SumSupport(m1, m2, vec3.UnitY));
+            List<vec3> simplex = new List<vec3> { SumSupport(m1, m2, vec3.UnitY) };
             vec3 Direction = -simplex[0];
 
-            for(int i = 0; i < 1000; i++)
+            CollisionResult result = new CollisionResult(m1, m2, simplex);
+
+            for (int i = 0; i < 1000; i++)
             {
                 vec3 P = SumSupport(m1, m2, Direction);
-                if (vec3.Dot(P.Normalized, Direction.Normalized) < 0) return false;
+                if (vec3.Dot(P.Normalized, Direction.Normalized) < 0) return result;
                 simplex.Add(P);
-                if (DoSimplex(simplex)) return true;
+                if (DoSimplex(simplex)) { result.Colliding = true; return result; }
+                if (simplex.Find(x => x.Length <= Error).Length > 0 || Direction.Length <= Error) return result;
                 Direction = GetNewDirection(simplex);
             }
 
             Console.WriteLine("GJK exceeded max steps!");
-            return false;
+
+            return result;
         }
-       
+
         // Used for debugging
         public int GJK_Step(ModelEntity m1, ModelEntity m2, List<vec3> simplex, ref vec3 Direction, ref int counter)
         {
-            if(counter == 0)
+            if (counter == 0)
             {
                 simplex.Add(SumSupport(m1, m2, vec3.UnitY));
                 Direction = -simplex[0];
@@ -46,7 +47,7 @@ namespace Yahtzee.Game
 
             vec3 P = SumSupport(m1, m2, Direction);
 
-            if(counter == 1)
+            if (counter == 1)
                 simplex.Add(P);
             else if (counter == 2 && vec3.Dot(P.Normalized, Direction.Normalized) < 0) return 2;
             else if (counter == 2 && DoSimplex(simplex)) return 1;
@@ -57,7 +58,36 @@ namespace Yahtzee.Game
             return 0;
         }
 
-        private vec3 SumSupport(ModelEntity m1, ModelEntity m2, vec3 Dir)
+        public bool TriangleTest(vec3 p0, vec3 p1, vec3 p2)
+        {
+            vec3 v1 = p1 - p0;
+            vec3 v2 = p2 - p0;
+            float v1dv1 = vec3.Dot(v1, v1);
+            float v1dv2 = vec3.Dot(v1, v2);
+            float v2dv2 = vec3.Dot(v2, v2);
+            float p0dv1 = vec3.Dot(p0, v1);
+            float p0dv2 = vec3.Dot(p0, v2);
+
+            float m_det = v1dv1 * v2dv2 - v1dv2 * v1dv2; // non-negative
+            float m_lambda1 = p0dv2 * v1dv2 - p0dv1 * v2dv2;
+            float m_lambda2 = p0dv1 * v1dv2 - p0dv2 * v1dv1;
+
+            if (m_det > 0)
+            {
+                vec3 m_closest = p0 + (m_lambda1 * v1 + m_lambda2 * v2) / m_det;
+
+                Console.WriteLine(m_closest);
+                Console.WriteLine(vec3.Dot(v2, m_closest));
+
+                return true;
+            }
+
+            Console.WriteLine(m_det);
+
+            return false;
+        }
+
+        public vec3 SumSupport(ModelEntity m1, ModelEntity m2, vec3 Dir)
             => SingleSupport(m1, Dir) - SingleSupport(m2, -Dir);
 
         public vec3 SingleSupport(ModelEntity m1, vec3 Dir)
@@ -85,7 +115,7 @@ namespace Yahtzee.Game
             float td = -9999;
             float ti = -1;
 
-            for(int i = 0; i < m1.collision.CollisionVertices.Length; i++)
+            for (int i = 0; i < m1.collision.CollisionVertices.Length; i++)
             {
                 vec3 v = m1.Transform.Apply(m1.collision.CollisionVertices[i]);
                 float dot = vec3.Dot(Dir, v);
@@ -97,7 +127,7 @@ namespace Yahtzee.Game
 
             return index;
         }
-        
+
 
         private bool DoSimplex(List<vec3> simplex)
         {
@@ -136,6 +166,7 @@ namespace Yahtzee.Game
                         return Normal;
                     else
                         return -Normal;
+
 
                 default:
                     return vec3.NaN;
@@ -217,7 +248,7 @@ namespace Yahtzee.Game
                 // Else origin lies within region ABC
                 // Simplex = {A,B,C}
             }
-                
+
             return false;
         }
 
@@ -248,7 +279,7 @@ namespace Yahtzee.Game
                 tetra.RemoveRange(0, 3); // Simplex = {A}
 
             else if (vec3.Dot(B, AB) <= 0 && vec3.Dot(B, CB) <= 0 && vec3.Dot(B, DB) <= 0) // Origin lies beyond B
-            { 
+            {
                 tetra.RemoveAt(3); // Simplex = {B}
                 tetra.RemoveRange(0, 2);
             }
@@ -256,7 +287,7 @@ namespace Yahtzee.Game
             else if (vec3.Dot(C, AC) <= 0 && vec3.Dot(C, BC) <= 0 && vec3.Dot(C, DC) <= 0) // Origin lies beyond C
             {
                 tetra.RemoveRange(2, 2); // Simplex = {C}
-                tetra.RemoveAt(0); 
+                tetra.RemoveAt(0);
             }
 
             else if (vec3.Dot(D, AD) <= 0 && vec3.Dot(D, BD) <= 0 && vec3.Dot(D, CD) <= 0) // Origin lies beyond D
@@ -313,21 +344,20 @@ namespace Yahtzee.Game
 
                 else
                 {
-                    // Check whether BCD is facing the origin to determine which 
+                    // Check what side of ABC D is on to determine what
                     // side of the triangles are outside the tetrahedron
-                    float denom = vec3.Dot(vec3.Cross(BC, BA), BD);
-                    float volume = (denom == 0) ? 1.0f : 1.0f / denom;
+                    float outside = vec3.Dot(vec3.Cross(BC, BA), BD) < 0 ? -1 : 1;
 
-                    if (vec3.Dot(vec3.Cross(B, A), C) * volume < 0 && DotABC_AB > 0 && DotABC_AC > 0 && DotABC_BC > 0) // Origin lies in region ABC
-                       tetra.RemoveAt(0); // Simplex = {A,B,C}
+                    if (vec3.Dot(vec3.Cross(B, A), C) * outside < 0 && DotABC_AB > 0 && DotABC_AC > 0 && DotABC_BC > 0) // Origin lies in region ABC
+                        tetra.RemoveAt(0); // Simplex = {A,B,C}
 
-                   else if (vec3.Dot(vec3.Cross(D, A), B) * volume < 0 && DotABD_AB > 0 && DotABD_AD > 0 && DotABD_BD > 0) // Origin lies in region ABD
-                       tetra.RemoveAt(1); // Simplex = {A,B,D}
+                    else if (vec3.Dot(vec3.Cross(D, A), B) * outside < 0 && DotABD_AB > 0 && DotABD_AD > 0 && DotABD_BD > 0) // Origin lies in region ABD
+                        tetra.RemoveAt(1); // Simplex = {A,B,D}
 
-                   else if (vec3.Dot(vec3.Cross(C, A), D) * volume < 0 && DotACD_AC > 0 && DotACD_AD > 0 && DotACD_CD > 0) // Origin lies in region ACD
-                       tetra.RemoveAt(2); // Simplex = {A,C,D}
+                    else if (vec3.Dot(vec3.Cross(C, A), D) * outside < 0 && DotACD_AC > 0 && DotACD_AD > 0 && DotACD_CD > 0) // Origin lies in region ACD
+                        tetra.RemoveAt(2); // Simplex = {A,C,D}
 
-                    //else if (vec3.Dot(vec3.Cross(C, D), B) * volume < 0 && DotBCD_BC > 0 && DotBCD_BD > 0 && DotBCD_CD > 0) // Origin lies in region BCD
+                    //else if (vec3.Dot(vec3.Cross(C, D), B) * outside < 0 && DotBCD_BC > 0 && DotBCD_BD > 0 && DotBCD_CD > 0) // Origin lies in region BCD
                     //    tetra.RemoveAt(3); // Simplex = {B,C,D}
 
                     else return true; // Origin lies within the tetrahedron

@@ -20,6 +20,7 @@ namespace Yahtzee.Render
         public DirectionalLight testLight;
         public PointLight testPointLight;
         private ModelEntity Backpack;
+        private ModelEntity e;
 
         private Shader lightingShaderOrtho;
         private Shader lightingShaderPersp;
@@ -74,7 +75,7 @@ namespace Yahtzee.Render
             //testPointLight.SetShadowsEnabled(true);
             //Lights.Add(testPointLight);
         
-            ModelEntity e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3, 0) };
+            e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3, 0) };
             e.Transform.Scale = new vec3(10, 0.1f, 10);
             Entities.Add(e);
             Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -2f, 0)};
@@ -173,13 +174,19 @@ namespace Yahtzee.Render
             if (key == Keys.ShiftLeft)
                 Entities.FindAll(x => x is ModelEntity).
                     //ForEach(x => ((ModelEntity)x).collision.UpdateHighlight(CurrentCamera.GetDirection()));
-                    ForEach(x => Program.PhysicsManager.SingleSupport(((ModelEntity)x), new vec3(1.1414202f, 125.55634f, -0f)));
+                    ForEach(x => Program.PhysicsManager.Collisions.SingleSupport(((ModelEntity)x), new vec3(1.1414202f, 125.55634f, -0f)));
 
             else if (key == Keys.ControlLeft && action == InputAction.Press)
                 PhysicsVisualizer.UpdateGJK();
 
             else if (key == Keys.V && action == InputAction.Press)
                 Backpack.Position += new vec3(0, -.05f, 0);
+
+            else if (key == Keys.B && action == InputAction.Press)
+            {
+                vec3 PenDepth = Program.PhysicsManager.DepthDetector.GetPenetrationDepth(Program.PhysicsManager.Collisions.GJKResult(Backpack, e));
+                Backpack.Position -= PenDepth;
+            }
         }
     }
 }

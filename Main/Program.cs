@@ -1,6 +1,4 @@
-﻿#define DEBUG
-
-using Silk.NET.GLFW;
+﻿using Silk.NET.GLFW;
 using Silk.NET.OpenGL;
 using System;
 using System.Drawing;
