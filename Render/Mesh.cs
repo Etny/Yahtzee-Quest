@@ -10,7 +10,7 @@ using Yahtzee.Render.Textures;
 
 namespace Yahtzee.Render
 {
-    class Mesh
+    class Mesh : IDisposable
     {
         public Vertex[] Vertices;
         public uint[] Indices;
@@ -18,7 +18,7 @@ namespace Yahtzee.Render
 
         protected GL gl;
         
-        protected uint VAO, VBO, EBO;
+        protected uint VAO = 0, VBO = 0, EBO = 0;
 
         public Mesh() { this.gl = GL.GetApi(); }
 
@@ -70,6 +70,12 @@ namespace Yahtzee.Render
             Textures[Textures.Length - 1] = texture;
         }
 
+        public void Dispose()
+        {
+            if(VBO != 0) gl.DeleteBuffer(VBO);
+            if(Indices != null) gl.DeleteBuffer(EBO);
+            if (VAO != 0) gl.DeleteVertexArray(VAO);
+        }
 
         public virtual unsafe void Draw(Shader shader)
         {

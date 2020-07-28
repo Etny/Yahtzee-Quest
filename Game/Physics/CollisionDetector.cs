@@ -58,35 +58,6 @@ namespace Yahtzee.Game.Physics
             return 0;
         }
 
-        public bool TriangleTest(vec3 p0, vec3 p1, vec3 p2)
-        {
-            vec3 v1 = p1 - p0;
-            vec3 v2 = p2 - p0;
-            float v1dv1 = vec3.Dot(v1, v1);
-            float v1dv2 = vec3.Dot(v1, v2);
-            float v2dv2 = vec3.Dot(v2, v2);
-            float p0dv1 = vec3.Dot(p0, v1);
-            float p0dv2 = vec3.Dot(p0, v2);
-
-            float m_det = v1dv1 * v2dv2 - v1dv2 * v1dv2; // non-negative
-            float m_lambda1 = p0dv2 * v1dv2 - p0dv1 * v2dv2;
-            float m_lambda2 = p0dv1 * v1dv2 - p0dv2 * v1dv1;
-
-            if (m_det > 0)
-            {
-                vec3 m_closest = p0 + (m_lambda1 * v1 + m_lambda2 * v2) / m_det;
-
-                Console.WriteLine(m_closest);
-                Console.WriteLine(vec3.Dot(v2, m_closest));
-
-                return true;
-            }
-
-            Console.WriteLine(m_det);
-
-            return false;
-        }
-
         public vec3 SumSupport(ModelEntity m1, ModelEntity m2, vec3 Dir)
             => SingleSupport(m1, Dir) - SingleSupport(m2, -Dir);
 
@@ -102,6 +73,7 @@ namespace Yahtzee.Game.Physics
                 if (dot <= maxDot && i != 0) continue;
                 maxDot = dot;
                 p = v;
+                m1.collision.highlight = i;
             }
 
             return p;

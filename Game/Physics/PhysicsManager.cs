@@ -22,6 +22,10 @@ namespace Yahtzee.Game
         {
             Collisions = new CollisionDetector();
             DepthDetector = new PenetrationDepthDetector(this);
+
+            vec3[] points = new vec3[] { new vec3(5, 4, -1), new vec3(10, -2, -1) };
+
+            Console.WriteLine(points.GetClosetToOriginOnAffineHull());
         }
 
         public vec3 ClosestPoint(vec3 A, vec3 B, vec3 C)
@@ -44,7 +48,10 @@ namespace Yahtzee.Game
         {
             mat2 orthoMatrix = new mat2(1, vec3.Dot(A, (B - A)), 1, vec3.Dot(B, (B - A)));
 
-            var result = (orthoMatrix.Inverse * mat2.Identity).Column0;
+            var result = orthoMatrix.Inverse.Column0;
+
+            if (result.y < 0) return A;
+            if (result.x < 0) return B;
 
             return (A * result.x) + (B * result.y);
         }

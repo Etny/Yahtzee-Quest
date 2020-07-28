@@ -27,6 +27,7 @@ namespace Yahtzee.Render
         private Shader defaultShader;
 
         private PhysicsVisualizer PhysicsVisualizer;
+        private PenetrationDepthVisualizer PenetrationDepthVisualizer = null;
 
         private FrameBuffer renderFrameBuffer;
         private FrameBuffer lightingFrameBuffer;
@@ -78,7 +79,7 @@ namespace Yahtzee.Render
             e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3, 0) };
             e.Transform.Scale = new vec3(10, 0.1f, 10);
             Entities.Add(e);
-            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -2f, 0)};
+            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -2.1f, 0)};
             Entities.Add(Backpack);
 
             PhysicsVisualizer = new PhysicsVisualizer(Backpack, e, Program.PhysicsManager);
@@ -104,6 +105,7 @@ namespace Yahtzee.Render
             setLightingData();
             RenderScene(defaultShader);
             PhysicsVisualizer.Draw();
+            PenetrationDepthVisualizer?.Draw();
 
             return renderFrameBuffer.BoundTexture;
         }
@@ -186,6 +188,14 @@ namespace Yahtzee.Render
             {
                 vec3 PenDepth = Program.PhysicsManager.DepthDetector.GetPenetrationDepth(Program.PhysicsManager.Collisions.GJKResult(Backpack, e));
                 Backpack.Position -= PenDepth;
+            }
+
+            else if(key == Keys.Apostrophe && action == InputAction.Press)
+            {
+                if (PenetrationDepthVisualizer == null)
+                    PenetrationDepthVisualizer = new PenetrationDepthVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack, e), Program.PhysicsManager);
+
+                PenetrationDepthVisualizer.UpdateDepthTest();
             }
         }
     }
