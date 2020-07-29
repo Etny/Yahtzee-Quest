@@ -26,7 +26,7 @@ namespace Yahtzee.Render
         private Shader lightingShaderPersp;
         private Shader defaultShader;
 
-        private PhysicsVisualizer PhysicsVisualizer;
+        private CollisionDetectionVisualizer PhysicsVisualizer;
         private PenetrationDepthVisualizer PenetrationDepthVisualizer = null;
 
         private FrameBuffer renderFrameBuffer;
@@ -82,7 +82,7 @@ namespace Yahtzee.Render
             Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(3f, -2.6f, 5f)};
             Entities.Add(Backpack);
 
-            PhysicsVisualizer = new PhysicsVisualizer(Backpack, e, Program.PhysicsManager);
+            PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
 
             Backpack.collision.Overlapping = true;
             Backpack.Transform.RotateX(Util.ToRad(45));

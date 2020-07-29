@@ -10,7 +10,7 @@ using Yahtzee.Render;
 
 namespace Yahtzee.Main
 {
-    static class Util
+    class Util
     {
 
         public static float ToRad(float deg)
@@ -27,19 +27,6 @@ namespace Yahtzee.Main
 
         public static void GLClear()
             => GL.GetApi().Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit));
-    
-    
-        public static vec3 GetClosetToOriginOnAffineHull(this vec3[] points)
-        {
-            return vec3.Zero;
-        }
-
-        private static vec3 ClosesToOriginTriangle(vec3[] points, bool clampToSimplex)
-        {
-
-
-            return vec3.NaN;
-        }
     
     }
 }

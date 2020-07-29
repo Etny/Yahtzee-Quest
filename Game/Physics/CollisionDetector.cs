@@ -36,6 +36,7 @@ namespace Yahtzee.Game.Physics
             return result;
         }
 
+#if DEBUG
         // Used for debugging
         public int GJK_Step(ModelEntity m1, ModelEntity m2, List<vec3> simplex, ref vec3 Direction, ref int counter)
         {
@@ -57,6 +58,7 @@ namespace Yahtzee.Game.Physics
             if (counter >= 4) counter = 1;
             return 0;
         }
+#endif
 
         public vec3 SumSupport(ModelEntity m1, ModelEntity m2, vec3 Dir)
             => SingleSupport(m1, Dir) - SingleSupport(m2, -Dir);
@@ -78,6 +80,7 @@ namespace Yahtzee.Game.Physics
             return p;
         }
 
+#if DEBUG
         // Used for debugging
         public int SingleSupportIndex(ModelEntity m1, vec3 Dir)
         {
@@ -98,6 +101,7 @@ namespace Yahtzee.Game.Physics
 
             return index;
         }
+#endif
 
 
         private bool DoSimplex(List<vec3> simplex)
