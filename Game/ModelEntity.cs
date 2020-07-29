@@ -18,7 +18,7 @@ namespace Yahtzee.Game
         {
             foreach(Entity e in Program.Scene.Entities)
             {
-                break;
+                //break;
                 //if(!collision.Overlapping) break;
                 if (Transform.Scale.x != 1) break;
                 if (e == this) continue;

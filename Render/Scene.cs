@@ -79,7 +79,7 @@ namespace Yahtzee.Render
             e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3, 0) };
             e.Transform.Scale = new vec3(10, 0.1f, 10);
             Entities.Add(e);
-            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -2.1f, 0)};
+            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(3f, -2.6f, 5f)};
             Entities.Add(Backpack);
 
             PhysicsVisualizer = new PhysicsVisualizer(Backpack, e, Program.PhysicsManager);
@@ -182,7 +182,7 @@ namespace Yahtzee.Render
                 PhysicsVisualizer.UpdateGJK();
 
             else if (key == Keys.V && action == InputAction.Press)
-                Backpack.Position += new vec3(0, -.05f, 0);
+                Backpack.Position += new vec3(0, 0.001f, 0);
 
             else if (key == Keys.B && action == InputAction.Press)
             {

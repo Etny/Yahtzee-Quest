@@ -1,8 +1,11 @@
 ﻿using GlmSharp;
+using Silk.NET.OpenGL;
 using SixLabors.Primitives;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 namespace Yahtzee.Game.Physics
@@ -11,7 +14,7 @@ namespace Yahtzee.Game.Physics
     {
         private PhysicsManager physicsManager;
 
-        private static float Error = .2f;//2.38418579E-07f;
+        private static float Error = .0001f;
 
         public PenetrationDepthDetector(PhysicsManager physicsManager)
         {
@@ -45,13 +48,45 @@ namespace Yahtzee.Game.Physics
                 }
                 float length = closestTri.ClosestPoint().Length;
 
-                vec3 newPoint = physicsManager.Collisions.SumSupport(result.M1, result.M2, closestTri.ClosestPoint());
+
+
+                vec3 newPoint;
+
+
+                if (closestTri.ClosestPoint().LengthSqr < Error)
+                    newPoint = physicsManager.Collisions.SumSupport(result.M1, result.M2, closestTri.Normal);
+                else
+                    newPoint = physicsManager.Collisions.SumSupport(result.M1, result.M2, closestTri.ClosestPoint());
+
+                if (vec3.Dot(closestTri.Normal, newPoint - closestTri.Points[0]) == 0 
+                    && vec3.Dot(closestTri.Normal, newPoint - closestTri.Points[1]) == 0
+                    && vec3.Dot(closestTri.Normal, newPoint - closestTri.Points[2]) == 0)
+                {
+                    return closestTri.ClosestPoint();
+                }
 
                 if (newPoint.Length - length <= Error) { Console.WriteLine("Steps: " + i);  return newPoint; }
 
                 Console.WriteLine($"Length on step {i}: {length}, with difference of {newPoint.Length - length} and new point {newPoint}");
                 Console.WriteLine(tris.Count);
-                closestTri.Subdivide(tris, newPoint, result, physicsManager.Collisions);
+                //closestTri.Subdivide(tris, newPoint, result, physicsManager.Collisions);
+                List<Triangle> facingNewPoint = tris.FindAll(t => vec3.Dot(t.Normal, newPoint) > 0);
+
+                Console.WriteLine("Facing: " + facingNewPoint.Count);
+
+                foreach (Triangle t in facingNewPoint)
+                {
+                    tris.Remove(t);
+                    for (int j = 0; j < 3; j++)
+                    {
+                        vec3[] edge = new vec3[] { t.Points[j], t.Points[(j + 1) % 3] };
+
+                        if (facingNewPoint.FindAll(tOther => tOther != t).Exists(tOther => tOther.Points.Contains(edge[0]) && tOther.Points.Contains(edge[1]))) continue;
+
+                        tris.Add(new Triangle(edge[0], edge[1], newPoint));
+                    }
+                }
+
             }
 
             Console.WriteLine("Penetration Depth testing exceed max steps!");
@@ -59,7 +94,7 @@ namespace Yahtzee.Game.Physics
             return vec3.NaN;
         }
 
-        public vec3 GetPenetrationDepthStep(CollisionResult result, ref List<Triangle> tris, ref Triangle closestTri, ref vec3 newPoint, ref List<vec3> newEdgePoints, ref int counter)
+        public vec3 GetPenetrationDepthStep(CollisionResult result, ref List<Triangle> tris, ref Triangle closestTri, ref vec3 newPoint, ref int counter)
         {
             if (!result.Colliding) return vec3.Zero;
 
@@ -89,21 +124,46 @@ namespace Yahtzee.Game.Physics
             }
             else if (counter == 2)
             {
-                newPoint = physicsManager.Collisions.SumSupport(result.M1, result.M2, closestTri.ClosestPoint());
-            }else if(counter == 3)
-            {
-                newEdgePoints.Add(closestTri.ClosestToOrigin(closestTri.Points[0], closestTri.Points[1]));
-                newEdgePoints.Add(closestTri.ClosestToOrigin(closestTri.Points[1], closestTri.Points[2]));
-                newEdgePoints.Add(closestTri.ClosestToOrigin(closestTri.Points[2], closestTri.Points[0]));
+                //Console.WriteLine(closestTri.ClosestPoint().LengthSqr + " " + float.Epsilon * 10);
+                if (closestTri.ClosestPoint().LengthSqr < Error)
+                    newPoint = physicsManager.Collisions.SumSupport(result.M1, result.M2, closestTri.Normal);
+                else
+                    newPoint = physicsManager.Collisions.SumSupport(result.M1, result.M2, closestTri.ClosestPoint());
+                
             }
-            else if (counter == 4)
+            else if (counter == 3)
             {
                 if (newPoint.Length - closestTri.ClosestPoint().Length <= Error) return newPoint;
-                closestTri.Subdivide(tris, newPoint, result, physicsManager.Collisions);
+                //closestTri.Subdivide(tris, newPoint, result, physicsManager.Collisions);
+
+                if (vec3.Dot(closestTri.Normal, newPoint - closestTri.Points[0]) == 0
+                    && vec3.Dot(closestTri.Normal, newPoint - closestTri.Points[1]) == 0
+                    && vec3.Dot(closestTri.Normal, newPoint - closestTri.Points[2]) == 0)
+                {
+                    return closestTri.ClosestPoint();
+                }
+
+                vec3 tempPoint = newPoint;
+                List<Triangle> facingNewPoint = tris.FindAll(t => vec3.Dot(t.Normal, tempPoint) > 0);
+
+                Console.WriteLine("Facing: " + facingNewPoint.Count);
+
+                foreach(Triangle t in facingNewPoint)
+                {
+                    tris.Remove(t);
+                    for(int i = 0; i < 3; i++)
+                    {
+                        vec3[] edge = new vec3[] { t.Points[i], t.Points[(i + 1) % 3] };
+
+                        if (facingNewPoint.FindAll(tOther => tOther != t).Exists(tOther => tOther.Points.Contains(edge[0]) && tOther.Points.Contains(edge[1]))) continue;
+
+                        tris.Add(new Triangle(edge[0], edge[1], newPoint));
+                    }
+                }
             }
 
 
-            counter = counter <= 3 ? counter + 1 : 1;
+            counter = counter <= 2 ? counter + 1 : 1;
 
             return vec3.NaN;
         }
@@ -115,7 +175,22 @@ namespace Yahtzee.Game.Physics
 
             private vec3 closest = vec3.NaN;
 
-            public Triangle(vec3 A, vec3 B, vec3 C) { Points = new vec3[] { A, B, C }; }
+            public vec3 Normal { get { return vec3.Cross(Points[1] - Points[0], Points[2] - Points[0]); } }
+
+            public vec3 Center { get { return Points[0] / 3 + Points[1] / 3 + Points[2] / 3; } }
+
+            public Triangle(vec3 A, vec3 B, vec3 C) 
+            {
+                if(vec3.Dot(vec3.Cross(B-A, C-A), A) <= 0)
+                    Points = new vec3[] { A, C, B };
+                else
+                {
+                    //Console.WriteLine("Needed to rewind >:(");
+                    Points = new vec3[] { A, B, C };
+                }
+
+
+            }
             public Triangle(List<vec3> list, int indexA, int indexB, int IndexC) : this(list[indexA], list[indexB], list[IndexC]) { }
 
             public vec3 ClosestPoint()
@@ -132,11 +207,7 @@ namespace Yahtzee.Game.Physics
 
                 var result = orthoMatrix.Inverse.Column0;
 
-                if (result.x < 0) result.x = 0;
-                if (result.y < 0) result.y = 0;
-                if (result.z < 0) result.z = 0;
-
-                //if (result == vec3.NaN || result.MinElement < 0) return vec3.NaN;
+                if (result == vec3.NaN /*|| result.MinElement < 0*/) return vec3.NaN;
 
                 closest = (Points[0] * result.x) + (Points[1] * result.y) + (Points[2] * result.z);
 

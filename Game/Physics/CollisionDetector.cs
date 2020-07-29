@@ -73,7 +73,6 @@ namespace Yahtzee.Game.Physics
                 if (dot <= maxDot && i != 0) continue;
                 maxDot = dot;
                 p = v;
-                m1.collision.highlight = i;
             }
 
             return p;
@@ -137,7 +136,12 @@ namespace Yahtzee.Game.Physics
                     if (vec3.Dot(Normal, C) <= 0)
                         return Normal;
                     else
+                    {
+                        vec3 temp = simplex[0];
+                        simplex[0] = simplex[1];
+                        simplex[1] = temp;
                         return -Normal;
+                    }
 
 
                 default:
