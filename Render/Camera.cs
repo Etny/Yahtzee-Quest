@@ -31,6 +31,8 @@ namespace Yahtzee.Render
             Program.Window.OnResize += OnResize;
             Program.Window.OnCursorMove += OnCursorMove;
 
+            MovementController = new MovementControllerWASD(2.5f, GetDirection);
+
             Position = new vec3(0, 0, 3);
 
             matricesBuffer = gl.CreateBuffer();
@@ -70,23 +72,6 @@ namespace Yahtzee.Render
                 Pitch = -89f;
 
             Transform.Rotation = quat.FromAxisAngle(Util.ToRad(Yaw), vec3.UnitY) * quat.FromAxisAngle(Util.ToRad(Pitch), vec3.UnitX);
-        }
-
-        public override void Update(Time deltaTime)
-        {
-            float camSpeed = (float)(2.5f * deltaTime.Delta);
-            var input = Program.InputManager;
-
-            if (input.IsPressed(Keys.W))
-                Position += GetDirection() * camSpeed;
-            if (input.IsPressed(Keys.S))
-                Position -= GetDirection() * camSpeed;
-            if (input.IsPressed(Keys.A))
-                Position -= vec3.Cross(GetDirection(), Up).Normalized * camSpeed;
-            if (input.IsPressed(Keys.D))
-                Position += vec3.Cross(GetDirection(), Up).Normalized * camSpeed;
-            if (input.IsPressed(Keys.G))
-                Console.WriteLine($"Dir: {GetDirection()}, Pos: {Position}, Yaw: {Yaw}, Pitch: {Pitch}");
         }
 
         private void OnResize(int width, int height)

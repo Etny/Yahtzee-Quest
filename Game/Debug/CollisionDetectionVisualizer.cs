@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using GlmSharp;
 using Silk.NET.OpenGL;
 using Yahtzee.Game.Debug;
+using Yahtzee.Game.Physics;
 using Yahtzee.Render;
 
 namespace Yahtzee.Game
@@ -14,10 +16,11 @@ namespace Yahtzee.Game
     /// </summary>
     unsafe class CollisionDetectionVisualizer
     {
-        private readonly ModelEntity m1, m2;
+        private readonly Entity m1, m2;
+        private readonly CollisionMesh c1, c2;
         private readonly PhysicsManager pm;
 
-        public List<vec3> Simplex = new List<vec3>();
+        public List<SupportPoint> Simplex = new List<SupportPoint>();
         public vec3 Direction;
 
         private LineMesh pointMesh;
@@ -30,10 +33,12 @@ namespace Yahtzee.Game
 
         private string[] messages = { "Intialize", "New Point", "Check for fail and do Simplex", "New Direction" };
 
-        public CollisionDetectionVisualizer(ModelEntity m1, ModelEntity m2, PhysicsManager pm)
+        public CollisionDetectionVisualizer(Entity m1, Entity m2, PhysicsManager pm)
         {
             this.m1 = m1;
             this.m2 = m2;
+            this.c1 = ((MovementControllerRigidBody)m1.MovementController).Collision;
+            this.c2 = ((MovementControllerRigidBody)m2.MovementController).Collision;
             this.pm = pm;
 
             pointMesh = new LineMesh(null, simplexColors);
@@ -45,13 +50,13 @@ namespace Yahtzee.Game
         {
             Console.WriteLine(messages[counter]);
 
-            int r = pm.Collisions.GJK_Step(m1, m2, Simplex, ref Direction, ref counter);
+            int r = pm.Collisions.GJK_Step(c1, c2, Simplex, ref Direction, ref counter);
 
             if (counter == 1) Console.WriteLine($"Direction: {Direction}");
 
             if (r == 0)
             {
-                pointMesh.SetPoints(Simplex.ToArray());
+                pointMesh.SetPoints(Simplex.Select(p => p.Sup).ToArray());
                 dirMesh.SetPoints(new vec3[]{ vec3.Zero, Direction.Normalized});
             }
             else
@@ -59,7 +64,7 @@ namespace Yahtzee.Game
                 Simplex.Clear();
                 counter = 0;
                 Console.WriteLine(r == 1 ? "Collision!" : "Failed!");
-                m1.collision.Overlapping = (r == 1);
+                c1.Overlapping = (r == 1);
             }
         }
         public void Draw()

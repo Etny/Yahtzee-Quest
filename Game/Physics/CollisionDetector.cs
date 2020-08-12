@@ -11,23 +11,23 @@ namespace Yahtzee.Game.Physics
         private static float Error = 2.38418579E-07f;
 
 
-        public bool GJK(ModelEntity m1, ModelEntity m2)
+        public bool GJK(RigidBody m1, RigidBody m2)
             => GJKResult(m1, m2).Colliding;
 
-        public CollisionResult GJKResult(ModelEntity m1, ModelEntity m2)
+        public CollisionResult GJKResult(RigidBody m1, RigidBody m2)
         {
-            List<vec3> simplex = new List<vec3> { SumSupport(m1, m2, vec3.UnitY) };
-            vec3 Direction = -simplex[0];
+            List<SupportPoint> simplex = new List<SupportPoint> { SumSupport(m1.Collision, m2.Collision, vec3.UnitY) };
+            vec3 Direction = -simplex[0].Sup;
 
             CollisionResult result = new CollisionResult(m1, m2, simplex);
 
             for (int i = 0; i < 1000; i++)
             {
-                vec3 P = SumSupport(m1, m2, Direction);
-                if (vec3.Dot(P.Normalized, Direction.Normalized) < 0) return result;
+                SupportPoint P = SumSupport(m1.Collision, m2.Collision, Direction);
+                if (vec3.Dot(P.Sup.Normalized, Direction.Normalized) < 0) return result;
                 simplex.Add(P);
                 if (DoSimplex(simplex)) { result.Colliding = true; return result; }
-                if (simplex.Find(x => x.Length <= Error).Length > 0 || Direction.Length <= Error) return result;
+                //if (simplex.Find(x => x.Length <= Error).Length > 0 || Direction.Length <= Error) return result;
                 Direction = GetNewDirection(simplex);
             }
 
@@ -38,19 +38,19 @@ namespace Yahtzee.Game.Physics
 
 #if DEBUG
         // Used for debugging
-        public int GJK_Step(ModelEntity m1, ModelEntity m2, List<vec3> simplex, ref vec3 Direction, ref int counter)
+        public int GJK_Step(CollisionMesh m1, CollisionMesh m2, List<SupportPoint> simplex, ref vec3 Direction, ref int counter)
         {
             if (counter == 0)
             {
                 simplex.Add(SumSupport(m1, m2, vec3.UnitY));
-                Direction = -simplex[0];
+                Direction = -simplex[0].Sup;
             }
 
-            vec3 P = SumSupport(m1, m2, Direction);
+            SupportPoint P = SumSupport(m1, m2, Direction);
 
             if (counter == 1)
                 simplex.Add(P);
-            else if (counter == 2 && vec3.Dot(P.Normalized, Direction.Normalized) < 0) return 2;
+            else if (counter == 2 && vec3.Dot(P.Sup.Normalized, Direction.Normalized) < 0) return 2;
             else if (counter == 2 && DoSimplex(simplex)) return 1;
             else if (counter == 3) Direction = GetNewDirection(simplex);
 
@@ -60,17 +60,20 @@ namespace Yahtzee.Game.Physics
         }
 #endif
 
-        public vec3 SumSupport(ModelEntity m1, ModelEntity m2, vec3 Dir)
-            => SingleSupport(m1, Dir) - SingleSupport(m2, -Dir);
+        public SupportPoint SumSupport(CollisionResult result, vec3 Dir)
+            => SumSupport(result.M1.Collision, result.M2.Collision, Dir);
 
-        public vec3 SingleSupport(ModelEntity m1, vec3 Dir)
+        public SupportPoint SumSupport(CollisionMesh m1, CollisionMesh m2, vec3 Dir)
+            => new SupportPoint(SingleSupport(m1, Dir), SingleSupport(m2, -Dir));
+
+        public vec3 SingleSupport(CollisionMesh m1, vec3 Dir)
         {
-            vec3 p = m1.Transform.Apply(m1.collision.CollisionVertices[0]);
+            vec3 p = m1.Transform.Apply(m1.CollisionVertices[0]);
             float maxDot = 0;
 
-            for (int i = 0; i < m1.collision.CollisionVertices.Length; i++)
+            for (int i = 0; i < m1.CollisionVertices.Length; i++)
             {
-                vec3 v = m1.Transform.Apply(m1.collision.CollisionVertices[i]);
+                vec3 v = m1.Transform.Apply(m1.CollisionVertices[i]);
                 float dot = vec3.Dot(Dir, v);
                 if (dot <= maxDot && i != 0) continue;
                 maxDot = dot;
@@ -80,18 +83,19 @@ namespace Yahtzee.Game.Physics
             return p;
         }
 
+
 #if DEBUG
         // Used for debugging
-        public int SingleSupportIndex(ModelEntity m1, vec3 Dir)
+        public int SingleSupportIndex(CollisionMesh m1, vec3 Dir)
         {
             int index = -1;
             float maxDot = -9999;
             float td = -9999;
             float ti = -1;
 
-            for (int i = 0; i < m1.collision.CollisionVertices.Length; i++)
+            for (int i = 0; i < m1.CollisionVertices.Length; i++)
             {
-                vec3 v = m1.Transform.Apply(m1.collision.CollisionVertices[i]);
+                vec3 v = m1.Transform.Apply(m1.CollisionVertices[i]);
                 float dot = vec3.Dot(Dir, v);
                 if (v == new vec3(0.5f, -0.5f, 0.5f)) { td = dot; ti = i; }
                 if (dot <= maxDot) continue;
@@ -104,7 +108,7 @@ namespace Yahtzee.Game.Physics
 #endif
 
 
-        private bool DoSimplex(List<vec3> simplex)
+        private bool DoSimplex(List<SupportPoint> simplex)
         {
             return simplex.Count switch
             {
@@ -115,24 +119,24 @@ namespace Yahtzee.Game.Physics
             };
         }
 
-        private vec3 GetNewDirection(List<vec3> simplex)
+        public vec3 GetNewDirection(List<SupportPoint> simplex)
         {
             switch (simplex.Count)
             {
                 case 1:
-                    return -simplex[0];
+                    return -simplex[0].Sup;
 
                 case 2:
-                    vec3 lineA = simplex[1];
-                    vec3 lineB = simplex[0];
+                    vec3 lineA = simplex[1].Sup;
+                    vec3 lineB = simplex[0].Sup;
                     vec3 lineAB = lineB - lineA;
 
                     return vec3.Cross(vec3.Cross(lineAB, -lineA), lineAB);
 
                 case 3:
-                    vec3 A = simplex[2];
-                    vec3 B = simplex[1];
-                    vec3 C = simplex[0];
+                    vec3 A = simplex[2].Sup;
+                    vec3 B = simplex[1].Sup;
+                    vec3 C = simplex[0].Sup;
                     vec3 AB = B - A;
                     vec3 AC = C - A;
                     vec3 Normal = vec3.Cross(AB, AC);
@@ -141,7 +145,7 @@ namespace Yahtzee.Game.Physics
                         return Normal;
                     else
                     {
-                        vec3 temp = simplex[0];
+                        var temp = simplex[0];
                         simplex[0] = simplex[1];
                         simplex[1] = temp;
                         return -Normal;
@@ -153,10 +157,10 @@ namespace Yahtzee.Game.Physics
             }
         }
 
-        private bool SimplexLine(List<vec3> line)
+        private bool SimplexLine(List<SupportPoint> line)
         {
-            vec3 A = line[1];
-            vec3 B = line[0];
+            vec3 A = line[1].Sup;
+            vec3 B = line[0].Sup;
 
             vec3 AB = B - A;
             vec3 BA = A - B;
@@ -176,11 +180,11 @@ namespace Yahtzee.Game.Physics
             return false;
         }
 
-        private bool SimplexTriangle(List<vec3> tri)
+        private bool SimplexTriangle(List<SupportPoint> tri)
         {
-            vec3 A = tri[2];
-            vec3 B = tri[1];
-            vec3 C = tri[0];
+            vec3 A = tri[2].Sup;
+            vec3 B = tri[1].Sup;
+            vec3 C = tri[0].Sup;
 
             vec3 AB = B - A;
             vec3 AC = C - A;
@@ -232,12 +236,12 @@ namespace Yahtzee.Game.Physics
             return false;
         }
 
-        private bool SimplexTetraHedron(List<vec3> tetra)
+        private bool SimplexTetraHedron(List<SupportPoint> tetra)
         {
-            vec3 A = tetra[3];
-            vec3 B = tetra[2];
-            vec3 C = tetra[1];
-            vec3 D = tetra[0];
+            vec3 A = tetra[3].Sup;
+            vec3 B = tetra[2].Sup;
+            vec3 C = tetra[1].Sup;
+            vec3 D = tetra[0].Sup;
 
             vec3 AB = B - A;
             vec3 AC = C - A;

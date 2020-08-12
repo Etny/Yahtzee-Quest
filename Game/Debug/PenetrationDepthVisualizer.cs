@@ -22,7 +22,8 @@ namespace Yahtzee.Game
         private readonly PhysicsManager pm;
 
         private List<Triangle> tris = new List<Triangle>();
-        private vec3 newPoint = vec3.NaN;
+        private SupportPoint newPoint = new SupportPoint(vec3.NaN, vec3.NaN);
+        private vec3 drawPoint = vec3.NaN;
         private Triangle closest = null;
 
         private List<LineMesh> TriMeshes = new List<LineMesh>();
@@ -53,27 +54,32 @@ namespace Yahtzee.Game
         {
             Console.WriteLine(messages[counter]);
 
+
             vec3 r = pm.DepthDetector.GetPenetrationDepthStep(result, ref tris, ref closest, ref newPoint, ref counter);
 
             if (r != vec3.NaN)
             {
                 Console.WriteLine("Returned: " + r);
                 TriMeshes.Clear();
+                closest = null;
                 counter = 0;
-                newPoint = vec3.NaN;
+                newPoint = new SupportPoint(vec3.NaN, vec3.NaN);
+                drawPoint = vec3.NaN;
                 return;
             }
 
+            drawPoint = newPoint.Sup;
+
             TriMeshes.ForEach(t => t.Dispose());
             TriMeshes.Clear();
-            tris.ForEach(t => TriMeshes.Add(new LineMesh(t.Points, t == closest ? triColorsClosest : triColors, t == closest ? 15 : 5)));
-            tris.ForEach(t => TriMeshes.Add(new LineMesh(new vec3[] { t.Center, t.Center + t.Normal.Normalized }, normalColors, newPoint == vec3.NaN || vec3.Dot(t.Normal, newPoint) < 0 ? 5 : 15)));
+            tris.ForEach(t => TriMeshes.Add(new LineMesh(t.Vec3Points, t == closest ? triColorsClosest : triColors, t == closest ? 15 : 5)));
+            tris.ForEach(t => TriMeshes.Add(new LineMesh(new vec3[] { t.Center, t.Center + t.Normal.Normalized }, normalColors, drawPoint == vec3.NaN || vec3.Dot(t.Normal, newPoint.Sup) < 0 ? 5 : 15)));
 
 
             if (counter == 2) 
-                newPoint = tris.Find(t => t == closest).ClosestPoint();
+                drawPoint = tris.Find(t => t == closest).ClosestPoint();
 
-            if (newPoint != vec3.NaN) pointMesh.SetPoints(new vec3[] { newPoint });
+            if (drawPoint != vec3.NaN) pointMesh.SetPoints(new vec3[] { drawPoint });
         }
         public void Draw()
         {

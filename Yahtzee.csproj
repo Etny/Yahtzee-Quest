@@ -20,6 +20,8 @@
     <None Remove="Resource\Models\Cube.obj" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vis.frag" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vis.vert" />
+    <None Remove="Resource\Shaders\Debug\Visualizer\vispoint.frag" />
+    <None Remove="Resource\Shaders\Debug\Visualizer\vispoint.vert" />
     <None Remove="Resource\Shaders\default.frag" />
     <None Remove="Resource\Shaders\default.vert" />
     <None Remove="Resource\Shaders\Lighting\lightingShader.vert" />
@@ -64,6 +66,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\Debug\Visualizer\vis.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\Debug\Visualizer\vispoint.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\Debug\Visualizer\vispoint.vert">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\Default\default.frag">

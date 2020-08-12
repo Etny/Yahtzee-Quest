@@ -7,6 +7,8 @@ namespace Yahtzee.Game
 {
     struct Transform
     {
+        public static Transform Identity = new Transform() { Translation = vec3.Zero, Rotation = quat.Identity, Scale = new vec3(1) };
+
         public vec3 Translation;
         public quat Rotation;
         public vec3 Scale;
@@ -18,6 +20,7 @@ namespace Yahtzee.Game
         public void RotateX(float angle) => Rotate(angle, vec3.UnitX);
         public void RotateY(float angle) => Rotate(angle, vec3.UnitY);
         public void RotateZ(float angle) => Rotate(angle, vec3.UnitZ);
+
 
         public vec3 Apply(vec3 v)
             => (ModelMatrix * new vec4(v, 1)).xyz;

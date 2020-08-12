@@ -7,6 +7,7 @@ using Silk.NET.OpenGL;
 using GlmSharp;
 using Yahtzee.Render.Textures;
 using Yahtzee.Game;
+using Yahtzee.Game.Physics;
 
 namespace Yahtzee.Render
 {
@@ -30,7 +31,7 @@ namespace Yahtzee.Render
             else loadCollisionModel("Resource/Models/" + filePath, proccessCollisionMesh);
         }
 
-        public static CollisionMesh LoadCollisionMesh(string filePath, ModelEntity parent)
+        public static CollisionMesh LoadCollisionMesh(string filePath, Entity parent)
         {
             var mesh = (CollisionMesh)new Model(filePath, true).Meshes[0];
             mesh.Parent = parent;

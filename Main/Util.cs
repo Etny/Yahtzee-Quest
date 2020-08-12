@@ -10,7 +10,7 @@ using Yahtzee.Render;
 
 namespace Yahtzee.Main
 {
-    class Util
+    static class Util
     {
 
         public static float ToRad(float deg)
@@ -28,5 +28,9 @@ namespace Yahtzee.Main
         public static void GLClear()
             => GL.GetApi().Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit));
     
+        public static void ClearFramebuffer(this GL gl)
+            => gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit));
+
+
     }
 }

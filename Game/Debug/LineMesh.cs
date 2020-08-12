@@ -10,7 +10,7 @@ namespace Yahtzee.Game.Debug
     unsafe class LineMesh : Mesh
     {
 
-        private Shader shader;
+        private Shader shader, shaderPoint;
 
         private int MaxPoints = 4;
 
@@ -27,6 +27,7 @@ namespace Yahtzee.Game.Debug
             LineWidth = lineWidth;
 
             shader = new Shader("Debug/Visualizer/vis");
+            shaderPoint = new Shader("Debug/Visualizer/vispoint");
 
             setupMesh();
 
@@ -83,7 +84,7 @@ namespace Yahtzee.Game.Debug
             gl.PointSize(LineWidth * 4);
 
             gl.BindVertexArray(VAO);
-            if(Points.Length == 1) gl.DrawArrays(PrimitiveType.Points, 0, 1);
+            if (Points.Length == 1) { shaderPoint.Use(); gl.DrawArrays(PrimitiveType.Points, 0, 1); }
             else gl.DrawArrays(PrimitiveType.LineLoop, 0, (uint)Points.Length);
 
             gl.Enable(EnableCap.CullFace);

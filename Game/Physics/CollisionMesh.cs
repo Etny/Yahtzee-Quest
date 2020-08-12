@@ -5,8 +5,9 @@ using System.Diagnostics;
 using System.Drawing;
 using Yahtzee.Game;
 using Yahtzee.Main;
+using Yahtzee.Render;
 
-namespace Yahtzee.Render
+namespace Yahtzee.Game.Physics
 {
     class CollisionMesh : Mesh
     {
@@ -16,7 +17,8 @@ namespace Yahtzee.Render
         public int highlight = -1;
 
         private Shader shader;
-        public ModelEntity Parent;
+        public Entity Parent = null;
+        public Transform Transform { get { return Parent == null ? Transform.Identity : Parent.Transform; } }
 
         public bool Overlapping = false;
 
@@ -93,7 +95,7 @@ namespace Yahtzee.Render
 
         public void UpdateHighlight(vec3 dir)
         {
-            highlight = Program.PhysicsManager.Collisions.SingleSupportIndex(Parent, dir);
+            highlight = Program.PhysicsManager.Collisions.SingleSupportIndex(this, dir);
         }
 
         public RectangleF GetRectangle()
@@ -103,11 +105,6 @@ namespace Yahtzee.Render
                                   t.Translation.y - (t.Scale.y / 2),
                                   t.Scale.x,
                                   t.Scale.y);
-        }
-
-        public void CheckCollision(CollisionMesh mesh)
-        { 
-            Overlapping = Program.PhysicsManager.Collisions.GJK(Parent, mesh.Parent);
         }
     }
 }

@@ -68,6 +68,7 @@ namespace Yahtzee.Main
         {
             gl.Enable(EnableCap.CullFace);
             gl.Enable(EnableCap.DepthTest);
+            gl.Enable(EnableCap.ProgramPointSize);
         }
 
     }
