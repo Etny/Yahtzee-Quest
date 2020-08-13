@@ -144,6 +144,8 @@ namespace Yahtzee.Main
         public readonly double Delta;
         public readonly double Total;
 
+        public float DeltaF { get { return (float)Delta; } }
+
         public Time(double delta, double total) { Delta = delta; Total = total; }
     }
 }

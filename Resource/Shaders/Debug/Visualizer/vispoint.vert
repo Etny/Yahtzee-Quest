@@ -17,5 +17,5 @@ void main()
 	gl_Position = projection * view * vec4(aPos, 1.0);
 	color = aColor;
 
-	gl_PointSize = pointSize * (1 - min(gl_Position.z, 0.7));
+	gl_PointSize = pointSize * max(1 - gl_Position.z, 0.2);
 }

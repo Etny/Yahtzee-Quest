@@ -28,7 +28,7 @@ namespace Yahtzee.Game.Physics
             this.Indices = indices;
             this.Parent = parent;
 
-            this.shader = new Shader("Debug/Line/line");
+            this.shader = ShaderRepository.GetShader("Debug/Line/line");
 
             List<vec3> temp = new List<vec3>();
 

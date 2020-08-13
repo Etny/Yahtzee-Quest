@@ -26,8 +26,8 @@ namespace Yahtzee.Game.Debug
 
             LineWidth = lineWidth;
 
-            shader = new Shader("Debug/Visualizer/vis");
-            shaderPoint = new Shader("Debug/Visualizer/vispoint");
+            shader = ShaderRepository.GetShader("Debug/Visualizer/vis");
+            shaderPoint = ShaderRepository.GetShader("Debug/Visualizer/vispoint");
 
             setupMesh();
 

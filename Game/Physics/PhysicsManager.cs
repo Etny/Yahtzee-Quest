@@ -11,6 +11,7 @@ using SixLabors.Primitives;
 using Yahtzee.Game.Physics;
 using Silk.NET.Vulkan;
 using System.Collections.Immutable;
+using Microsoft.Extensions.DependencyModel;
 
 namespace Yahtzee.Game
 {
@@ -71,8 +72,10 @@ namespace Yahtzee.Game
                     else 
                         result = Collisions.GJKResult(body2, body1);
 
+
                     if (result.Colliding == true)
                     {
+                        vec3 penDepth = DepthDetector.GetPenetrationDepth(result);
                         body1.Collision.Overlapping = true;
                         body2.Collision.Overlapping = true;
                         constraintsToSolve.Add(result);

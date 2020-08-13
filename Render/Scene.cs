@@ -47,13 +47,13 @@ namespace Yahtzee.Render
 
             Program.Window.OnButton += OnButton;
 
-            defaultShader = new Shader("Default/default");
+            defaultShader = ShaderRepository.GetShader("Default/default");
             defaultShader.SetFloat("material.shininess", 32.0f);
             defaultShader.SetFloat("lightNearPlane", near);
             defaultShader.SetFloat("lightFarPlane", far);
 
-            lightingShaderOrtho = new Shader("Lighting/lightingShader", "Lighting/lightingShaderOrtho");
-            lightingShaderPersp = new Shader("Lighting/lightingShader", "Lighting/lightingShaderPersp");
+            lightingShaderOrtho = ShaderRepository.GetShader("Lighting/lightingShader", "Lighting/lightingShaderOrtho");
+            lightingShaderPersp = ShaderRepository.GetShader("Lighting/lightingShader", "Lighting/lightingShaderPersp");
             lightingShaderPersp.SetFloat("farPlane", far);
 
             renderFrameBuffer = new FrameBuffer(windowWidth, windowHeight);
@@ -86,8 +86,14 @@ namespace Yahtzee.Render
 
             PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
 
+            //Backpack.Transform.Rotation = new quat(-0.050921164f, 0, 0, 0.9987677f);
+            //e.Transform.Rotation = new quat(-0.050921164f, 0, 0, 0.9987677f);
+
             //Backpack.Transform.RotateX(Util.ToRad(45));
             //Backpack.Transform.RotateZ(Util.ToRad(45));
+
+            //e.RigidBody.Impulse(new vec3(0, -30f, 0), new vec3(0, .5f, -.5f));
+            //Backpack.RigidBody.Impulse(new vec3(0, -30f, 0), new vec3(-.5f, .5f, 0));
         }
 
         public Texture Render()
@@ -191,7 +197,7 @@ namespace Yahtzee.Render
             else if (key == Keys.C && action == InputAction.Press)
             {
                 if (ContactPointVisualizer == null)
-                    ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
+                    ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager.Collisions.GJKResult(e.RigidBody, Backpack.RigidBody), Program.PhysicsManager);
                 else
                     ContactPointVisualizer.result = Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody);
 
@@ -200,7 +206,7 @@ namespace Yahtzee.Render
             else if(key == Keys.Apostrophe && action == InputAction.Press)
             {
                 if (PenetrationDepthVisualizer == null)
-                    PenetrationDepthVisualizer = new PenetrationDepthVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
+                    PenetrationDepthVisualizer = new PenetrationDepthVisualizer(Program.PhysicsManager.Collisions.GJKResult(e.RigidBody, Backpack.RigidBody), Program.PhysicsManager);
 
                 PenetrationDepthVisualizer.UpdateDepthTest();
             }

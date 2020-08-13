@@ -38,7 +38,7 @@ namespace Yahtzee.Render
             texture2 = new Texture((uint)windowSize.Width, (uint)windowSize.Height);
             postProBuffer = new FrameBuffer();
 
-            defaultShader = new Shader("PostProcess/postPro", "PostProcess/postProDefault");
+            defaultShader = ShaderRepository.GetShader("PostProcess/postPro", "PostProcess/postProDefault");
             defaultShader.SetInt("screen", 0);
         }
 
@@ -87,7 +87,7 @@ namespace Yahtzee.Render
 
         public Shader AddPostProcessShader(string fragmentPath)
         {
-            Shader shader = new Shader("PostProcess/postPro", "PostProcess/" + fragmentPath);
+            Shader shader = ShaderRepository.GetShader("PostProcess/postPro", "PostProcess/" + fragmentPath);
             shader.SetInt("screen", 0);
             postProcessShaders.Add(shader);
             return shader;
