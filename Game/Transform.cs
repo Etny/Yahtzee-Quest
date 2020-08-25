@@ -13,10 +13,11 @@ namespace Yahtzee.Game
         public quat Rotation;
         public vec3 Scale;
 
-        public mat4 ModelMatrix { get { return mat4.Translate(Translation) * Rotation.ToMat4 * mat4.Scale(Scale); } }
+        public mat4 ModelMatrix { get { return mat4.Translate(Translation) * Rotation.ToMat4 * mat4.Scale(Scale);} }
 
         public void Rotate(float angle, vec3 axis) => Rotation = Rotation.Rotated(angle, axis);
 
+        public void Rotate(float angleX, float angleY, float angleZ) { RotateX(angleX); RotateY(angleY); RotateZ(angleZ); }
         public void RotateX(float angle) => Rotate(angle, vec3.UnitX);
         public void RotateY(float angle) => Rotate(angle, vec3.UnitY);
         public void RotateZ(float angle) => Rotate(angle, vec3.UnitZ);

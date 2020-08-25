@@ -22,6 +22,7 @@ namespace Yahtzee.Game
         private readonly PhysicsManager pm;
 
         private List<Triangle> tris = new List<Triangle>();
+        private List<vec3> removed = new List<vec3>();
         private SupportPoint newPoint = new SupportPoint(vec3.NaN, vec3.NaN);
         private vec3 drawPoint = vec3.NaN;
         private Triangle closest = null;
@@ -55,12 +56,13 @@ namespace Yahtzee.Game
             Console.WriteLine(messages[counter]);
 
 
-            vec3 r = pm.DepthDetector.GetPenetrationDepthStep(result, ref tris, ref closest, ref newPoint, ref counter);
+            vec3 r = pm.DepthDetector.GetPenetrationDepthStep(result, ref tris, ref removed, ref closest, ref newPoint, ref counter);
 
             if (r != vec3.NaN)
             {
                 Console.WriteLine("Returned: " + r);
                 TriMeshes.Clear();
+                removed.Clear();
                 closest = null;
                 counter = 0;
                 newPoint = new SupportPoint(vec3.NaN, vec3.NaN);

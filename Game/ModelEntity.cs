@@ -14,7 +14,6 @@ namespace Yahtzee.Game
         public Model Model;
 
         public RigidBody RigidBody { get { return ((MovementControllerRigidBody)MovementController).RigidBody; } }
-        public CollisionMesh Collision { get { return ((MovementControllerRigidBody)MovementController).Collision; } }
         public ModelEntity(string modelPath) : base() { Model = new Model(modelPath); MovementController = new MovementControllerRigidBody(this); }
 
         public override void Draw(Shader shader)
@@ -27,6 +26,10 @@ namespace Yahtzee.Game
         public override void Update(Time deltaTime)
         {
             base.Update(deltaTime);
+            return;
+            RigidBody.Collision.Overlapping = false;
+            foreach (var r in Program.PhysicsManager.GetPhysicsBodies())
+                if (r != RigidBody && Program.PhysicsManager.Collisions.GJK(RigidBody, r)) RigidBody.Collision.Overlapping = true; 
         }
     }
 }

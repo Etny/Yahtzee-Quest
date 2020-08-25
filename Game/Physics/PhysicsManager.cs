@@ -22,6 +22,8 @@ namespace Yahtzee.Game
 
         private ImmutableList<RigidBody> Bodies;
 
+        private static int maxIterations = 10;
+
         public PhysicsManager()
         {
             Collisions = new CollisionDetector();
@@ -59,6 +61,7 @@ namespace Yahtzee.Game
             for (int i = 0; i < Bodies.Count-1; i++)
             {
                 RigidBody body1 = Bodies[i];
+                //break;
 
                 for(int j = i + 1; j < Bodies.Count; j++)
                 {
@@ -75,7 +78,9 @@ namespace Yahtzee.Game
 
                     if (result.Colliding == true)
                     {
-                        vec3 penDepth = DepthDetector.GetPenetrationDepth(result);
+                        //vec3 penDepth = DepthDetector.GetPenetrationDepth(result);
+                        //Console.WriteLine(body1.Transform.Translation + " and " + body2.Transform.Translation);
+
                         body1.Collision.Overlapping = true;
                         body2.Collision.Overlapping = true;
                         constraintsToSolve.Add(result);
@@ -84,8 +89,72 @@ namespace Yahtzee.Game
             }
 
             //TODO: Solve Constraints
+            float[] ReactionMagnitude = new float[constraintsToSolve.Count];
+            float[] d = new float[constraintsToSolve.Count];
+            float[] n = new float[constraintsToSolve.Count];
+            vec3[,] b = new vec3[Bodies.Count,2];
+
+
+            for (int i = 0; i < constraintsToSolve.Count; i++)
+            {
+                ReactionMagnitude[i] = 1;
+                var con = constraintsToSolve[i];
+                var jac = con.Jacobian;
+
+                //LengthSqr = Dot(v, v)
+                d[i] = jac[0, 0].LengthSqr + jac[0, 1].LengthSqr + jac[1, 0].LengthSqr + jac[1, 1].LengthSqr;
+
+                n[i] = con.GetEta(deltaTime);
+
+                b[con.M1.Index.Value, 0] += jac[0, 0];
+                b[con.M1.Index.Value, 1] += jac[0, 1];
+
+                b[con.M2.Index.Value, 0] += jac[1, 0];
+                b[con.M2.Index.Value, 1] += jac[1, 1];
+            }
+
+
+
+            for (int iter = 0; iter < maxIterations; iter++)
+            {
+                for(int i = 0; i < constraintsToSolve.Count; i++)
+                {
+                    var con = constraintsToSolve[i];
+                    vec3[,] Jacobian = con.Jacobian;
+                    int i1 = con.M1.Index.Value, i2 = con.M2.Index.Value;
+
+                    float deltaMag = (n[i] - (vec3.Dot(Jacobian[0,0], b[i1,0]) + vec3.Dot(Jacobian[0, 1], b[i1, 1]))
+                                        - (vec3.Dot(Jacobian[1, 0], b[i2, 0]) + vec3.Dot(Jacobian[1, 1], b[i2, 1]))) / d[i];
+
+                    var oldMag = ReactionMagnitude[i];
+                    ReactionMagnitude[i] = Math.Max(0f, oldMag + deltaMag);
+                    deltaMag = ReactionMagnitude[i] - oldMag;
+
+                    b[i1, 0] += deltaMag * Jacobian[0, 0];
+                    b[i1, 1] += deltaMag * Jacobian[0, 1];
+                    b[i2, 0] += deltaMag * Jacobian[1, 0];
+                    b[i2, 1] += deltaMag * Jacobian[1, 1];
+                }
+            }
+
+            for(int i = 0; i < constraintsToSolve.Count; i++)
+            {
+                var constraint = constraintsToSolve[i];
+                vec3[,] Jacobian = constraint.Jacobian;
+                var Magnitude = ReactionMagnitude[i];
+
+                Console.WriteLine(Magnitude);
+
+                constraint.M1.ForcesInternal += Jacobian[0, 0] * Magnitude;
+                constraint.M1.TorqueInternal += Jacobian[0, 1] * Magnitude;
+
+                if (constraint.M2.Static) continue;
+                constraint.M2.ForcesInternal += Jacobian[1, 0] * Magnitude;
+                constraint.M2.TorqueInternal += Jacobian[1, 1] * Magnitude;
+            }
 
             Bodies.ForEach(b => b.ApplyFinalForces(deltaTime));
         }
+
     }
 }

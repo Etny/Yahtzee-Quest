@@ -78,15 +78,17 @@ namespace Yahtzee.Render
             //testPointLight.SetShadowsEnabled(true);
             //Lights.Add(testPointLight);
         
-            e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3, 0) };
-            e.Transform.Scale = new vec3(10, 0.1f, 10);
+            e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -7, 0) };
+            e.Transform.Scale = new vec3(10, 2f, 10);
+            e.RigidBody.Static = true;
             Entities.Add(e);
-            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(3f, -2.6f, 3f)};
+            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, 3, 4)};
             Entities.Add(Backpack);
 
             PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
 
-            //Backpack.Transform.Rotation = new quat(-0.050921164f, 0, 0, 0.9987677f);
+            //Backpack.Transform.Translation = new vec3(4.4344954f, -2.4530697f, 3.912924f);
+            //Backpack.Transform.Rotation = new quat(-0.00012831406f, -0.07105909f, -0.00027409612f, 0.9974806f);
             //e.Transform.Rotation = new quat(-0.050921164f, 0, 0, 0.9987677f);
 
             //Backpack.Transform.RotateX(Util.ToRad(45));
@@ -197,7 +199,7 @@ namespace Yahtzee.Render
             else if (key == Keys.C && action == InputAction.Press)
             {
                 if (ContactPointVisualizer == null)
-                    ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager.Collisions.GJKResult(e.RigidBody, Backpack.RigidBody), Program.PhysicsManager);
+                    ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
                 else
                     ContactPointVisualizer.result = Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody);
 
@@ -206,7 +208,7 @@ namespace Yahtzee.Render
             else if(key == Keys.Apostrophe && action == InputAction.Press)
             {
                 if (PenetrationDepthVisualizer == null)
-                    PenetrationDepthVisualizer = new PenetrationDepthVisualizer(Program.PhysicsManager.Collisions.GJKResult(e.RigidBody, Backpack.RigidBody), Program.PhysicsManager);
+                    PenetrationDepthVisualizer = new PenetrationDepthVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
 
                 PenetrationDepthVisualizer.UpdateDepthTest();
             }

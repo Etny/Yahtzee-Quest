@@ -16,7 +16,7 @@ namespace Yahtzee.Game.Physics
     {
         private PhysicsManager _pm;
 
-        private static float Error = 1E-5f;
+        private static float Error = .00001f;
 
         public PenetrationDepthDetector(PhysicsManager physicsManager)
         {
@@ -36,7 +36,11 @@ namespace Yahtzee.Game.Physics
         {
             if (!result.Colliding) return vec3.NaN;
 
-            var info = GetPenetrationInfo(result);
+            return Contact(GetPenetrationInfo(result));
+        }
+
+        public vec3 Contact((Triangle, vec3) info)
+        {
             var tri = info.Item1;
             var depth = info.Item2;
 
@@ -47,9 +51,27 @@ namespace Yahtzee.Game.Physics
                  + tri.Points[2].A * barycentric.z;
         }
 
+        public (vec3,vec3) ContactDouble((Triangle, vec3) info)
+        {
+            var tri = info.Item1;
+            var depth = info.Item2;
+
+            vec3 barycentric = tri.ProjectOrigin(depth);
+
+            return (tri.Points[0].A * barycentric.x
+                  + tri.Points[1].A * barycentric.y
+                  + tri.Points[2].A * barycentric.z,
+
+                    tri.Points[0].B * barycentric.x
+                  + tri.Points[1].B * barycentric.y
+                  + tri.Points[2].B * barycentric.z);
+        }
+
         public (Triangle, vec3) GetPenetrationInfo(CollisionResult result)
         {
             if (!result.Colliding) return (null, vec3.Zero);
+
+            var removed = new List<vec3>();
 
             List<Triangle> tris = new List<Triangle>
             {
@@ -82,6 +104,10 @@ namespace Yahtzee.Game.Physics
                 if(closestTri.OnSupportPlane(newPoint.Sup))
                     return (closestTri, closestTri.ClosestPoint());
 
+                //Return the current closest triangle if we're stuck in an oscillating loop
+                if (removed.Contains(newPoint.Sup))
+                    return (closestTri, closestTri.ClosestPoint());
+
                 //Return the new point if the distance delta gets bellow a small error
                 if (newPoint.Sup.Length - closestTri.ClosestPoint().Length <= Error)
                     return (closestTri, newPoint.Sup); 
@@ -93,6 +119,7 @@ namespace Yahtzee.Game.Physics
                 {
                     //Remove all those triangles
                     tris.Remove(t);
+                    removed.AddRange(t.Vec3Points);
 
                     //Construct a new triangle {A, B, newPoint} for each edge AB of
                     //the tri that is unique among the triangles facing the new point
@@ -106,7 +133,9 @@ namespace Yahtzee.Game.Physics
                                                             tOther.Vec3Points.Contains(A.Sup) && 
                                                             tOther.Vec3Points.Contains(B.Sup) )) continue;
 
-                        tris.Add(new Triangle(A, B, newPoint));
+                        Triangle newTri = new Triangle(A, B, newPoint);
+                        foreach (vec3 p in newTri.Vec3Points) removed.Remove(p);
+                        tris.Add(newTri);
                     }
                 }
 
@@ -122,7 +151,7 @@ namespace Yahtzee.Game.Physics
 
 #if DEBUG
             //Used for debugging
-        public vec3 GetPenetrationDepthStep(CollisionResult result, ref List<Triangle> tris, ref Triangle closestTri, ref SupportPoint newPoint, ref int counter)
+        public vec3 GetPenetrationDepthStep(CollisionResult result, ref List<Triangle> tris, ref List<vec3> removed, ref Triangle closestTri, ref SupportPoint newPoint, ref int counter)
         {
             //if (!result.Colliding) return vec3.Zero;
 
@@ -159,6 +188,8 @@ namespace Yahtzee.Game.Physics
             {
                 newPoint = _pm.Collisions.SumSupport(result.M1.Collision, result.M2.Collision,
                     closestTri.ClosestPoint().LengthSqr < Error ? closestTri.Normal : closestTri.Normal);
+
+                if (removed.Contains(newPoint.Sup)) return closestTri.ClosestPoint();
             }
             else if (counter == 3)
             {
@@ -169,14 +200,16 @@ namespace Yahtzee.Game.Physics
                     return closestTri.ClosestPoint();
                 }
 
+
                 
                 var tempPoint = newPoint;
-                List<Triangle> facingNewPoint = tris.FindAll(t => vec3.Dot(t.Normal, tempPoint.Sup) > 0);
+                List<Triangle> facingNewPoint = tris.FindAll(t => vec3.Dot(t.Normal, tempPoint.Sup) >= 0);
 
                 foreach (Triangle t in facingNewPoint)
                 {
                     //Remove all those triangles
                     tris.Remove(t);
+                    removed.AddRange(t.Vec3Points);
 
                     //Construct a new triangle {A, B, newPoint} for each edge AB of
                     //the tri that is unique among the triangles facing the new point
@@ -191,6 +224,7 @@ namespace Yahtzee.Game.Physics
                                                             tOther.Vec3Points.Contains(B.Sup))) continue;
 
                         var newTri = new Triangle(A, B, newPoint);
+                        foreach (vec3 p in newTri.Vec3Points) removed.Remove(p);
                         //if (newTri.OnSupportPlane(newPoint.Sup)) return newTri.ClosestPoint();
                         tris.Add(newTri);
                     }
@@ -269,7 +303,7 @@ namespace Yahtzee.Game.Physics
             }
 
             public bool OnSupportPlane(vec3 newPoint)
-                => Vec3Points.Contains(newPoint) || Array.TrueForAll(Points, p => Math.Abs(vec3.Dot(Normal, newPoint - p.Sup)) <= Error);
+                => Vec3Points.Contains(newPoint) || Array.TrueForAll(Points, p => Math.Abs(vec3.Dot(Normal, (newPoint - p.Sup).Normalized)) <= Error);
 
             public bool OnSupportPlane(CollisionResult result, CollisionDetector coll)
                 => OnSupportPlane(coll.SumSupport(result, ClosestPoint()).Sup);

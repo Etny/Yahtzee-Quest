@@ -64,7 +64,6 @@ namespace Yahtzee.Game
                 Simplex.Clear();
                 counter = 0;
                 Console.WriteLine(r == 1 ? "Collision!" : "Failed!");
-                c1.Overlapping = (r == 1);
             }
         }
         public void Draw()
