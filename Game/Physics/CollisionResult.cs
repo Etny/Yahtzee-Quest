@@ -5,6 +5,7 @@ using System.Text;
 using GlmSharp;
 using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using Yahtzee.Main;
+using db = System.Diagnostics.Debug;
 
 namespace Yahtzee.Game.Physics
 {
@@ -48,15 +49,24 @@ namespace Yahtzee.Game.Physics
             vec3 x1 = M1.Transform.Translation, x2 = M2.Transform.Translation;
             vec3 r1 = _contact.Item1 - x1, r2 = _contact.Item2 - x2;
 
+            //_normal = new vec3(0, -1, 0);
+            //_normal = (x2 - x1).NormalizedSafe;
+            //Console.WriteLine(_normal);
             _error = vec3.Dot(x2 + r2 - x1 - r1, _normal);
 
+            db.Assert(!Colliding || _error <= 0);
+            //if (_error > 0) _error = 0;
+
             //Console.WriteLine(_contact.Item1 + " || " + _contact.Item2 + " || " + (_contact.Item1 + _penvec));
-            Console.WriteLine(_error);
+            //Console.WriteLine(_error);
 
             _jacobian[0, 0] = -_normal;
             _jacobian[0, 1] = -vec3.Cross(r1, _normal);
             _jacobian[1, 0] = _normal;
             _jacobian[1, 1] = vec3.Cross(r2, _normal);
+
+
+            db.Assert(_jacobian[0, 0].Length > 0);
         }
 
         public float GetEta(Time deltaTime)
@@ -70,11 +80,12 @@ namespace Yahtzee.Game.Physics
             //Console.WriteLine("--------------");
 
             var d = 1 / deltaTime.DeltaF;
-            var df = deltaTime.DeltaF;
+            var df = 1; // deltaTime.DeltaF;
             vec3[,] V = new vec3[,] { { (d * M1.Velocity) + (df * M1.ForcesExternal), (d * M1.AngularVelocity) + (df * M1.TorqueExternal)},
                                       { (d * M2.Velocity) + (df * M2.ForcesExternal), (d * M2.AngularVelocity) + (df * M2.TorqueExternal)}};
 
-            float result = d * (-d * _error);
+            float result = d * (-(.3f / deltaTime.DeltaF) * _error);
+            //result = d * _penvec.Length;
 
             for (int i = 0; i < 2; i++)
                 for (int j = 0; j < 2; j++)
@@ -87,11 +98,13 @@ namespace Yahtzee.Game.Physics
         {
             if (!Colliding) return;
 
-            var info = Program.PhysicsManager.DepthDetector.GetPenetrationInfo(this);
+            var info = Program.PhysicsManager.DepthDetector.NewEPA(this);
 
-            _normal = info.Item2.Normalized;
-            _penvec = info.Item2;
+            _normal = info.Item1.Normal;
+            //_penvec = info.Item2;
             _contact = Program.PhysicsManager.DepthDetector.ContactDouble(info);
+
+            db.Assert(_normal != vec3.NaN);
         }
     }
 }

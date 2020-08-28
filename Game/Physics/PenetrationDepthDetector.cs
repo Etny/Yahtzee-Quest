@@ -3,12 +3,16 @@ using Silk.NET.OpenGL;
 using SixLabors.Primitives;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Yahtzee.Main;
+using db = System.Diagnostics.Debug;
+
 
 namespace Yahtzee.Game.Physics
 {
@@ -42,7 +46,7 @@ namespace Yahtzee.Game.Physics
         public vec3 Contact((Triangle, vec3) info)
         {
             var tri = info.Item1;
-            var depth = info.Item2;
+            var depth = info.Item1.ClosestPoint();
 
             vec3 barycentric = tri.ProjectOrigin(depth);
 
@@ -54,7 +58,7 @@ namespace Yahtzee.Game.Physics
         public (vec3,vec3) ContactDouble((Triangle, vec3) info)
         {
             var tri = info.Item1;
-            var depth = info.Item2;
+            var depth = info.Item1.ClosestPoint();
 
             vec3 barycentric = tri.ProjectOrigin(depth);
 
@@ -67,7 +71,67 @@ namespace Yahtzee.Game.Physics
                   + tri.Points[2].B * barycentric.z);
         }
 
-        public (Triangle, vec3) GetPenetrationInfo(CollisionResult result)
+
+        public (Triangle, vec3) NewEPA(CollisionResult result)
+        {
+            if (!result.Colliding) return (null, vec3.NaN);
+
+            vec3 center = result.Simplex[0].Sup / 4 + result.Simplex[1].Sup / 4 + result.Simplex[2].Sup / 4 + result.Simplex[3].Sup / 4;
+
+            List<Triangle> tris = new List<Triangle>
+            {
+                new Triangle(result.Simplex, 0, 1, 2, center),
+                new Triangle(result.Simplex, 0, 1, 3, center),
+                new Triangle(result.Simplex, 0, 2, 3, center),
+                new Triangle(result.Simplex, 1, 2, 3, center)
+            };
+
+            db.Assert(result.M1.Transform.Translation != vec3.NaN);
+            db.Assert(result.M2.Transform.Translation != vec3.NaN);
+
+            for (int i = 0; i < 999; i++)
+            {
+                Triangle closestTri = null;
+
+                foreach (var t in tris)
+                    if (closestTri == null || t.DistToOrigin() < closestTri.DistToOrigin())
+                        closestTri = t;
+
+                db.Assert(closestTri != null);
+
+                var newPoint = _pm.Collisions.SumSupport(result, closestTri.Normal);
+
+                if (closestTri.OnSupportPlane(newPoint.Sup))
+                    return (closestTri, newPoint.Sup);
+
+                var trisToRemove = tris.FindAll(t => vec3.Dot(t.Normal, newPoint.Sup - t.Vec3Points[0]) > 0);
+
+                foreach (var t in trisToRemove)
+                {
+                    tris.Remove(t);
+
+                    for (int j = 0; j < 3; j++)
+                    {
+                        var A = t.Points[j];
+                        var B = t.Points[(j + 1) % 3];
+
+
+                        if (trisToRemove.Exists(tOther => tOther != t &&
+                                                            tOther.Vec3Points.Contains(A.Sup) &&
+                                                            tOther.Vec3Points.Contains(B.Sup))) continue;
+
+                        Triangle newTri = new Triangle(A, B, newPoint, center);
+                        tris.Add(newTri);
+                    }
+                }
+            }
+
+            db.Assert(false);
+
+            return (null, vec3.NaN);
+        }
+
+        private (Triangle, vec3) GetPenetrationInfo(CollisionResult result)
         {
             if (!result.Colliding) return (null, vec3.Zero);
 
@@ -81,9 +145,13 @@ namespace Yahtzee.Game.Physics
                 new Triangle(result.Simplex, 1, 2, 3)
             };
 
+            db.Assert(result.M1.Transform.Translation != vec3.NaN);
+            db.Assert(result.M2.Transform.Translation != vec3.NaN);
+
+
             //Check if we're making touching contact and return early if we are
             foreach (Triangle t in tris)
-                if (t.DistToOrigin() <= Error && t.IsClosestPointOnTriangle())
+                if (t.DistToOrigin() <= Error && t.ClosestPoint() != vec3.NaN && t.IsClosestPointOnTriangle())
                     return (t, t.ClosestPoint());
 
             for (int i = 0; i < 999; i++)
@@ -157,62 +225,43 @@ namespace Yahtzee.Game.Physics
 
             if (counter == 0)
             {
+
+                vec3 center = result.Simplex[0].Sup / 4 + result.Simplex[1].Sup / 4 + result.Simplex[2].Sup / 4 + result.Simplex[3].Sup / 4;
+
                 tris = new List<Triangle>
                 {
-                    new Triangle(result.Simplex, 0, 1, 2),
-                    new Triangle(result.Simplex, 0, 1, 3),
-                    new Triangle(result.Simplex, 0, 2, 3),
-                    new Triangle(result.Simplex, 1, 2, 3)
+                    new Triangle(result.Simplex, 0, 1, 2, center),
+                    new Triangle(result.Simplex, 0, 1, 3, center),
+                    new Triangle(result.Simplex, 0, 2, 3, center),
+                    new Triangle(result.Simplex, 1, 2, 3, center)
                 };
 
-                foreach (Triangle t in tris)
-                    if (t.DistToOrigin() <= Error && t.IsClosestPointOnTriangle())
-                        return t.ClosestPoint();
             }
             else if (counter == 1)
-            {
-                tris = tris.FindAll(t => t.ClosestPoint() != vec3.NaN);
-                
+            {   
                 closestTri = null;
 
-                List<Triangle> tempTri = new List<Triangle>();
-
-                foreach (Triangle tri in tris) {
-                    if (closestTri == null || (tri.ClosestPoint().LengthSqr < closestTri.ClosestPoint().LengthSqr && tri.IsClosestPointOnTriangle()))
-                        closestTri = tri;
-                }
-
-                
+                foreach (var t in tris)
+                    if (closestTri == null || t.DistToOrigin() < closestTri.DistToOrigin())
+                        closestTri = t;
             }
             else if (counter == 2)
             {
-                newPoint = _pm.Collisions.SumSupport(result.M1.Collision, result.M2.Collision,
-                    closestTri.ClosestPoint().LengthSqr < Error ? closestTri.Normal : closestTri.Normal);
+                newPoint = _pm.Collisions.SumSupport(result, closestTri.Normal);
 
-                if (removed.Contains(newPoint.Sup)) return closestTri.ClosestPoint();
+                if (closestTri.OnSupportPlane(newPoint.Sup))
+                    return newPoint.Sup;
             }
             else if (counter == 3)
             {
-                if (newPoint.Sup.Length - closestTri.ClosestPoint().Length <= Error) return newPoint.Sup;
-
-                if (closestTri.OnSupportPlane(newPoint.Sup))
-                {
-                    return closestTri.ClosestPoint();
-                }
-
-
                 
                 var tempPoint = newPoint;
-                List<Triangle> facingNewPoint = tris.FindAll(t => vec3.Dot(t.Normal, tempPoint.Sup) >= 0);
+                List<Triangle> facingNewPoint = tris.FindAll(t => vec3.Dot(t.Normal, tempPoint.Sup - t.Vec3Points[0]) > 0);
 
                 foreach (Triangle t in facingNewPoint)
                 {
-                    //Remove all those triangles
                     tris.Remove(t);
-                    removed.AddRange(t.Vec3Points);
 
-                    //Construct a new triangle {A, B, newPoint} for each edge AB of
-                    //the tri that is unique among the triangles facing the new point
                     for (int j = 0; j < 3; j++)
                     {
                         var A = t.Points[j];
@@ -224,8 +273,6 @@ namespace Yahtzee.Game.Physics
                                                             tOther.Vec3Points.Contains(B.Sup))) continue;
 
                         var newTri = new Triangle(A, B, newPoint);
-                        foreach (vec3 p in newTri.Vec3Points) removed.Remove(p);
-                        //if (newTri.OnSupportPlane(newPoint.Sup)) return newTri.ClosestPoint();
                         tris.Add(newTri);
                     }
 
@@ -249,19 +296,24 @@ namespace Yahtzee.Game.Physics
             private vec3 barycentric = vec3.NaN;
             private float? dist = null;
 
-            public vec3 Normal { get { return vec3.Cross(Points[1].Sup - Points[0].Sup, Points[2].Sup - Points[0].Sup).Normalized; } }
+            public vec3 Normal { get { return vec3.Cross(Points[1].Sup - Points[0].Sup, Points[2].Sup - Points[0].Sup).NormalizedSafe; } }
 
             public vec3 Center { get { return Points[0].Sup / 3 + Points[1].Sup / 3 + Points[2].Sup / 3; } }
 
-            public Triangle(SupportPoint A, SupportPoint B, SupportPoint C) 
+            public Triangle(SupportPoint A, SupportPoint B, SupportPoint C, vec3 center) 
             {
                 //Ensure the normal is facing outwards
-                if(vec3.Dot(vec3.Cross(B.Sup-A.Sup, C.Sup-A.Sup), A.Sup) <= 0)
+                if(vec3.Dot(vec3.Cross(B.Sup - A.Sup, C.Sup - A.Sup), (A.Sup / 3 + B.Sup / 3 + C.Sup / 3) - center) <= 0)
                     Points = new SupportPoint[] { A, C, B };
                 else
                     Points = new SupportPoint[] { A, B, C };
             }
+
+            public Triangle(SupportPoint A, SupportPoint B, SupportPoint C) : this(A, B, C, vec3.Zero) { }
+
+            public Triangle(List<SupportPoint> list, int indexA, int indexB, int IndexC, vec3 center) : this(list[indexA], list[indexB], list[IndexC], center) { }
             public Triangle(List<SupportPoint> list, int indexA, int indexB, int IndexC) : this(list[indexA], list[indexB], list[IndexC]) { }
+
 
             ///<summary>
             ///Returns the closest point to the origin on the triangles affine hull.
@@ -303,7 +355,7 @@ namespace Yahtzee.Game.Physics
             }
 
             public bool OnSupportPlane(vec3 newPoint)
-                => Vec3Points.Contains(newPoint) || Array.TrueForAll(Points, p => Math.Abs(vec3.Dot(Normal, (newPoint - p.Sup).Normalized)) <= Error);
+                => Vec3Points.Contains(newPoint) || Array.TrueForAll(Points, p => Math.Abs(vec3.Dot(Normal, (newPoint - p.Sup).NormalizedSafe)) <= Error);
 
             public bool OnSupportPlane(CollisionResult result, CollisionDetector coll)
                 => OnSupportPlane(coll.SumSupport(result, ClosestPoint()).Sup);

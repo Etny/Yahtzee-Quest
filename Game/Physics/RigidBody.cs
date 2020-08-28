@@ -3,6 +3,7 @@ using Silk.NET.OpenGL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using Yahtzee.Main;
 using Yahtzee.Render;
@@ -35,7 +36,7 @@ namespace Yahtzee.Game.Physics
         public int? Index = null;
 
         private Transform _tempTransform;
-        
+
 
         public RigidBody(Entity parent, string collision)
         {
@@ -50,12 +51,12 @@ namespace Yahtzee.Game.Physics
         ~RigidBody() => Program.PhysicsManager.DeregisterRigidBody(this);
 
         public void Update(Time deltaTime)
-        { 
+        {
             Collision.Overlapping = false;
 
             if (Static) return;
             //Apply Gravity
-            Impulse(new vec3(0, -.981f * Mass, 0));
+            Impulse(new vec3(0, -4.81f * Mass, 0));
         }
 
         public void ApplyInitialForces(Time deltaTime)
@@ -64,8 +65,8 @@ namespace Yahtzee.Game.Physics
 
             _tempTransform = Parent.Transform;
 
-            Parent.Transform.Translation += deltaTime.DeltaF * (Velocity + (deltaTime.DeltaF * (ForcesExternal / Mass)));
-            Parent.Transform.Rotation += deltaTime.DeltaF / 2 * (Parent.Transform.Rotation * new quat(AngularVelocity + deltaTime.DeltaF * (InertiaInverse * TorqueExternal), 0));
+            Parent.Transform.Translation += deltaTime.DeltaF * (Velocity + ((deltaTime.DeltaF * ForcesExternal) / Mass));
+            Parent.Transform.Rotation += deltaTime.DeltaF / 2 * (Parent.Transform.Rotation * new quat(AngularVelocity + (InertiaInverse * (deltaTime.DeltaF * TorqueExternal)), 0));
         }
 
         public void ApplyFinalForces(Time deltaTime)
@@ -74,16 +75,20 @@ namespace Yahtzee.Game.Physics
 
             Parent.Transform = _tempTransform;
 
-            Velocity += deltaTime.DeltaF * ((ForcesExternal + ForcesInternal) / Mass);
+            Velocity += (deltaTime.DeltaF * (ForcesExternal + ForcesInternal)) / Mass;
+            //Velocity += (deltaTime.DeltaF * ForcesExternal) + ForcesInternal / Mass;
             Parent.Transform.Translation += deltaTime.DeltaF * Velocity;
 
-            AngularVelocity += deltaTime.DeltaF * (InertiaInverse * (TorqueExternal + TorqueInternal));
-            Parent.Transform.Rotation += deltaTime.DeltaF/2 * (Parent.Transform.Rotation * new quat(AngularVelocity, 0));
+            AngularVelocity += InertiaInverse * (deltaTime.DeltaF * (TorqueExternal + TorqueInternal));
+            Parent.Transform.Rotation += deltaTime.DeltaF / 2 * (Parent.Transform.Rotation * new quat(AngularVelocity, 0));
+
+            //for (int i = 0; i < 9; i++)
+            //    Console.Write(InertiaInverse[i] + (((i+1)%3 == 0) ? "\n" : ", "));
+            //Console.WriteLine("---------");
 
             //quat temp = deltaTime.DeltaF / 2 * (Parent.Transform.Rotation * new quat(AngularVelocity, 0));
             //dvec3 angles = temp.EulerAngles;
             //Parent.Transform.Rotate((float)angles.x, (float)angles.y, (float)angles.z);
-
 
             ForcesExternal = vec3.Zero;
             ForcesInternal = vec3.Zero;
@@ -91,7 +96,7 @@ namespace Yahtzee.Game.Physics
             TorqueExternal = vec3.Zero;
             TorqueInternal = vec3.Zero;
         }
-        
+
         public void Impulse(vec3 impulse)
             => Impulse(impulse, vec3.Zero);
 
@@ -103,7 +108,7 @@ namespace Yahtzee.Game.Physics
             if (Static) return;
 
             ForcesExternal += impulse;
-            TorqueExternal += vec3.Cross(point, impulse);
+            if(point != vec3.Zero) TorqueExternal += vec3.Cross(point, impulse);
         }
 
     }

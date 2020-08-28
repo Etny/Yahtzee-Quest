@@ -78,11 +78,11 @@ namespace Yahtzee.Render
             //testPointLight.SetShadowsEnabled(true);
             //Lights.Add(testPointLight);
         
-            e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -7, 0) };
-            e.Transform.Scale = new vec3(10, 2f, 10);
+            e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3f, 0) };
+            //e.Transform.Scale = new vec3(10, 2f, 10);
             e.RigidBody.Static = true;
             Entities.Add(e);
-            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, 3, 4)};
+            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(.6f, 2, 0f)};
             Entities.Add(Backpack);
 
             PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
@@ -166,6 +166,14 @@ namespace Yahtzee.Render
             vec3 LightPos = new vec3((float)Math.Cos(deltaTime.Total) * 2, 2, (float)Math.Sin(deltaTime.Total) * 2);
             //testLight.Direction = (-LightPos).Normalized;
             //testPointLight.Position = LightPos;
+
+            /*Backpack.Transform.RotateZ(deltaTime.DeltaF * Util.ToRad(45));
+            if (ContactPointVisualizer == null)
+                ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
+            else
+                ContactPointVisualizer.result = Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody);
+
+            ContactPointVisualizer.UpdateContactPoints();*/
 
             ///*if(Backpack.collision.Overlapping)*/ Backpack.Transform.RotateZ(Util.ToRad(deltaTime.Delta * 45));
         }

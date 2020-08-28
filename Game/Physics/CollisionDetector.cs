@@ -24,7 +24,7 @@ namespace Yahtzee.Game.Physics
             for (int i = 0; i < 1000; i++)
             {
                 SupportPoint P = SumSupport(m1.Collision, m2.Collision, Direction);
-                if (vec3.Dot(P.Sup.Normalized, Direction.Normalized) < 0) return result;
+                if (vec3.Dot(P.Sup.NormalizedSafe, Direction.NormalizedSafe) < 0) return result;
                 simplex.Add(P);
                 if (DoSimplex(simplex)) { result.Colliding = true; return result; }
                 //if (simplex.Find(x => x.Length <= Error).Length > 0 || Direction.Length <= Error) return result;
@@ -50,7 +50,7 @@ namespace Yahtzee.Game.Physics
 
             if (counter == 1)
                 simplex.Add(P);
-            else if (counter == 2 && vec3.Dot(P.Sup.Normalized, Direction.Normalized) < 0) return 2;
+            else if (counter == 2 && vec3.Dot(P.Sup.NormalizedSafe, Direction.NormalizedSafe) < 0) return 2;
             else if (counter == 2 && DoSimplex(simplex)) return 1;
             else if (counter == 3) Direction = GetNewDirection(simplex);
 

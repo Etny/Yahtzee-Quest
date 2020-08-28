@@ -12,6 +12,7 @@ using Yahtzee.Game.Physics;
 using Silk.NET.Vulkan;
 using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyModel;
+using db = System.Diagnostics.Debug;  
 
 namespace Yahtzee.Game
 {
@@ -22,7 +23,7 @@ namespace Yahtzee.Game
 
         private ImmutableList<RigidBody> Bodies;
 
-        private static int maxIterations = 10;
+        private static int maxIterations = 100;
 
         public PhysicsManager()
         {
@@ -56,6 +57,8 @@ namespace Yahtzee.Game
         {
             var constraintsToSolve = new List<CollisionResult>();
 
+            //return;
+
             Bodies.ForEach(b => b.ApplyInitialForces(deltaTime));
 
             for (int i = 0; i < Bodies.Count-1; i++)
@@ -78,9 +81,6 @@ namespace Yahtzee.Game
 
                     if (result.Colliding == true)
                     {
-                        //vec3 penDepth = DepthDetector.GetPenetrationDepth(result);
-                        //Console.WriteLine(body1.Transform.Translation + " and " + body2.Transform.Translation);
-
                         body1.Collision.Overlapping = true;
                         body2.Collision.Overlapping = true;
                         constraintsToSolve.Add(result);
@@ -101,10 +101,14 @@ namespace Yahtzee.Game
                 var con = constraintsToSolve[i];
                 var jac = con.Jacobian;
 
-                //LengthSqr = Dot(v, v)
+                //v.LengthSqr = Dot(v, v)
                 d[i] = jac[0, 0].LengthSqr + jac[0, 1].LengthSqr + jac[1, 0].LengthSqr + jac[1, 1].LengthSqr;
 
+                if (d[i] <= 0) d[i] = 1;
+
                 n[i] = con.GetEta(deltaTime);
+
+                //Console.WriteLine(n[i]);
 
                 b[con.M1.Index.Value, 0] += jac[0, 0];
                 b[con.M1.Index.Value, 1] += jac[0, 1];
@@ -123,12 +127,16 @@ namespace Yahtzee.Game
                     vec3[,] Jacobian = con.Jacobian;
                     int i1 = con.M1.Index.Value, i2 = con.M2.Index.Value;
 
-                    float deltaMag = (n[i] - (vec3.Dot(Jacobian[0,0], b[i1,0]) + vec3.Dot(Jacobian[0, 1], b[i1, 1]))
-                                        - (vec3.Dot(Jacobian[1, 0], b[i2, 0]) + vec3.Dot(Jacobian[1, 1], b[i2, 1]))) / d[i];
+                    float deltaMag = (n[i] - vec3.Dot(Jacobian[0, 0], b[i1, 0]) - vec3.Dot(Jacobian[0, 1], b[i1, 1])
+                                           - vec3.Dot(Jacobian[1, 0], b[i2, 0]) - vec3.Dot(Jacobian[1, 1], b[i2, 1])) / d[i];
+
+                    db.Assert(deltaMag >= 0 || deltaMag < 0);
 
                     var oldMag = ReactionMagnitude[i];
                     ReactionMagnitude[i] = Math.Max(0f, oldMag + deltaMag);
                     deltaMag = ReactionMagnitude[i] - oldMag;
+
+                    db.Assert(deltaMag >= 0 || deltaMag < 0);
 
                     b[i1, 0] += deltaMag * Jacobian[0, 0];
                     b[i1, 1] += deltaMag * Jacobian[0, 1];
@@ -143,10 +151,12 @@ namespace Yahtzee.Game
                 vec3[,] Jacobian = constraint.Jacobian;
                 var Magnitude = ReactionMagnitude[i];
 
-                Console.WriteLine(Magnitude);
+                //Console.WriteLine(Magnitude);
 
                 constraint.M1.ForcesInternal += Jacobian[0, 0] * Magnitude;
                 constraint.M1.TorqueInternal += Jacobian[0, 1] * Magnitude;
+
+                db.Assert(constraint.M1.ForcesInternal != vec3.NaN);
 
                 if (constraint.M2.Static) continue;
                 constraint.M2.ForcesInternal += Jacobian[1, 0] * Magnitude;
