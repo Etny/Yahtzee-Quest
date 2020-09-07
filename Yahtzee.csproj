@@ -30,6 +30,7 @@
     <None Remove="Resource\Shaders\Debug\Line\line.frag" />
     <None Remove="Resource\Shaders\Debug\Line\line.vert" />
     <None Remove="Resource\Shaders\PostProcess\gammaCorrect.frag" />
+    <None Remove="Resource\Shaders\PostProcess\pixelate.frag" />
     <None Remove="Resource\Shaders\PostProcess\postPro.vert" />
     <None Remove="Resource\Shaders\PostProcess\postProDefault.frag" />
   </ItemGroup>
@@ -96,6 +97,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\gammaCorrect.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\PostProcess\pixelate.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\postPro.vert">

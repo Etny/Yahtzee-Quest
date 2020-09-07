@@ -36,8 +36,6 @@ namespace Yahtzee.Render
 
         private GL gl;
 
-        bool lightingDone = false;
-
         public Scene()
         {
             gl = GL.GetApi();
@@ -68,34 +66,26 @@ namespace Yahtzee.Render
             CurrentCamera = new Camera();
             Entities.Add(CurrentCamera);
             flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRad(25), Util.ToRad(30)) { Direction = new vec3(0, -1, 1) };
-            //flashLight.SetShadowsEnabled(true);
-            Lights.Add(flashLight);
-            //testLight = new DirectionalLight(new vec3(0, -1, -1));
-            //testLight = new DirectionalLight(new vec3(0.65854764f, -0.5150382f, -0.54868096f));
-            //testLight.SetShadowsEnabled(true);
-            //Lights.Add(testLight);
-            //testPointLight = new PointLight(vec3.Zero);
-            //testPointLight.SetShadowsEnabled(true);
-            //Lights.Add(testPointLight);
+            //Lights.Add(flashLight);
+            testLight = new DirectionalLight(new vec3(.1f, -.5f, -.5f));
+            testLight.SetShadowsEnabled(true);
+            Lights.Add(testLight);
         
             e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3f, 0) };
             //e.Transform.Scale = new vec3(10, 2f, 10);
             e.RigidBody.Static = true;
             Entities.Add(e);
-            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(.6f, 2, 0f)};
+            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(.2f, -2.1f, 0f)};
             Entities.Add(Backpack);
+            //Entities.Add(new ModelEntity("Basic/Cube.obj") { Position = new vec3(.4f, 8f, 0f) });
 
             PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
 
-            //Backpack.Transform.Translation = new vec3(4.4344954f, -2.4530697f, 3.912924f);
-            //Backpack.Transform.Rotation = new quat(-0.00012831406f, -0.07105909f, -0.00027409612f, 0.9974806f);
-            //e.Transform.Rotation = new quat(-0.050921164f, 0, 0, 0.9987677f);
+            
 
-            //Backpack.Transform.RotateX(Util.ToRad(45));
-            //Backpack.Transform.RotateZ(Util.ToRad(45));
-
-            //e.RigidBody.Impulse(new vec3(0, -30f, 0), new vec3(0, .5f, -.5f));
-            //Backpack.RigidBody.Impulse(new vec3(0, -30f, 0), new vec3(-.5f, .5f, 0));
+            Backpack.Transform.RotateX(Util.ToRad(45));
+            Backpack.Transform.RotateZ(Util.ToRad(45));
+            //Backpack.Transform.RotateY(Util.ToRad(45));
         }
 
         public Texture Render()
@@ -122,9 +112,6 @@ namespace Yahtzee.Render
 
         private void LightingPass()
         {
-            /*if (lightingDone) return;
-            lightingDone = true;*/
-
             if (!Lights.Exists(x => x.ShadowsEnabled))
                 return;
 
@@ -163,7 +150,7 @@ namespace Yahtzee.Render
             flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
             //testLight.Position = new vec3(0, (float)(Math.Cos(deltaTime.Total) * 2), 1);
 
-            vec3 LightPos = new vec3((float)Math.Cos(deltaTime.Total) * 2, 2, (float)Math.Sin(deltaTime.Total) * 2);
+            //vec3 LightPos = new vec3((float)Math.Cos(deltaTime.Total) * 2, 2, (float)Math.Sin(deltaTime.Total) * 2);
             //testLight.Direction = (-LightPos).Normalized;
             //testPointLight.Position = LightPos;
 
@@ -176,6 +163,9 @@ namespace Yahtzee.Render
             ContactPointVisualizer.UpdateContactPoints();*/
 
             ///*if(Backpack.collision.Overlapping)*/ Backpack.Transform.RotateZ(Util.ToRad(deltaTime.Delta * 45));
+            ///
+            //Backpack.Transform.Translation = new vec3(0.107839f, -2.006235f, 0.3047915f);
+            //Backpack.Transform.Rotation = new quat(0.0002077843f, 0.3905348f, 0.00025733f, 0.9205882f);
         }
 
         private void RenderScene(Shader shader)

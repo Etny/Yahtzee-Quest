@@ -27,10 +27,10 @@ namespace Yahtzee.Game.Physics
         public mat3 InertiaInverse = mat3.Identity;
 
         public vec3 ForcesExternal = vec3.Zero;
-        public vec3 ForcesInternal = vec3.Zero;
+        public vec3 ForcesConstraints = vec3.Zero;
 
         public vec3 TorqueExternal = vec3.Zero;
-        public vec3 TorqueInternal = vec3.Zero;
+        public vec3 TorqueConstraints = vec3.Zero;
 
         public bool Static = false;
         public int? Index = null;
@@ -45,7 +45,7 @@ namespace Yahtzee.Game.Physics
 
             InertiaInverse = Inertia.Inverse;
 
-            //Impulse(new vec3(0, -3f * Mass, 0), new vec3(-.5f, .5f, 0));
+            //Impulse(new vec3(0, -3000f * Mass, 0), new vec3(-.5f, .5f, 0));
         }
 
         ~RigidBody() => Program.PhysicsManager.DeregisterRigidBody(this);
@@ -53,8 +53,8 @@ namespace Yahtzee.Game.Physics
         public void Update(Time deltaTime)
         {
             Collision.Overlapping = false;
-
             if (Static) return;
+
             //Apply Gravity
             Impulse(new vec3(0, -4.81f * Mass, 0));
         }
@@ -66,7 +66,8 @@ namespace Yahtzee.Game.Physics
             _tempTransform = Parent.Transform;
 
             Parent.Transform.Translation += deltaTime.DeltaF * (Velocity + ((deltaTime.DeltaF * ForcesExternal) / Mass));
-            Parent.Transform.Rotation += deltaTime.DeltaF / 2 * (Parent.Transform.Rotation * new quat(AngularVelocity + (InertiaInverse * (deltaTime.DeltaF * TorqueExternal)), 0));
+            Parent.Transform.Rotation += .5f * new quat(AngularVelocity + (InertiaInverse * (deltaTime.DeltaF * TorqueExternal)), 0) * Parent.Transform.Rotation * deltaTime.DeltaF;
+            Parent.Transform.Rotation = Parent.Transform.Rotation.NormalizedSafe;
         }
 
         public void ApplyFinalForces(Time deltaTime)
@@ -75,33 +76,25 @@ namespace Yahtzee.Game.Physics
 
             Parent.Transform = _tempTransform;
 
-            Velocity += (deltaTime.DeltaF * (ForcesExternal + ForcesInternal)) / Mass;
-            //Velocity += (deltaTime.DeltaF * ForcesExternal) + ForcesInternal / Mass;
+            Velocity += (deltaTime.DeltaF * (ForcesExternal + ForcesConstraints)) / Mass;
             Parent.Transform.Translation += deltaTime.DeltaF * Velocity;
 
-            AngularVelocity += InertiaInverse * (deltaTime.DeltaF * (TorqueExternal + TorqueInternal));
-            Parent.Transform.Rotation += deltaTime.DeltaF / 2 * (Parent.Transform.Rotation * new quat(AngularVelocity, 0));
-
-            //for (int i = 0; i < 9; i++)
-            //    Console.Write(InertiaInverse[i] + (((i+1)%3 == 0) ? "\n" : ", "));
-            //Console.WriteLine("---------");
-
-            //quat temp = deltaTime.DeltaF / 2 * (Parent.Transform.Rotation * new quat(AngularVelocity, 0));
-            //dvec3 angles = temp.EulerAngles;
-            //Parent.Transform.Rotate((float)angles.x, (float)angles.y, (float)angles.z);
+            AngularVelocity += InertiaInverse * (deltaTime.DeltaF * (TorqueExternal + TorqueConstraints));
+            Parent.Transform.Rotation += .5f * new quat(AngularVelocity, 0) * Parent.Transform.Rotation * deltaTime.DeltaF;
+            Parent.Transform.Rotation = Parent.Transform.Rotation.NormalizedSafe;
 
             ForcesExternal = vec3.Zero;
-            ForcesInternal = vec3.Zero;
+            ForcesConstraints = vec3.Zero;
 
             TorqueExternal = vec3.Zero;
-            TorqueInternal = vec3.Zero;
+            TorqueConstraints = vec3.Zero;
         }
 
         public void Impulse(vec3 impulse)
             => Impulse(impulse, vec3.Zero);
 
-        public void ImpulseWorldSpace(vec3 impulse, vec3 point)
-            => Impulse(impulse, point - Transform.Translation);
+        public void ImpulseLocal(vec3 impulse, vec3 point)
+            => Impulse(impulse, point + Transform.Translation);
 
         public void Impulse(vec3 impulse, vec3 point)
         {

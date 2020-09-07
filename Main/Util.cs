@@ -19,6 +19,12 @@ namespace Yahtzee.Main
         public static float ToDeg(float rad)
             => (float)(rad / Math.PI) * 180;
 
+        public static float AsRad(this float deg)
+           => (float)((deg / 180) * Math.PI);
+
+        public static float AsDeg(this float rad)
+            => (float)(rad / Math.PI) * 180;
+
         public static float ToRad(double deg)
            => (float)((deg / 180) * Math.PI);
 
@@ -30,7 +36,5 @@ namespace Yahtzee.Main
     
         public static void ClearFramebuffer(this GL gl)
             => gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit));
-
-
     }
 }

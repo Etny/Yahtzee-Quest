@@ -40,14 +40,14 @@ namespace Yahtzee.Game
         [Conditional("DEBUG")]
         public void UpdateContactPoints()
         {
-            var info = pm.DepthDetector.NewEPA(result);
-            var p = pm.DepthDetector.ContactDouble(info);
+            var info = pm.DepthDetector.GetPenetrationInfo(result);
+            var p = pm.DepthDetector.GetContactInfo(info);
 
             if (p.Item1 == vec3.NaN) return;
 
             points = p;
 
-            //Console.WriteLine($"Contact Point(s): {points}");
+            Console.WriteLine($"Contact Point(s): {points}, M1 pos: {result.M1.Transform.Translation}");
 
             pointMesh1.SetPoints(new vec3[] { points.Item1 });
             //pointMesh2.SetPoints(new vec3[] { points.Item1 - (info.Item1.Normal * info.Item1.DistToOrigin()) });

@@ -146,7 +146,7 @@ float CalcShadow(vec4 fragPosLightSpace, in sampler2D shadowMap, bool linearizeD
 	for(int i=0; i<9; i++)
 	{
 		pcfPos = projectedFragPos.xy + (vec2(-1 + i/3, -1 + mod(i,3)) * stepSize);
-		shadow += SampleShadowMapSmooth(shadowMap, pcfPos, currentDepth - .0015, linearizeDepth, stepSize);	
+		shadow += SampleShadowMapSmooth(shadowMap, pcfPos, currentDepth - .0001, linearizeDepth, stepSize);	
 	}
 
     return shadow / 9;

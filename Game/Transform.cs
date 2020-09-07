@@ -22,7 +22,6 @@ namespace Yahtzee.Game
         public void RotateY(float angle) => Rotate(angle, vec3.UnitY);
         public void RotateZ(float angle) => Rotate(angle, vec3.UnitZ);
 
-
         public vec3 Apply(vec3 v)
             => (ModelMatrix * new vec4(v, 1)).xyz;
     }

@@ -61,7 +61,7 @@ namespace Yahtzee.Game
             if (r != vec3.NaN)
             {
                 Console.WriteLine("Returned: " + r + ", normal: "+closest.Normal);
-                Console.WriteLine("EPA normal: " + pm.DepthDetector.NewEPA(result).Item1.Normal) ;
+                //Console.WriteLine("EPA normal: " + pm.DepthDetector.GetPenetrationInfo(result).Item1.Normal) ;
                 TriMeshes.Clear();
                 removed.Clear();
                 closest = null;
@@ -76,7 +76,7 @@ namespace Yahtzee.Game
             TriMeshes.ForEach(t => t.Dispose());
             TriMeshes.Clear();
             tris.ForEach(t => TriMeshes.Add(new LineMesh(t.Vec3Points, t == closest ? triColorsClosest : triColors, t == closest ? 15 : 5)));
-            tris.ForEach(t => TriMeshes.Add(new LineMesh(new vec3[] { t.Center, t.Center + t.Normal.NormalizedSafe }, normalColors, drawPoint == vec3.NaN || vec3.Dot(t.Normal, newPoint.Sup) < 0 ? 5 : 15)));
+            tris.ForEach(t => TriMeshes.Add(new LineMesh(new vec3[] { t.Center, t.Center + t.Normal.NormalizedSafe }, normalColors, drawPoint == vec3.NaN || vec3.Dot(t.Normal, newPoint.Sup - t.Vec3Points[0]) < 0 ? 5 : 15)));
 
 
             if (counter == 2) 
