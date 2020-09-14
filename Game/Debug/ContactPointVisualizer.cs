@@ -19,46 +19,55 @@ namespace Yahtzee.Game
     /// </summary>
     unsafe class ContactPointVisualizer
     {
-        public CollisionResult result;
+        public CollisionResult result = null;
         private readonly PhysicsManager pm;
 
         private vec3[] pointColor1 = { new vec3(0.807f, 0.070f, 0.792f) };
         private vec3[] pointColor2 = { new vec3(0.3f, 0.8f, 0.4f) };
-        LineMesh pointMesh1, pointMesh2;
-        (vec3, vec3) points = (vec3.NaN, vec3.NaN);
+        List<LineMesh> points = new List<LineMesh>();
 
-        public ContactPointVisualizer(CollisionResult result, PhysicsManager pm)
+        public ContactPointVisualizer(PhysicsManager pm)
         {
-            this.result = result;
             this.pm = pm;
-
-            pointMesh1 = new LineMesh(null, pointColor1);
-            pointMesh2 = new LineMesh(null, pointColor2);
-
         }
+
+        public void SetResult(CollisionResult result)
+            => this.result = result;
+
+        public (LineMesh, LineMesh) AddPoints((vec3, vec3) p)
+        {
+            points.Add(new LineMesh(new vec3[] { p.Item1 }, pointColor1));
+            points.Add(new LineMesh(new vec3[] { p.Item2 }, pointColor2));
+
+            return (points[points.Count-2], points[points.Count-1]);
+        }
+
+        public void RemovePoints((LineMesh, LineMesh) remove)
+        {
+            points.Remove(remove.Item1);
+            points.Remove(remove.Item2);
+        }
+
 
         [Conditional("DEBUG")]
         public void UpdateContactPoints()
         {
+            if (result == null) return;
+
             var info = pm.DepthDetector.GetPenetrationInfo(result);
             var p = pm.DepthDetector.GetContactInfo(info);
 
             if (p.Item1 == vec3.NaN) return;
 
-            points = p;
+            Console.WriteLine($"Contact Point(s): {p.Item1} | {p.Item2}");
 
-            Console.WriteLine($"Contact Point(s): {points}, M1 pos: {result.M1.Transform.Translation}");
-
-            pointMesh1.SetPoints(new vec3[] { points.Item1 });
-            //pointMesh2.SetPoints(new vec3[] { points.Item1 - (info.Item1.Normal * info.Item1.DistToOrigin()) });
-            pointMesh2.SetPoints(new vec3[] { points.Item2 });
+            AddPoints(p);
         }
         public void Draw()
         {
-            if (points.Item1 == vec3.NaN) return;
+            if (points.Count <= 0) return;
 
-            pointMesh1.Draw(null);
-            pointMesh2.Draw(null);
+            foreach (var p in points) p.Draw(null);
         }
 
     }

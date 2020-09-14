@@ -28,7 +28,7 @@ namespace Yahtzee.Render
 
         private CollisionDetectionVisualizer PhysicsVisualizer;
         private PenetrationDepthVisualizer PenetrationDepthVisualizer = null;
-        private ContactPointVisualizer ContactPointVisualizer = null;
+        public ContactPointVisualizer ContactPointVisualizer = null;
 
 
         private FrameBuffer renderFrameBuffer;
@@ -75,16 +75,16 @@ namespace Yahtzee.Render
             //e.Transform.Scale = new vec3(10, 2f, 10);
             e.RigidBody.Static = true;
             Entities.Add(e);
-            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(.2f, -2.1f, 0f)};
+            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(.05f, -1.5f, 0f)};
             Entities.Add(Backpack);
             //Entities.Add(new ModelEntity("Basic/Cube.obj") { Position = new vec3(.4f, 8f, 0f) });
 
             PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
-
+            ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager);
             
 
-            Backpack.Transform.RotateX(Util.ToRad(45));
-            Backpack.Transform.RotateZ(Util.ToRad(45));
+            //Backpack.Transform.RotateX(Util.ToRad(45));
+            //Backpack.Transform.RotateZ(Util.ToRad(45));
             //Backpack.Transform.RotateY(Util.ToRad(45));
         }
 
@@ -196,14 +196,10 @@ namespace Yahtzee.Render
             }
             else if (key == Keys.C && action == InputAction.Press)
             {
-                if (ContactPointVisualizer == null)
-                    ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
-                else
-                    ContactPointVisualizer.result = Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody);
-
+                ContactPointVisualizer.SetResult(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody));
                 ContactPointVisualizer.UpdateContactPoints();
             }
-            else if(key == Keys.Apostrophe && action == InputAction.Press)
+            else if (key == Keys.Apostrophe && action == InputAction.Press)
             {
                 if (PenetrationDepthVisualizer == null)
                     PenetrationDepthVisualizer = new PenetrationDepthVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);

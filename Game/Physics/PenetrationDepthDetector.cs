@@ -39,7 +39,8 @@ namespace Yahtzee.Game.Physics
         public (vec3,vec3) GetContactInfo((Triangle, vec3) info)
         {
             var tri = info.Item1;
-            var depth = info.Item1.ClosestPoint();
+            db.Assert(tri != null);
+            var depth = tri.ClosestPoint();
 
             vec3 barycentric = tri.ProjectOrigin(depth);
 
@@ -121,8 +122,8 @@ namespace Yahtzee.Game.Physics
 
             db.Assert(false);
 
-            foreach (vec3 v in result.SimplexPos) Console.WriteLine("Failed on: " + v);
-            Console.WriteLine("Pos: " + result.M1.Transform.Translation + ", Rot: " + result.M1.Transform.Rotation);
+            //foreach (vec3 v in result.SimplexPos) Console.WriteLine("Failed on: " + v);
+            //Console.WriteLine("Pos: " + result.M1.Transform.Translation + ", Rot: " + result.M1.Transform.Rotation);
 
             //GetPenetrationInfo(result);
 

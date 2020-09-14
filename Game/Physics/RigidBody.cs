@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Text;
+using Yahtzee.Game.Physics.Constraints;
 using Yahtzee.Main;
 using Yahtzee.Render;
 
@@ -18,6 +19,8 @@ namespace Yahtzee.Game.Physics
 
         public vec3 Position { get { return Parent.Position; } }
         public Transform Transform { get { return Parent.Transform; } }
+        public List<int> Overlapping = new List<int>();
+        public List<Constraint> InvolvedConstraints = new List<Constraint>();
 
         public vec3 Velocity = vec3.Zero;
         public vec3 AngularVelocity = vec3.Zero;
@@ -34,6 +37,7 @@ namespace Yahtzee.Game.Physics
 
         public bool Static = false;
         public int? Index = null;
+        public int UID = -1;
 
         private Transform _tempTransform;
 
@@ -53,6 +57,9 @@ namespace Yahtzee.Game.Physics
         public void Update(Time deltaTime)
         {
             Collision.Overlapping = false;
+            Overlapping.Clear();
+            InvolvedConstraints = InvolvedConstraints.FindAll(c => c.StillValid());
+
             if (Static) return;
 
             //Apply Gravity
