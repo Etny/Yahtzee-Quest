@@ -53,6 +53,7 @@ namespace Yahtzee.Game
         public void UpdateContactPoints()
         {
             if (result == null) return;
+            if (!result.Colliding) return;
 
             var info = pm.DepthDetector.GetPenetrationInfo(result);
             var p = pm.DepthDetector.GetContactInfo(info);

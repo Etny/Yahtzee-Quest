@@ -35,6 +35,7 @@ namespace Yahtzee.Render
         private FrameBuffer lightingFrameBuffer;
 
         private GL gl;
+        int t = 0;
 
         public Scene()
         {
@@ -71,11 +72,11 @@ namespace Yahtzee.Render
             testLight.SetShadowsEnabled(true);
             Lights.Add(testLight);
         
-            e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0, -3f, 0) };
-            //e.Transform.Scale = new vec3(10, 2f, 10);
+            e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
+            //e.Transform.Scale = new vec3(10, 1f, 10);
             e.RigidBody.Static = true;
             Entities.Add(e);
-            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(.05f, -1.5f, 0f)};
+            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0.01f, -1.5f, 0)};
             Entities.Add(Backpack);
             //Entities.Add(new ModelEntity("Basic/Cube.obj") { Position = new vec3(.4f, 8f, 0f) });
 
@@ -161,11 +162,11 @@ namespace Yahtzee.Render
                 ContactPointVisualizer.result = Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody);
 
             ContactPointVisualizer.UpdateContactPoints();*/
+            
 
-            ///*if(Backpack.collision.Overlapping)*/ Backpack.Transform.RotateZ(Util.ToRad(deltaTime.Delta * 45));
-            ///
-            //Backpack.Transform.Translation = new vec3(0.107839f, -2.006235f, 0.3047915f);
-            //Backpack.Transform.Rotation = new quat(0.0002077843f, 0.3905348f, 0.00025733f, 0.9205882f);
+            //if (t == 2) Backpack.RigidBody.AngularVelocity = new vec3(0, 0, -0.70710677f) / deltaTime.DeltaF;
+            //else Backpack.RigidBody.AngularVelocity = vec3.Zero;
+            //t++;
         }
 
         private void RenderScene(Shader shader)

@@ -26,8 +26,10 @@ namespace Yahtzee.Game.Physics
         public vec3 AngularVelocity = vec3.Zero;
 
         public float Mass = 1;
+        public float InverseMass { get { return 1f / Mass; } }
+
         public mat3 Inertia = mat3.Identity;
-        public mat3 InertiaInverse = mat3.Identity;
+        public mat3 InverseInertia = mat3.Identity;
 
         public vec3 ForcesExternal = vec3.Zero;
         public vec3 ForcesConstraints = vec3.Zero;
@@ -47,7 +49,7 @@ namespace Yahtzee.Game.Physics
             Parent = parent;
             Collision = Model.LoadCollisionMesh(collision, parent);
 
-            InertiaInverse = Inertia.Inverse;
+            InverseInertia = Inertia.Inverse;
 
             //Impulse(new vec3(0, -3000f * Mass, 0), new vec3(-.5f, .5f, 0));
         }
@@ -63,7 +65,7 @@ namespace Yahtzee.Game.Physics
             if (Static) return;
 
             //Apply Gravity
-            Impulse(new vec3(0, -4.81f * Mass, 0));
+            Impulse(new vec3(0, -4.81f * Mass, 0) * deltaTime.DeltaF);
         }
 
         public void ApplyInitialForces(Time deltaTime)
@@ -72,9 +74,13 @@ namespace Yahtzee.Game.Physics
 
             _tempTransform = Parent.Transform;
 
-            Parent.Transform.Translation += deltaTime.DeltaF * (Velocity + ((deltaTime.DeltaF * ForcesExternal) / Mass));
-            Parent.Transform.Rotation += .5f * new quat(AngularVelocity + (InertiaInverse * (deltaTime.DeltaF * TorqueExternal)), 0) * Parent.Transform.Rotation * deltaTime.DeltaF;
-            Parent.Transform.Rotation = Parent.Transform.Rotation.NormalizedSafe;
+            Velocity += ForcesExternal;
+            Parent.Transform.Translation += deltaTime.DeltaF * Velocity;
+
+            AngularVelocity += TorqueExternal;
+            var theta = (deltaTime.DeltaF * AngularVelocity).Length;
+            var a = AngularVelocity.NormalizedSafe;
+            Parent.Transform.Rotation = new quat(a * (float)Math.Sin(theta / 2), (float)Math.Cos(theta / 2)) * Parent.Transform.Rotation;
         }
 
         public void ApplyFinalForces(Time deltaTime)
@@ -83,18 +89,22 @@ namespace Yahtzee.Game.Physics
 
             Parent.Transform = _tempTransform;
 
-            Velocity += (deltaTime.DeltaF * (ForcesExternal + ForcesConstraints)) / Mass;
-            Parent.Transform.Translation += deltaTime.DeltaF * Velocity;
+            var dt = deltaTime.DeltaF;
 
-            AngularVelocity += InertiaInverse * (deltaTime.DeltaF * (TorqueExternal + TorqueConstraints));
-            Parent.Transform.Rotation += .5f * new quat(AngularVelocity, 0) * Parent.Transform.Rotation * deltaTime.DeltaF;
-            Parent.Transform.Rotation = Parent.Transform.Rotation.NormalizedSafe;
+            Velocity += ForcesConstraints;
+            Parent.Transform.Translation += dt * Velocity;
+
+            AngularVelocity += TorqueConstraints;
+            Parent.Transform.Rotation = quat.FromAxisAngle((dt * AngularVelocity).Length, AngularVelocity.NormalizedSafe) * Parent.Transform.Rotation;
+
 
             ForcesExternal = vec3.Zero;
             ForcesConstraints = vec3.Zero;
 
             TorqueExternal = vec3.Zero;
             TorqueConstraints = vec3.Zero;
+
+            //Console.WriteLine(Velocity.x);
         }
 
         public void Impulse(vec3 impulse)
@@ -107,8 +117,8 @@ namespace Yahtzee.Game.Physics
         {
             if (Static) return;
 
-            ForcesExternal += impulse;
-            if(point != vec3.Zero) TorqueExternal += vec3.Cross(point, impulse);
+            ForcesExternal += impulse / Mass;
+            if(point != vec3.Zero) TorqueExternal += InverseInertia * vec3.Cross(point, impulse);
         }
 
     }
