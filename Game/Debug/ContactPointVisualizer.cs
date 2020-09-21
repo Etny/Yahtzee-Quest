@@ -24,7 +24,8 @@ namespace Yahtzee.Game
 
         private vec3[] pointColor1 = { new vec3(0.807f, 0.070f, 0.792f) };
         private vec3[] pointColor2 = { new vec3(0.3f, 0.8f, 0.4f) };
-        List<LineMesh> points = new List<LineMesh>();
+        Dictionary<int, LineMesh> points = new Dictionary<int, LineMesh>();
+        private static int ID = 0;
 
         public ContactPointVisualizer(PhysicsManager pm)
         {
@@ -34,18 +35,20 @@ namespace Yahtzee.Game
         public void SetResult(CollisionResult result)
             => this.result = result;
 
-        public (LineMesh, LineMesh) AddPoints((vec3, vec3) p)
+        public (LineMesh, LineMesh, int, int) AddPoints((vec3, vec3) p)
         {
-            points.Add(new LineMesh(new vec3[] { p.Item1 }, pointColor1));
-            points.Add(new LineMesh(new vec3[] { p.Item2 }, pointColor2));
-
-            return (points[points.Count-2], points[points.Count-1]);
+            var l1 = new LineMesh(new vec3[] { p.Item1 }, pointColor1);
+            var l2 = new LineMesh(new vec3[] { p.Item2 }, pointColor2);
+            points.Add(ID++, l1);
+            //points.Add(ID++, l2);
+            ID++;
+            return (l1, l2, ID - 2, ID - 1);
         }
 
-        public void RemovePoints((LineMesh, LineMesh) remove)
+        public void RemovePoints((LineMesh, LineMesh, int, int) remove)
         {
-            points.Remove(remove.Item1);
-            points.Remove(remove.Item2);
+            points.Remove(remove.Item3);
+            points.Remove(remove.Item4);
         }
 
 
@@ -68,7 +71,7 @@ namespace Yahtzee.Game
         {
             if (points.Count <= 0) return;
 
-            foreach (var p in points) p.Draw(null);
+            foreach (var p in points.Values) p.Draw(null);
         }
 
     }

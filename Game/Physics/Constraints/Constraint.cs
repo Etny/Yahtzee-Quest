@@ -10,7 +10,6 @@ namespace Yahtzee.Game.Physics.Constraints
     {
 
         public readonly RigidBody M1, M2;
-        //public vec3[,] Jacobian { get { if (_jacobian == null) CalculateJacobian(); return _jacobian; } }
         public int Age = 0;
 
         protected vec3[,] _jacobian = null;

@@ -76,13 +76,14 @@ namespace Yahtzee.Render
             //e.Transform.Scale = new vec3(10, 1f, 10);
             e.RigidBody.Static = true;
             Entities.Add(e);
-            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0.01f, -1.5f, 0)};
+            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0.48f, -1f, 0)};
             Entities.Add(Backpack);
             //Entities.Add(new ModelEntity("Basic/Cube.obj") { Position = new vec3(.4f, 8f, 0f) });
 
             PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
             ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager);
-            
+
+           
 
             //Backpack.Transform.RotateX(Util.ToRad(45));
             //Backpack.Transform.RotateZ(Util.ToRad(45));

@@ -17,6 +17,10 @@ namespace Yahtzee.Game.Physics
         public Entity Parent;
         public CollisionMesh Collision;
 
+        private float decayRate = 3f;
+        private vec3 tempTorque = vec3.Zero;
+        private float decayThreshold = .72f;
+
         public vec3 Position { get { return Parent.Position; } }
         public Transform Transform { get { return Parent.Transform; } }
         public List<int> Overlapping = new List<int>();
@@ -94,8 +98,30 @@ namespace Yahtzee.Game.Physics
             Velocity += ForcesConstraints;
             Parent.Transform.Translation += dt * Velocity;
 
+            //Console.WriteLine((TorqueConstraints).Length);
+
+            if(TorqueConstraints.LengthSqr == 0 || (tempTorque + TorqueConstraints).Length < decayThreshold)
+            {
+                tempTorque += TorqueConstraints;
+                TorqueConstraints = vec3.Zero;
+
+                float decay = decayRate * dt;
+                vec3 decayVec = new vec3(Math.Abs(tempTorque.x) - decay < 0 ? tempTorque.x : Math.Sign(tempTorque.x) * decay,
+                                         Math.Abs(tempTorque.y) - decay < 0 ? tempTorque.y : Math.Sign(tempTorque.y) * decay,
+                                         Math.Abs(tempTorque.z) - decay < 0 ? tempTorque.z : Math.Sign(tempTorque.z) * decay);
+
+                tempTorque -= decayVec;
+            }
+            else
+            {
+                AngularVelocity += tempTorque;
+                tempTorque = vec3.Zero;
+            }
+
             AngularVelocity += TorqueConstraints;
             Parent.Transform.Rotation = quat.FromAxisAngle((dt * AngularVelocity).Length, AngularVelocity.NormalizedSafe) * Parent.Transform.Rotation;
+            //Console.WriteLine(tempTorque);
+
 
 
             ForcesExternal = vec3.Zero;

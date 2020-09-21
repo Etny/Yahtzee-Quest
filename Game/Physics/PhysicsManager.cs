@@ -85,25 +85,11 @@ namespace Yahtzee.Game
 
                     if (result.Colliding)
                     {
-                        //body1.Collision.Overlapping = true;
-                        //body2.Collision.Overlapping = true;
                         body1.Overlapping.Add(body2.UID);
                         body2.Overlapping.Add(body1.UID);
-                        constraintsToSolve.Add(new ConstraintCollision(result));
-                        continue;
 
-                        var bs = body1.Static ? body1 : body2;
-                        var bp = body1.Static ? body2 : body1;
-                        float top = bs.Position.y + .5f;
-                        vec3 c1 = bp.Transform.Apply(new vec3(-.5f, -.5f, -.5f));
-                        vec3 c2 = bp.Transform.Apply(new vec3(.5f, -.5f, -.5f));
-                        vec3 c3 = bp.Transform.Apply(new vec3(-.5f, -.5f, .5f));
-                        vec3 c4 = bp.Transform.Apply(new vec3(.5f, -.5f, .5f));
-
-                        constraintsToSolve.Add(new ConstraintCollision(result, c1, new vec3(c1.x, top, c1.z)));
-                        constraintsToSolve.Add(new ConstraintCollision(result, new vec3(.5f, c2.y, -.5f), new vec3(.5f, bs.Position.y + .5f, -.5f)));
-                        constraintsToSolve.Add(new ConstraintCollision(result, c3, new vec3(c3.x, top, c3.z)));
-                        constraintsToSolve.Add(new ConstraintCollision(result, new vec3(.5f, c4.y, .5f), new vec3(.5f, bs.Position.y + .5f, .5f)));
+                        var col = new ConstraintCollision(result);
+                        constraintsToSolve.Add(col);                        
                     }
                 }
             }
@@ -111,17 +97,17 @@ namespace Yahtzee.Game
             foreach (Constraint c in ConstraintCache) constraintsToSolve.Add(c);
             ConstraintCache.Clear();
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1; i++)
                 constraintsToSolve.ForEach(c => c.Resolve(deltaTime));
 
-            foreach(var c in constraintsToSolve)
+            foreach(Constraint c in constraintsToSolve)
             {
                 c.Age++;
-                if (c.StillValid()) ConstraintCache.Add(c);
-                else Program.Scene.ContactPointVisualizer.RemovePoints(((ConstraintCollision)c).meshes);
+                if (c.StillValid()) ConstraintCache.Add(c); 
+                else Program.Scene.ContactPointVisualizer.RemovePoints(((ConstraintCollision)c).meshes); 
             }
 
-            //ConstraintCache.Clear();
+            ConstraintCache.Clear();
 
             Bodies.ForEach(b => b.ApplyFinalForces(deltaTime));
         }
