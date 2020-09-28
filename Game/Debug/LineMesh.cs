@@ -73,7 +73,7 @@ namespace Yahtzee.Game.Debug
                 gl.BufferSubData(BufferTargetARB.ArrayBuffer, (sizeof(vec3) * MaxPoints), (uint)(sizeof(vec3) * Points.Length), i);
         }
 
-        public override unsafe void Draw(Shader unused)
+        public override unsafe void Draw(Shader unused, int count = 1)
         {
             if (Points.Length <= 0) return;
 

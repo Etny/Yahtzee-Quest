@@ -17,16 +17,13 @@ namespace Yahtzee.Game.Physics
         public int highlight = -1;
 
         private Shader shader;
-        public Entity Parent = null;
-        public Transform Transform { get { return Parent == null ? Transform.Identity : Parent.Transform; } }
 
         public bool Overlapping = false;
 
-        public CollisionMesh(vec3[] vertices, uint[] indices, ModelEntity parent = null) : base()
+        public CollisionMesh(vec3[] vertices, uint[] indices) : base()
         {
             this.DrawVertices = vertices;
             this.Indices = indices;
-            this.Parent = parent;
 
             this.shader = ShaderRepository.GetShader("Debug/Line/line");
 
@@ -64,13 +61,12 @@ namespace Yahtzee.Game.Physics
             gl.EnableVertexAttribArray(0);
         }
 
-        public override unsafe void Draw(Shader shader) { }
 
         [Conditional("DEBUG")]
-        public unsafe void DrawOutline()
+        public unsafe void DrawOutline(Transform t)
         {
             shader.Use();
-            shader.SetMat4("model", Parent.Transform.ModelMatrix);
+            shader.SetMat4("model", t.ModelMatrix);
             shader.SetBool("overlapping", Overlapping);
 
             gl.Disable(EnableCap.CullFace);
@@ -93,18 +89,6 @@ namespace Yahtzee.Game.Physics
 
         }
 
-        public void UpdateHighlight(vec3 dir)
-        {
-            highlight = Program.PhysicsManager.Collisions.SingleSupportIndex(this, dir);
-        }
 
-        public RectangleF GetRectangle()
-        {
-            Transform t = Parent.Transform;
-            return new RectangleF(t.Translation.x - (t.Scale.x / 2),
-                                  t.Translation.y - (t.Scale.y / 2),
-                                  t.Scale.x,
-                                  t.Scale.y);
-        }
     }
 }

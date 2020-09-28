@@ -77,7 +77,7 @@ namespace Yahtzee.Render
             if (VAO != 0) gl.DeleteVertexArray(VAO);
         }
 
-        public virtual unsafe void Draw(Shader shader)
+        public virtual unsafe void Draw(Shader shader, int count = 1)
         {
             int diffuseNumber = 1;
             int specularNumber = 1;
@@ -117,8 +117,8 @@ namespace Yahtzee.Render
             gl.ActiveTexture(TextureUnit.Texture0);
 
             gl.BindVertexArray(VAO);
-            if (Indices != null) gl.DrawElements(PrimitiveType.Triangles, (uint)Indices.Length, DrawElementsType.UnsignedInt, (void*)0);
-            else gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)Vertices.Length);
+            if (Indices != null) gl.DrawElementsInstanced((GLEnum)PrimitiveType.Triangles, (uint)Indices.Length, (GLEnum)DrawElementsType.UnsignedInt, (void*)0, (uint)count);
+            else gl.DrawArraysInstanced((GLEnum)PrimitiveType.Triangles, 0, (uint)Vertices.Length, (uint)count);
         }
     }
 

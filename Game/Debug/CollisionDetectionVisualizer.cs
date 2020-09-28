@@ -17,7 +17,7 @@ namespace Yahtzee.Game
     unsafe class CollisionDetectionVisualizer
     {
         private readonly Entity m1, m2;
-        private readonly CollisionMesh c1, c2;
+        private readonly RigidBody c1, c2;
         private readonly PhysicsManager pm;
 
         public List<SupportPoint> Simplex = new List<SupportPoint>();
@@ -37,8 +37,8 @@ namespace Yahtzee.Game
         {
             this.m1 = m1;
             this.m2 = m2;
-            this.c1 = ((MovementControllerRigidBody)m1.MovementController).Collision;
-            this.c2 = ((MovementControllerRigidBody)m2.MovementController).Collision;
+            this.c1 = ((MovementControllerRigidBody)m1.MovementController).RigidBody;
+            this.c2 = ((MovementControllerRigidBody)m2.MovementController).RigidBody;
             this.pm = pm;
 
             pointMesh = new LineMesh(null, simplexColors);

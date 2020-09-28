@@ -10,12 +10,12 @@ namespace Yahtzee.Render
 
         public static Model LoadModel(string path, bool collision = false)
         {
-            if (!ModelCache.ContainsKey(path))
-            {
+            string key = path + (collision ? "col" : "");
 
-            }
+            if (!ModelCache.ContainsKey(key))
+                ModelCache.Add(key, new Model(path, collision));
 
-            return new Model(path, collision);
+            return ModelCache.GetValueOrDefault(key);
         }
     }
 }

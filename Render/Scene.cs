@@ -147,7 +147,10 @@ namespace Yahtzee.Render
         }
 
         private void RenderScene(Shader shader)
-            => Entities.ForEach(e => e.Draw(shader));
+        { 
+            Entities.ForEach(e => e.Draw(shader));
+            ModelManager.DrawModels(shader);
+        }
 
         private void OnResize(int width, int height)
         {

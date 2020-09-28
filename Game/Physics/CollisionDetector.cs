@@ -16,14 +16,14 @@ namespace Yahtzee.Game.Physics
 
         public CollisionResult GJKResult(RigidBody m1, RigidBody m2)
         {
-            List<SupportPoint> simplex = new List<SupportPoint> { SumSupport(m1.Collision, m2.Collision, vec3.UnitY) };
+            List<SupportPoint> simplex = new List<SupportPoint> { SumSupport(m1, m2, vec3.UnitY) };
             vec3 Direction = -simplex[0].Sup;
 
             CollisionResult result = new CollisionResult(m1, m2, simplex);
 
             for (int i = 0; i < 1000; i++)
             {
-                SupportPoint P = SumSupport(m1.Collision, m2.Collision, Direction);
+                SupportPoint P = SumSupport(m1, m2, Direction);
                 if (vec3.Dot(P.Sup.NormalizedSafe, Direction.NormalizedSafe) < 0) return result;
                 simplex.Add(P);
                 if (DoSimplex(simplex)) { result.Colliding = true; return result; }
@@ -38,7 +38,7 @@ namespace Yahtzee.Game.Physics
 
 #if DEBUG
         // Used for debugging
-        public int GJK_Step(CollisionMesh m1, CollisionMesh m2, List<SupportPoint> simplex, ref vec3 Direction, ref int counter)
+        public int GJK_Step(RigidBody m1, RigidBody m2, List<SupportPoint> simplex, ref vec3 Direction, ref int counter)
         {
             if (counter == 0)
             {
@@ -61,19 +61,20 @@ namespace Yahtzee.Game.Physics
 #endif
 
         public SupportPoint SumSupport(CollisionResult result, vec3 Dir)
-            => SumSupport(result.Body1.Collision, result.Body2.Collision, Dir);
+            => SumSupport(result.Body1, result.Body2, Dir);
 
-        public SupportPoint SumSupport(CollisionMesh m1, CollisionMesh m2, vec3 Dir)
+        public SupportPoint SumSupport(RigidBody m1, RigidBody m2, vec3 Dir)
             => new SupportPoint(SingleSupport(m1, Dir), SingleSupport(m2, -Dir));
 
-        public vec3 SingleSupport(CollisionMesh m1, vec3 Dir)
+        public vec3 SingleSupport(RigidBody b1, vec3 Dir)
         {
-            vec3 p = m1.Transform.Apply(m1.CollisionVertices[0]);
+            var m1 = b1.Collision;
+            vec3 p = b1.Transform.Apply(m1.CollisionVertices[0]);
             float maxDot = 0;
 
             for (int i = 0; i < m1.CollisionVertices.Length; i++)
             {
-                vec3 v = m1.Transform.Apply(m1.CollisionVertices[i]);
+                vec3 v = b1.Transform.Apply(m1.CollisionVertices[i]);
                 float dot = vec3.Dot(Dir, v);
                 if (dot <= maxDot && i != 0) continue;
                 maxDot = dot;
@@ -86,16 +87,16 @@ namespace Yahtzee.Game.Physics
 
 #if DEBUG
         // Used for debugging
-        public int SingleSupportIndex(CollisionMesh m1, vec3 Dir)
+        public int SingleSupportIndex(RigidBody b1, vec3 Dir)
         {
             int index = -1;
             float maxDot = -9999;
             float td = -9999;
             float ti = -1;
-
+            var m1 = b1.Collision;
             for (int i = 0; i < m1.CollisionVertices.Length; i++)
             {
-                vec3 v = m1.Transform.Apply(m1.CollisionVertices[i]);
+                vec3 v = b1.Transform.Apply(m1.CollisionVertices[i]);
                 float dot = vec3.Dot(Dir, v);
                 if (v == new vec3(0.5f, -0.5f, 0.5f)) { td = dot; ti = i; }
                 if (dot <= maxDot) continue;

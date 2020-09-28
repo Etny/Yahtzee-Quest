@@ -20,6 +20,7 @@ namespace Yahtzee.Render
         private List<ImageTexture> loadedTextures;
 
         private string directory;
+        public readonly string Key;
 
         private delegate Mesh MeshLoader(ai.Mesh mesh, ai.Scene scene);
 
@@ -27,14 +28,15 @@ namespace Yahtzee.Render
         {
             this.gl = GL.GetApi();
 
+            Key = filePath + (collision ? "col" : "");
+
             if (!collision) loadModel("Resource/Models/" + filePath, proccessMesh);
             else loadCollisionModel("Resource/Models/" + filePath, proccessCollisionMesh);
         }
 
-        public static CollisionMesh LoadCollisionMesh(string filePath, Entity parent)
+        public static CollisionMesh LoadCollisionMesh(string filePath)
         {
             var mesh = (CollisionMesh)new Model(filePath, true).Meshes[0];
-            mesh.Parent = parent;
             return mesh;
         }
         
@@ -199,13 +201,13 @@ namespace Yahtzee.Render
             return new CollisionMesh(vertices.ToArray(), indices.ToArray());
         }
 
-        public void Draw(Shader shader)
+        public void Draw(Shader shader, int count = 1)
         {
             // meshes[0].Draw(shader);
             // return;
 
             foreach (Mesh mesh in Meshes)
-                mesh.Draw(shader);
+                mesh.Draw(shader, count);
         }
     }
 }

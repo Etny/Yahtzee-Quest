@@ -63,7 +63,7 @@ namespace Yahtzee.Game.Physics
         public RigidBody(Entity parent, string collision)
         {
             Parent = parent;
-            Collision = Model.LoadCollisionMesh(collision, parent);
+            Collision = Model.LoadCollisionMesh(collision);
 
             float tr = 1f/6f;
             float of = 0;
