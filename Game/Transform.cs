@@ -7,15 +7,15 @@ namespace Yahtzee.Game
 {
     struct Transform
     {
-        public static Transform Identity = new Transform() { Translation = vec3.Zero, Rotation = quat.Identity, Scale = new vec3(1) };
+        public static Transform Identity = new Transform() { Translation = vec3.Zero, Orientation = quat.Identity, Scale = new vec3(1) };
 
         public vec3 Translation;
-        public quat Rotation;
+        public quat Orientation;
         public vec3 Scale;
 
-        public mat4 ModelMatrix { get { return mat4.Translate(Translation) * Rotation.ToMat4 * mat4.Scale(Scale);} }
+        public mat4 ModelMatrix { get { return mat4.Translate(Translation) * Orientation.ToMat4 * mat4.Scale(Scale);} }
 
-        public void Rotate(float angle, vec3 axis) => Rotation = Rotation.Rotated(angle, axis);
+        public void Rotate(float angle, vec3 axis) => Orientation = Orientation.Rotated(angle, axis);
 
         public void Rotate(float angleX, float angleY, float angleZ) { RotateX(angleX); RotateY(angleY); RotateZ(angleZ); }
         public void RotateX(float angle) => Rotate(angle, vec3.UnitX);
@@ -24,5 +24,7 @@ namespace Yahtzee.Game
 
         public vec3 Apply(vec3 v)
             => (ModelMatrix * new vec4(v, 1)).xyz;
+
+        public static vec3 operator *(Transform t, vec3 rhs) => t.Apply(rhs);
     }
 }

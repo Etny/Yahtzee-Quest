@@ -46,7 +46,7 @@ namespace Yahtzee.Render
         }
 
         public mat4 LookAt() => mat4.LookAt(Position, Position + GetDirection(), Up);
-        public vec3 GetDirection() => Transform.Rotation * Front;
+        public vec3 GetDirection() => Transform.Orientation * Front;
 
         public void SetData(Shader shader)
         {
@@ -71,7 +71,7 @@ namespace Yahtzee.Render
             if (Pitch < -89f)
                 Pitch = -89f;
 
-            Transform.Rotation = quat.FromAxisAngle(Util.ToRad(Yaw), vec3.UnitY) * quat.FromAxisAngle(Util.ToRad(Pitch), vec3.UnitX);
+            Transform.Orientation = quat.FromAxisAngle(Util.ToRad(Yaw), vec3.UnitY) * quat.FromAxisAngle(Util.ToRad(Pitch), vec3.UnitX);
         }
 
         private void OnResize(int width, int height)

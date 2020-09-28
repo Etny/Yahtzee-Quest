@@ -17,43 +17,59 @@ namespace Yahtzee.Game.Physics
         public Entity Parent;
         public CollisionMesh Collision;
 
-        private float decayRate = 3f;
-        private vec3 tempTorque = vec3.Zero;
-        private float decayThreshold = .72f;
+        public float Friction = 1f;
 
         public vec3 Position { get { return Parent.Position; } }
         public Transform Transform { get { return Parent.Transform; } }
         public List<int> Overlapping = new List<int>();
-        public List<Constraint> InvolvedConstraints = new List<Constraint>();
+        public List<ConstraintCollision> InvolvedContacts = new List<ConstraintCollision>();
 
-        public vec3 Velocity = vec3.Zero;
-        public vec3 AngularVelocity = vec3.Zero;
+        public vec3 Velocity { get { return _velocity; } set { _velocity = value; _projectedTransformValid = false; } }
+        public vec3 AngularVelocity { get { return _angularVelocity; } set { _angularVelocity = value; _projectedTransformValid = false; } }
+
+        private vec3 _velocity = vec3.Zero, _angularVelocity = vec3.Zero;
 
         public float Mass = 1;
         public float InverseMass { get { return 1f / Mass; } }
 
         public mat3 Inertia = mat3.Identity;
         public mat3 InverseInertia = mat3.Identity;
+        public mat3 InverseInertiaWorldspace = mat3.Identity;
 
         public vec3 ForcesExternal = vec3.Zero;
-        public vec3 ForcesConstraints = vec3.Zero;
-
         public vec3 TorqueExternal = vec3.Zero;
-        public vec3 TorqueConstraints = vec3.Zero;
 
         public bool Static = false;
         public int? Index = null;
         public int UID = -1;
 
         private Transform _tempTransform;
+        private Transform _projectedTransform;
+        private bool _projectedTransformValid = false;
 
+        public Transform ProjectedTransform(Time deltaTime)
+        {
+            if (!_projectedTransformValid)
+            {
+                _projectedTransform = _tempTransform;
+                _projectedTransform.Translation += Velocity * deltaTime.DeltaF;
+                _projectedTransform.Orientation = quat.FromAxisAngle((deltaTime.DeltaF * AngularVelocity).Length, AngularVelocity.NormalizedSafe) * _projectedTransform.Orientation;
+                _projectedTransformValid = true;
+            }
+
+            return _projectedTransform;
+        }
 
         public RigidBody(Entity parent, string collision)
         {
             Parent = parent;
             Collision = Model.LoadCollisionMesh(collision, parent);
 
+            float tr = 1f/6f;
+            float of = 0;
+            Inertia = new mat3(tr, of, of, of, tr, of, of, of, tr);
             InverseInertia = Inertia.Inverse;
+            InverseInertiaWorldspace = InverseInertia;
 
             //Impulse(new vec3(0, -3000f * Mass, 0), new vec3(-.5f, .5f, 0));
         }
@@ -63,8 +79,9 @@ namespace Yahtzee.Game.Physics
         public void Update(Time deltaTime)
         {
             Collision.Overlapping = false;
+            _projectedTransformValid = false;
             Overlapping.Clear();
-            InvolvedConstraints = InvolvedConstraints.FindAll(c => c.StillValid());
+            InvolvedContacts = InvolvedContacts.FindAll(c => c.StillValid());
 
             if (Static) return;
 
@@ -77,14 +94,18 @@ namespace Yahtzee.Game.Physics
             if (Static) return;
 
             _tempTransform = Parent.Transform;
+            var dt = deltaTime.DeltaF;
 
             Velocity += ForcesExternal;
-            Parent.Transform.Translation += deltaTime.DeltaF * Velocity;
+            Parent.Transform.Translation += dt * Velocity;
 
             AngularVelocity += TorqueExternal;
-            var theta = (deltaTime.DeltaF * AngularVelocity).Length;
-            var a = AngularVelocity.NormalizedSafe;
-            Parent.Transform.Rotation = new quat(a * (float)Math.Sin(theta / 2), (float)Math.Cos(theta / 2)) * Parent.Transform.Rotation;
+            Parent.Transform.Orientation = quat.FromAxisAngle((dt * AngularVelocity).Length, AngularVelocity.NormalizedSafe) * Parent.Transform.Orientation;
+
+            ForcesExternal = vec3.Zero;
+            TorqueExternal = vec3.Zero;
+
+            UpdateInertia();
         }
 
         public void ApplyFinalForces(Time deltaTime)
@@ -95,42 +116,18 @@ namespace Yahtzee.Game.Physics
 
             var dt = deltaTime.DeltaF;
 
-            Velocity += ForcesConstraints;
             Parent.Transform.Translation += dt * Velocity;
+            Parent.Transform.Orientation = quat.FromAxisAngle((dt * AngularVelocity).Length, AngularVelocity.NormalizedSafe) * Parent.Transform.Orientation;
 
-            //Console.WriteLine((TorqueConstraints).Length);
+            UpdateInertia();
+        }
 
-            if(TorqueConstraints.LengthSqr == 0 || (tempTorque + TorqueConstraints).Length < decayThreshold)
-            {
-                tempTorque += TorqueConstraints;
-                TorqueConstraints = vec3.Zero;
-
-                float decay = decayRate * dt;
-                vec3 decayVec = new vec3(Math.Abs(tempTorque.x) - decay < 0 ? tempTorque.x : Math.Sign(tempTorque.x) * decay,
-                                         Math.Abs(tempTorque.y) - decay < 0 ? tempTorque.y : Math.Sign(tempTorque.y) * decay,
-                                         Math.Abs(tempTorque.z) - decay < 0 ? tempTorque.z : Math.Sign(tempTorque.z) * decay);
-
-                tempTorque -= decayVec;
-            }
-            else
-            {
-                AngularVelocity += tempTorque;
-                tempTorque = vec3.Zero;
-            }
-
-            AngularVelocity += TorqueConstraints;
-            Parent.Transform.Rotation = quat.FromAxisAngle((dt * AngularVelocity).Length, AngularVelocity.NormalizedSafe) * Parent.Transform.Rotation;
-            //Console.WriteLine(tempTorque);
-
-
-
-            ForcesExternal = vec3.Zero;
-            ForcesConstraints = vec3.Zero;
-
-            TorqueExternal = vec3.Zero;
-            TorqueConstraints = vec3.Zero;
-
-            //Console.WriteLine(Velocity.x);
+        private void UpdateInertia()
+        {
+            var t = Parent.Transform;
+            t.Translation = vec3.Zero;
+            var worldspaceMat = new mat3() { Row0 = t * vec3.UnitX, Row1 = t * vec3.UnitY, Row2 = t * vec3.UnitZ };
+            InverseInertiaWorldspace = worldspaceMat.Transposed * InverseInertia * worldspaceMat;
         }
 
         public void Impulse(vec3 impulse)
@@ -144,7 +141,7 @@ namespace Yahtzee.Game.Physics
             if (Static) return;
 
             ForcesExternal += impulse / Mass;
-            if(point != vec3.Zero) TorqueExternal += InverseInertia * vec3.Cross(point, impulse);
+            if(point != vec3.Zero) TorqueExternal += InverseInertiaWorldspace * vec3.Cross(point, impulse);
         }
 
     }

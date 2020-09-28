@@ -70,8 +70,8 @@ namespace Yahtzee.Game.Physics
                 new Triangle(result.Simplex, 1, 2, 3, center)
             };
 
-            db.Assert(result.M1.Transform.Translation != vec3.NaN);
-            db.Assert(result.M2.Transform.Translation != vec3.NaN);
+            db.Assert(result.Body1.Transform.Translation != vec3.NaN);
+            db.Assert(result.Body2.Transform.Translation != vec3.NaN);
 
             for (int i = 0; i < 999; i++)
             {
@@ -151,7 +151,7 @@ namespace Yahtzee.Game.Physics
                 };
 
                 foreach (vec3 v in result.SimplexPos) Console.WriteLine("Showing: " + v);
-                Console.WriteLine("Pos: " + result.M1.Transform.Translation + ", Rot: " + result.M1.Transform.Rotation);
+                Console.WriteLine("Pos: " + result.Body1.Transform.Translation + ", Rot: " + result.Body1.Transform.Orientation);
 
 
             }

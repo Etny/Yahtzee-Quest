@@ -16,7 +16,7 @@ namespace Yahtzee.Game
 
         public IMovementController MovementController = null;
 
-        public Entity() { Transform = new Transform() { Translation = vec3.Zero, Rotation = quat.Identity, Scale = new vec3(1) }; }
+        public Entity() { Transform = new Transform() { Translation = vec3.Zero, Orientation = quat.Identity, Scale = new vec3(1) }; }
 
         public virtual void Update(Time deltaTime) 
         {

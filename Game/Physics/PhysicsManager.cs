@@ -23,7 +23,7 @@ namespace Yahtzee.Game
         public PenetrationDepthDetector DepthDetector;
 
         private ImmutableList<RigidBody> Bodies;
-        private List<Constraint> ConstraintCache;
+        private List<IConstraint> ConstraintCache;
 
         private static int maxIterations = 50;
         private static int nextID = 0;
@@ -34,7 +34,7 @@ namespace Yahtzee.Game
             DepthDetector = new PenetrationDepthDetector(this);
 
             Bodies = ImmutableList<RigidBody>.Empty;
-            ConstraintCache = new List<Constraint>();
+            ConstraintCache = new List<IConstraint>();
         }
 
         public void RegisterRigidBody(RigidBody body)
@@ -60,7 +60,7 @@ namespace Yahtzee.Game
 
         public void Update(Time deltaTime)
         {
-            var constraintsToSolve = new List<Constraint>();
+            var constraintsToSolve = new List<IConstraint>();
             //if (ConstraintCache.Count > 0) Console.WriteLine(ConstraintCache.Count);
             //return;
 
@@ -89,25 +89,35 @@ namespace Yahtzee.Game
                         body2.Overlapping.Add(body1.UID);
 
                         var col = new ConstraintCollision(result);
-                        constraintsToSolve.Add(col);                        
+                        constraintsToSolve.Add(col);
+                        constraintsToSolve.AddRange(col.GetFrictionConstraints());
                     }
                 }
             }
 
-            foreach (Constraint c in ConstraintCache) constraintsToSolve.Add(c);
+            foreach (IConstraint c in ConstraintCache) if(c.StillValid()) constraintsToSolve.Add(c);
             ConstraintCache.Clear();
 
-            for (int i = 0; i < 1; i++)
-                constraintsToSolve.ForEach(c => c.Resolve(deltaTime));
-
-            foreach(Constraint c in constraintsToSolve)
+            if (constraintsToSolve.Count > 0)
             {
-                c.Age++;
-                if (c.StillValid()) ConstraintCache.Add(c); 
-                else Program.Scene.ContactPointVisualizer.RemovePoints(((ConstraintCollision)c).meshes); 
-            }
 
-            ConstraintCache.Clear();
+                for (int i = 0; i < 12; i++)
+                    constraintsToSolve.FindAll(c => c is ConstraintCollision).ForEach(c => c.Resolve(deltaTime, i));
+
+                constraintsToSolve.FindAll(c => !(c is ConstraintCollision)).ForEach(c => c.Resolve(deltaTime, 0));
+
+                foreach (IConstraint c in constraintsToSolve)
+                {
+                    ConstraintCache.Add(c);
+                    if (c is ConstraintCollision)
+                    {
+                        ((ConstraintCollision)c).EndTimestep();
+                        Program.Scene.ContactPointVisualizer.RemovePoints(((ConstraintCollision)c).meshes);
+                    }
+                }
+
+                //ConstraintCache.Clear();
+            }
 
             Bodies.ForEach(b => b.ApplyFinalForces(deltaTime));
         }

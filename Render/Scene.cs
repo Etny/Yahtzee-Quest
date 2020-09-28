@@ -73,21 +73,14 @@ namespace Yahtzee.Render
             Lights.Add(testLight);
         
             e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
-            //e.Transform.Scale = new vec3(10, 1f, 10);
+            e.Transform.Scale = new vec3(100, 1f, 100);
             e.RigidBody.Static = true;
             Entities.Add(e);
-            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0.48f, -1f, 0)};
+            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(10f, -1f, 0)};
             Entities.Add(Backpack);
-            //Entities.Add(new ModelEntity("Basic/Cube.obj") { Position = new vec3(.4f, 8f, 0f) });
 
             PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
             ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager);
-
-           
-
-            //Backpack.Transform.RotateX(Util.ToRad(45));
-            //Backpack.Transform.RotateZ(Util.ToRad(45));
-            //Backpack.Transform.RotateY(Util.ToRad(45));
         }
 
         public Texture Render()
@@ -150,24 +143,7 @@ namespace Yahtzee.Render
             Program.PhysicsManager.Update(deltaTime);
 
             flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
-            //testLight.Position = new vec3(0, (float)(Math.Cos(deltaTime.Total) * 2), 1);
-
-            //vec3 LightPos = new vec3((float)Math.Cos(deltaTime.Total) * 2, 2, (float)Math.Sin(deltaTime.Total) * 2);
-            //testLight.Direction = (-LightPos).Normalized;
-            //testPointLight.Position = LightPos;
-
-            /*Backpack.Transform.RotateZ(deltaTime.DeltaF * Util.ToRad(45));
-            if (ContactPointVisualizer == null)
-                ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
-            else
-                ContactPointVisualizer.result = Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody);
-
-            ContactPointVisualizer.UpdateContactPoints();*/
             
-
-            //if (t == 2) Backpack.RigidBody.AngularVelocity = new vec3(0, 0, -0.70710677f) / deltaTime.DeltaF;
-            //else Backpack.RigidBody.AngularVelocity = vec3.Zero;
-            //t++;
         }
 
         private void RenderScene(Shader shader)
@@ -207,6 +183,20 @@ namespace Yahtzee.Render
                     PenetrationDepthVisualizer = new PenetrationDepthVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
 
                 PenetrationDepthVisualizer.UpdateDepthTest();
+            }
+            else if (key == Keys.P && action == InputAction.Press)
+            {
+                vec3 o = new vec3(0, 4, 0);
+                Random r = new Random();
+                for(int i = 0; i < 3; i++)
+                {
+                    for(int j = 0; j < 3; j++)
+                    {
+                        ModelEntity m = new ModelEntity("Basic/Cube.obj") { Position = o + new vec3(i * 1.2f, 0, j * 1.2f) };
+                        m.Transform.Rotate((float)r.NextDouble(), new vec3((float)r.NextDouble(), (float)r.NextDouble(), (float)r.NextDouble()));
+                        Entities.Add(m);
+                    }
+                }
             }
         }
     }

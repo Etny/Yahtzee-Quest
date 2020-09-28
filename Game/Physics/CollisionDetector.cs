@@ -61,7 +61,7 @@ namespace Yahtzee.Game.Physics
 #endif
 
         public SupportPoint SumSupport(CollisionResult result, vec3 Dir)
-            => SumSupport(result.M1.Collision, result.M2.Collision, Dir);
+            => SumSupport(result.Body1.Collision, result.Body2.Collision, Dir);
 
         public SupportPoint SumSupport(CollisionMesh m1, CollisionMesh m2, vec3 Dir)
             => new SupportPoint(SingleSupport(m1, Dir), SingleSupport(m2, -Dir));

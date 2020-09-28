@@ -92,6 +92,7 @@ namespace Yahtzee.Main
         public void StartLoop()
         {
             lastFrame = glfw.GetTimerValue();
+            long step = 0;
 
             while (!glfw.WindowShouldClose(window))
             {
@@ -100,9 +101,11 @@ namespace Yahtzee.Main
                 lastFrame = currentFrame;
 
                 //Console.WriteLine($"FPS: {1f / deltaTime}");
+                if (deltaTime > (1f / 60f)) deltaTime = 1f / 60f;
 
                 if (OnTick == null) break;
-                OnTick.Invoke(new Time(deltaTime, glfw.GetTime()));
+                OnTick.Invoke(new Time(deltaTime, glfw.GetTime(), step));
+                step++;
             }
 
             glfw.Terminate();
@@ -143,9 +146,9 @@ namespace Yahtzee.Main
     {
         public readonly double Delta;
         public readonly double Total;
-
+        public readonly long Step;
         public float DeltaF { get { return (float)Delta; } }
 
-        public Time(double delta, double total) { Delta = delta; Total = total; }
+        public Time(double delta, double total, long step) { Delta = delta; Total = total; Step = step; }
     }
 }

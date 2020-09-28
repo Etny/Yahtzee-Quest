@@ -8,85 +8,116 @@ using db = System.Diagnostics.Debug;
 
 namespace Yahtzee.Game.Physics.Constraints
 {
-    class ConstraintCollision : Constraint
+    class ConstraintCollision : IConstraint
     {
+        public RigidBody Body1, Body2;
+        protected vec3[,] _jacobian;
+
+        public int Age = 0;
+
+        public float TotalLambda { get { return _totalLambda; } }
+        public (vec3, vec3) ContactPoints { get { return _contact; } }
+
         protected vec3 _normal = vec3.NaN;
         protected (vec3, vec3) _contact = (vec3.NaN, vec3.NaN);
-        protected float _pendepth = 0;
+        public float _pendepth = 0;
+        protected float _oldPendepth = 0;
 
-        private float tl = 0;
-        private float k = 0;
+        protected float _totalLambda = 0;
+        protected float _effectiveMass = 0;
         public (LineMesh, LineMesh, int, int) meshes;
 
-        public ConstraintCollision(CollisionResult result) : base(result.M1, result.M2) 
+        public ConstraintCollision(CollisionResult result)
         {
-            M1.InvolvedConstraints.Add(this);
-            M2.InvolvedConstraints.Add(this);
+            Body1 = result.Body1;
+            Body2 = result.Body2;
 
             CalculateData(result);
+
+            Body1.InvolvedContacts.Add(this);
+            Body2.InvolvedContacts.Add(this);
         }
 
-        public override bool StillValid()
+        public ConstraintFriction[] GetFrictionConstraints()
         {
-            if (!M1.Overlapping.Contains(M2.UID)) return false;
-            if (Age > 6) return false;
+            vec3 t, bt;
 
-            return true;
+            if (Math.Abs(_normal.x) >= (1f / Math.Sqrt(3)))
+                t = new vec3(_normal.y, -_normal.x, 0).NormalizedSafe;
+            else
+                t = new vec3(0, _normal.z, -_normal.y).NormalizedSafe;
+
+            bt = vec3.Cross(t, _normal);
+
+            return new ConstraintFriction[] { new ConstraintFriction(this, t), new ConstraintFriction(this, bt) };
         }
 
-        public override void Resolve(Time deltaTime)
+        public bool StillValid() => Age <= 4;
+
+        public void Resolve(Time deltaTime, int iter)
         {
+            if (iter == 0) Age++;
+
             if (_pendepth <= 0) return;
+            if (!Body1.Overlapping.Contains(Body2.UID)) return;
 
             //meshes.Item1.SetPoints(new vec3[] { _contact.Item1 });
             //meshes.Item2.SetPoints(new vec3[] { _contact.Item2 });
 
             CalculateJacobian(deltaTime);
 
-            float JV =  vec3.Dot(_jacobian[0, 0], M1.Velocity) +
-                        vec3.Dot(_jacobian[0, 1], M1.AngularVelocity) +
-                        vec3.Dot(_jacobian[1, 0], M2.Velocity) +
-                        vec3.Dot(_jacobian[1, 1], M2.AngularVelocity);
+            float JV =  vec3.Dot(_jacobian[0, 0], Body1.Velocity) +
+                        vec3.Dot(_jacobian[0, 1], Body1.AngularVelocity) +
+                        vec3.Dot(_jacobian[1, 0], Body2.Velocity) +
+                        vec3.Dot(_jacobian[1, 1], Body2.AngularVelocity);
 
-            float bias = (1f / deltaTime.DeltaF) * -_pendepth;
+            float bias = (.3f / deltaTime.DeltaF) * -_pendepth;
 
-            float lambda = k * (-(JV + bias));
+            float lambda = _effectiveMass * (-(JV + bias));
 
-            float oldLambda = tl;
-            tl = Math.Max(0f, tl + lambda);
-            lambda = tl - oldLambda;
+            float oldLambda = _totalLambda;
+            _totalLambda = Math.Max(0f, _totalLambda + lambda);
+            lambda = _totalLambda - oldLambda;
+            
 
-            //Console.WriteLine((_jacobian[0, 1] * lambda).Length);
+            ApplyForces(Body1, deltaTime, Body1.InverseMass * _jacobian[0, 0] * lambda, Body1.InverseInertiaWorldspace * _jacobian[0, 1] * lambda);
 
-            ApplyForces(M1, deltaTime, M1.InverseMass * _jacobian[0, 0] * lambda, M1.InverseInertia * _jacobian[0, 1] * lambda);
-
-            if (!M2.Static)
-                ApplyForces(M2, deltaTime, M2.InverseMass * _jacobian[1, 0] * lambda, M2.InverseInertia * _jacobian[1, 1] * lambda);
+            if (!Body2.Static)
+                ApplyForces(Body2, deltaTime, Body2.InverseMass * _jacobian[1, 0] * lambda, Body2.InverseInertiaWorldspace * _jacobian[1, 1] * lambda);
         }
 
         private void ApplyForces(RigidBody M, Time deltaTime, vec3 deltaVel, vec3 deltaRot)
         {
-            M.ForcesConstraints += deltaVel;
-            M.TorqueConstraints += deltaRot;
+            M.Velocity += deltaVel;
+            M.AngularVelocity += deltaRot;
 
-            foreach (Constraint c in M.InvolvedConstraints)
-                    c.UpdateConstraint(M, deltaTime, deltaVel, deltaRot);
+            db.Assert(M.InvolvedContacts.Count > 0);
+
+            foreach (ConstraintCollision c in M.InvolvedContacts)
+                    c.UpdateConstraint(M, deltaTime);
         }
 
-        public override void UpdateConstraint(RigidBody M, Time deltaTime, vec3 deltaVel, vec3 deltaRot)
+
+        public void UpdateConstraint(RigidBody M, Time deltaTime)
         {
-            if (M != M1 && M != M2) return;
-            vec3 contact = M == M1 ? _contact.Item1 : _contact.Item2;
+            if (M != Body1 && M != Body2) return;
+            vec3 contact = M == Body1 ? _contact.Item1 : _contact.Item2;
 
-            var rot = (quat.FromAxisAngle((deltaTime.DeltaF * deltaRot).Length, deltaRot.NormalizedSafe) * contact) - contact;
-            var deltaPos = (deltaVel * deltaTime.DeltaF);// + rot;
+            var newPos = M.ProjectedTransform(deltaTime);
 
-            //Console.Write("Old pendepth :" + _pendepth);
-            _pendepth += (M == M1 ? 1 : -1) * vec3.Dot(deltaPos, _normal);
-            //Console.WriteLine(", New pendepth: " + _pendepth + ", deltaPos: "+deltaPos + ", actual: "+(vec3.Dot(deltaPos, _normal)));
+            var r = contact - M.Position;
+            var rotated = (newPos.Orientation * M.Transform.Orientation.Inverse) * r;
+            var rot = rotated - r;
+
+            var deltaPos = (newPos.Translation - M.Position) + rot;
+
+            
+            _pendepth = _oldPendepth + (M == Body1 ? 1 : -1) * vec3.Dot(deltaPos, _normal);
+            //if (M == Body1) _contact.Item1 += deltaPos;
+            //if (M == Body2) _contact.Item2 += deltaPos;
         }
 
-
+        public void EndTimestep() => _oldPendepth = _pendepth;
 
         protected void CalculateJacobian(Time deltaTime)
         {
@@ -94,18 +125,18 @@ namespace Yahtzee.Game.Physics.Constraints
 
             //Console.WriteLine(_normal);
 
-            vec3 r1 = _contact.Item1 - (M1.Transform.Translation + (deltaTime.DeltaF * M1.ForcesConstraints)), 
-                 r2 = _contact.Item2 - (M2.Transform.Translation + (deltaTime.DeltaF * M2.ForcesConstraints));
+            vec3 r1 = _contact.Item1 - Body1.Position, /* + (deltaTime.DeltaF * Body1.ForcesConstraints));, */
+                 r2 = _contact.Item2 - Body2.Position; //+ (deltaTime.DeltaF * Body2.ForcesConstraints));
 
             _jacobian[0, 0] = -_normal;
             _jacobian[0, 1] = -vec3.Cross(r1, _normal);
-            _jacobian[1, 0] = !M2.Static ? _normal : vec3.Zero;
-            _jacobian[1, 1] = !M2.Static ? vec3.Cross(r2, _normal) : vec3.Zero;
+            _jacobian[1, 0] = !Body2.Static ? _normal : vec3.Zero;
+            _jacobian[1, 1] = !Body2.Static ? vec3.Cross(r2, _normal) : vec3.Zero;
 
             
-            k = M1.InverseMass + vec3.Dot(_jacobian[0, 1], M1.InverseInertia * _jacobian[0, 1]) +
-                M2.InverseMass + vec3.Dot(_jacobian[1, 1], M2.InverseInertia * _jacobian[1, 1]);
-            k = 1f / k;
+            _effectiveMass = Body1.InverseMass + vec3.Dot(_jacobian[0, 1], Body1.InverseInertiaWorldspace * _jacobian[0, 1]) +
+                             Body2.InverseMass + vec3.Dot(_jacobian[1, 1], Body2.InverseInertiaWorldspace * _jacobian[1, 1]);
+            _effectiveMass = 1f / _effectiveMass;
         }
 
         private void CalculateData(CollisionResult result)
@@ -114,7 +145,8 @@ namespace Yahtzee.Game.Physics.Constraints
 
             _normal = info.Item1.Normal;
             _contact = Program.PhysicsManager.DepthDetector.GetContactInfo(info);
-            _pendepth = info.Item1.DistToOrigin();
+            _pendepth = info.Item1.ClosestPoint().Length;
+            _oldPendepth = _pendepth;
 
             //meshes = Program.Scene.ContactPointVisualizer.AddPoints(_contact);
         }

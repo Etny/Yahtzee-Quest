@@ -11,17 +11,17 @@ namespace Yahtzee.Game.Physics
 {
     class CollisionResult
     {
-        public readonly RigidBody M1, M2;
+        public readonly RigidBody Body1, Body2;
         public readonly List<SupportPoint> Simplex;
 
         public IEnumerable<vec3> SimplexPos { get { return Simplex.Select(p => p.Sup); } }
 
         public bool Colliding;
 
-        public CollisionResult(RigidBody m1, RigidBody m2, List<SupportPoint> simplex, bool colliding = false)
+        public CollisionResult(RigidBody body1, RigidBody body2, List<SupportPoint> simplex, bool colliding = false)
         {
-            M1 = m1;
-            M2 = m2;
+            Body1 = body1;
+            Body2 = body2;
             Simplex = simplex;
             Colliding = colliding;
         }
