@@ -19,6 +19,8 @@ namespace Yahtzee.Game.Physics
         private Shader shader;
 
         public bool Overlapping = false;
+        public vec3 NormalColor = new vec3(1, 0.9f, 0);
+        public vec3 OverlappingColor = new vec3(1, .3f, 0);
 
         public CollisionMesh(vec3[] vertices, uint[] indices) : base()
         {
@@ -67,7 +69,7 @@ namespace Yahtzee.Game.Physics
         {
             shader.Use();
             shader.SetMat4("model", t.ModelMatrix);
-            shader.SetBool("overlapping", Overlapping);
+            shader.SetVec4("color", Overlapping ? new vec4(OverlappingColor, 1) : new vec4(NormalColor, 1));
 
             gl.Disable(EnableCap.CullFace);
             gl.PolygonMode(GLEnum.FrontAndBack, PolygonMode.Line);
@@ -77,12 +79,12 @@ namespace Yahtzee.Game.Physics
             if (Indices != null) gl.DrawElements(PrimitiveType.Triangles, (uint)DrawVertices.Length, DrawElementsType.UnsignedInt, (void*)0);
             else gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)DrawVertices.Length);
 
-            if(highlight >= 0)
-            {
-                gl.PointSize(40);
-                shader.SetBool("overlapping", true);
-                gl.DrawArrays(PrimitiveType.Points, highlight, 1);
-            }
+            //if(highlight >= 0)
+            //{
+            //    gl.PointSize(40);
+            //    shader.SetBool("overlapping", true);
+            //    gl.DrawArrays(PrimitiveType.Points, highlight, 1);
+            //}
 
             gl.PolygonMode(GLEnum.FrontAndBack, PolygonMode.Fill);
             gl.Enable(EnableCap.CullFace);

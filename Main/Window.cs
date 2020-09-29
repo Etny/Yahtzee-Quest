@@ -101,7 +101,7 @@ namespace Yahtzee.Main
                 lastFrame = currentFrame;
 
                 //Console.WriteLine($"FPS: {1f / deltaTime}");
-                if (deltaTime > (1f / 60f)) deltaTime = 1f / 60f;
+                if (deltaTime > (1f / 30f)) deltaTime = 1f / 30f;
 
                 if (OnTick == null) break;
                 OnTick.Invoke(new Time(deltaTime, glfw.GetTime(), step));

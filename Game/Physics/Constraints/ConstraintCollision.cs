@@ -71,7 +71,7 @@ namespace Yahtzee.Game.Physics.Constraints
                         vec3.Dot(_jacobian[1, 0], Body2.Velocity) +
                         vec3.Dot(_jacobian[1, 1], Body2.AngularVelocity);
 
-            float bias = (.3f / deltaTime.DeltaF) * -_pendepth;
+            float bias = (.5f / deltaTime.DeltaF) * -_pendepth;
 
             float lambda = _effectiveMass * (-(JV + bias));
 

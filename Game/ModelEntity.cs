@@ -30,10 +30,11 @@ namespace Yahtzee.Game
 
         public override void Draw(Shader shader)
         {
+            ((MovementControllerRigidBody)MovementController).Collision.DrawOutline(Transform);
+            //RigidBody.aabbMesh.DrawOutline(RigidBody.AABB.GetTransform());
             if (DrawInstanced) return;
             shader.SetMat4("models[0]", Transform.ModelMatrix);
             Model.Draw(shader);
-            ((MovementControllerRigidBody)MovementController).Collision.DrawOutline(Transform);
         }
 
         public override void Update(Time deltaTime)

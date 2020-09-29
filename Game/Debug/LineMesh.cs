@@ -12,7 +12,7 @@ namespace Yahtzee.Game.Debug
 
         private Shader shader, shaderPoint;
 
-        private int MaxPoints = 4;
+        private int MaxPoints = 8;
 
         public vec3[] Points = new vec3[0];
         public vec3[] Colors = new vec3[0];
@@ -53,6 +53,13 @@ namespace Yahtzee.Game.Debug
 
         public void SetColors(vec3[] Colors)
         {
+            if(Colors.Length < Points.Length)
+            {
+                var temp = new vec3[Points.Length];
+                for (int i = 0; i < temp.Length; i++) temp[i] = Colors[i % Colors.Length];
+                Colors = temp;
+            }
+
             this.Colors = Colors;
 
             gl.BindVertexArray(VAO);

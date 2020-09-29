@@ -66,34 +66,27 @@ namespace Yahtzee.Game
 
             Bodies.ForEach(b => b.ApplyInitialForces(deltaTime));
 
-            for (int i = 0; i < Bodies.Count-1; i++)
-            {
-                RigidBody body1 = Bodies[i];
+            foreach (var pair in Broadphase.GetColliderPairs(Bodies)) {
+                var body1 = pair.Item1;
+                var body2 = pair.Item2;
 
-                for(int j = i + 1; j < Bodies.Count; j++)
+                CollisionResult result;
+                if (!body1.Static)
+                    result = Collisions.GJKResult(body1, body2);
+                else
+                    result = Collisions.GJKResult(body2, body1);
+
+
+                if (result.Colliding)
                 {
-                    RigidBody body2 = Bodies[j];
+                    body1.Overlapping.Add(body2.UID);
+                    body2.Overlapping.Add(body1.UID);
 
-                    if (body1.Static && body2.Static) continue;
-
-                    CollisionResult result;
-                    if(!body1.Static) 
-                        result = Collisions.GJKResult(body1, body2);
-                    else 
-                        result = Collisions.GJKResult(body2, body1);
-
-
-                    if (result.Colliding)
-                    {
-                        body1.Overlapping.Add(body2.UID);
-                        body2.Overlapping.Add(body1.UID);
-
-                        var col = new ConstraintCollision(result);
-                        constraintsToSolve.Add(col);
-                        constraintsToSolve.AddRange(col.GetFrictionConstraints());
-                    }
+                    var col = new ConstraintCollision(result);
+                    constraintsToSolve.Add(col);
+                    constraintsToSolve.AddRange(col.GetFrictionConstraints());
                 }
-            }
+            }        
 
             foreach (IConstraint c in ConstraintCache) if(c.StillValid()) constraintsToSolve.Add(c);
             ConstraintCache.Clear();
