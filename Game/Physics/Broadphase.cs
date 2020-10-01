@@ -24,18 +24,9 @@ namespace Yahtzee.Game.Physics
 
                     if (body1.AABB.Intersects(body2.AABB))
                     {
-                        if (body1.Sleeping)
-                        {
-                            if (body1.Overlapping.Contains(body2.UID)) continue;
-                            else body1.WakeUp();
-                        }
-
-                        if (body2.Sleeping)
-                        {
-                            if (body2.Overlapping.Contains(body1.UID)) continue;
-                            else body2.WakeUp();
-                        }
-
+                        if (body1.Sleeping && !body1.AABBOverlapCache.Contains(body2.UID)) body1.WakeUp();
+                        if (body2.Sleeping && !body2.AABBOverlapCache.Contains(body1.UID)) body2.WakeUp();
+                        
                         body1.OverlappingAABB.Add(body2.UID);
                         body2.OverlappingAABB.Add(body1.UID);
                         pairs.Add((body1, body2));

@@ -50,9 +50,10 @@ namespace Yahtzee.Game.Physics.Constraints
 
             //Console.WriteLine("Friction: " + Body1.InverseInertiaWorldspace * _jacobian[0, 1] * lambda + " on step " + deltaTime.Step);
 
-            ApplyForces(Body1, Body1.InverseMass * _jacobian[0, 0] * lambda, Body1.InverseInertiaWorldspace * _jacobian[0, 1] * lambda);
+            if (Body1.PhysicsActive)
+                ApplyForces(Body1, Body1.InverseMass * _jacobian[0, 0] * lambda, Body1.InverseInertiaWorldspace * _jacobian[0, 1] * lambda);
 
-            if (!Body2.Static)
+            if (Body2.PhysicsActive)
                 ApplyForces(Body2, Body2.InverseMass * _jacobian[1, 0] * lambda, Body2.InverseInertiaWorldspace * _jacobian[1, 1] * lambda);
         }
 
@@ -69,10 +70,10 @@ namespace Yahtzee.Game.Physics.Constraints
             vec3 r1 = Contact.ContactPoints.Item1 - Body1.Position,
                  r2 = Contact.ContactPoints.Item2 - Body2.Position;
 
-            _jacobian[0, 0] = -_normal;
-            _jacobian[0, 1] = -vec3.Cross(r1, _normal);
-            _jacobian[1, 0] = !Body2.Static ? _normal : vec3.Zero;
-            _jacobian[1, 1] = !Body2.Static ? vec3.Cross(r2, _normal) : vec3.Zero;
+            _jacobian[0, 0] = Body1.PhysicsActive ? -_normal : vec3.Zero;
+            _jacobian[0, 1] = Body1.PhysicsActive ? -vec3.Cross(r1, _normal) : vec3.Zero;
+            _jacobian[1, 0] = Body2.PhysicsActive ? _normal : vec3.Zero;
+            _jacobian[1, 1] = Body2.PhysicsActive ? vec3.Cross(r2, _normal) : vec3.Zero;
 
             _effectiveMass = Body1.InverseMass + vec3.Dot(_jacobian[0, 1], Body1.InverseInertiaWorldspace * _jacobian[0, 1]) +
                              Body2.InverseMass + vec3.Dot(_jacobian[1, 1], Body2.InverseInertiaWorldspace * _jacobian[1, 1]);

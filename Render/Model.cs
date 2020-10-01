@@ -45,7 +45,7 @@ namespace Yahtzee.Render
         {
             var assimp = new ai.AssimpContext();
 
-            ai.Scene scene = assimp.ImportFile(path, ai.PostProcessSteps.Triangulate | ai.PostProcessSteps.FlipUVs | ai.PostProcessSteps.CalculateTangentSpace);
+            ai.Scene scene = assimp.ImportFile(path, ai.PostProcessSteps.Triangulate | ai.PostProcessSteps.CalculateTangentSpace);
 
             if (scene == null || scene.RootNode == null || scene.SceneFlags.HasFlag(ai.SceneFlags.Incomplete))
             {

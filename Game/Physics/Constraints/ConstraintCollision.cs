@@ -52,11 +52,15 @@ namespace Yahtzee.Game.Physics.Constraints
             return new ConstraintFriction[] { new ConstraintFriction(this, t), new ConstraintFriction(this, bt) };
         }
 
-        public bool StillValid() => Age <= 4;
+        public bool StillValid() => Age <= 4 && (!Body1.Sleeping && !Body2.Sleeping);
 
         public void Resolve(Time deltaTime, int iter)
         {
-            if (iter == 0) Age++;
+            if (iter == 0)
+            {
+                Age++;
+                CalculateJacobian();
+            }
 
             if (_pendepth <= 0) return;
             if (!Body1.Overlapping.Contains(Body2.UID)) return;
@@ -64,14 +68,23 @@ namespace Yahtzee.Game.Physics.Constraints
             //meshes.Item1.SetPoints(new vec3[] { _contact.Item1 });
             //meshes.Item2.SetPoints(new vec3[] { _contact.Item2 });
 
-            CalculateJacobian(deltaTime);
-
             float JV =  vec3.Dot(_jacobian[0, 0], Body1.Velocity) +
                         vec3.Dot(_jacobian[0, 1], Body1.AngularVelocity) +
                         vec3.Dot(_jacobian[1, 0], Body2.Velocity) +
                         vec3.Dot(_jacobian[1, 1], Body2.AngularVelocity);
 
-            float bias = (.5f / deltaTime.DeltaF) * -_pendepth;
+            float restitution = Body1.Restitution * Body2.Restitution;
+            float closingVelocity = 0;
+
+            if (restitution != 0)
+                closingVelocity = vec3.Dot( -Body1.Velocity
+                                            - vec3.Cross(Body1.AngularVelocity, _contact.Item1 - Body1.Position)
+                                            + Body2.Velocity
+                                            + vec3.Cross(Body2.AngularVelocity, _contact.Item2 - Body2.Position),
+                                            _normal);
+
+
+            float bias = (.5f / deltaTime.DeltaF) * -_pendepth + (restitution * closingVelocity);
 
             float lambda = _effectiveMass * (-(JV + bias));
 
@@ -79,10 +92,10 @@ namespace Yahtzee.Game.Physics.Constraints
             _totalLambda = Math.Max(0f, _totalLambda + lambda);
             lambda = _totalLambda - oldLambda;
             
+            if (Body1.PhysicsActive)
+                ApplyForces(Body1, deltaTime, Body1.InverseMass * _jacobian[0, 0] * lambda, Body1.InverseInertiaWorldspace * _jacobian[0, 1] * lambda);
 
-            ApplyForces(Body1, deltaTime, Body1.InverseMass * _jacobian[0, 0] * lambda, Body1.InverseInertiaWorldspace * _jacobian[0, 1] * lambda);
-
-            if (!Body2.Static)
+            if (Body2.PhysicsActive)
                 ApplyForces(Body2, deltaTime, Body2.InverseMass * _jacobian[1, 0] * lambda, Body2.InverseInertiaWorldspace * _jacobian[1, 1] * lambda);
         }
 
@@ -119,19 +132,17 @@ namespace Yahtzee.Game.Physics.Constraints
 
         public void EndTimestep() => _oldPendepth = _pendepth;
 
-        protected void CalculateJacobian(Time deltaTime)
+        protected void CalculateJacobian()
         {
             if(_jacobian == null) _jacobian = new vec3[2, 2];
 
-            //Console.WriteLine(_normal);
+            vec3 r1 = _contact.Item1 - Body1.Position, 
+                 r2 = _contact.Item2 - Body2.Position; 
 
-            vec3 r1 = _contact.Item1 - Body1.Position, /* + (deltaTime.DeltaF * Body1.ForcesConstraints));, */
-                 r2 = _contact.Item2 - Body2.Position; //+ (deltaTime.DeltaF * Body2.ForcesConstraints));
-
-            _jacobian[0, 0] = -_normal;
-            _jacobian[0, 1] = -vec3.Cross(r1, _normal);
-            _jacobian[1, 0] = !Body2.Static ? _normal : vec3.Zero;
-            _jacobian[1, 1] = !Body2.Static ? vec3.Cross(r2, _normal) : vec3.Zero;
+            _jacobian[0, 0] = Body1.PhysicsActive ? -_normal : vec3.Zero;
+            _jacobian[0, 1] = Body1.PhysicsActive ? -vec3.Cross(r1, _normal) : vec3.Zero;
+            _jacobian[1, 0] = Body2.PhysicsActive ? _normal : vec3.Zero;
+            _jacobian[1, 1] = Body2.PhysicsActive ? vec3.Cross(r2, _normal) : vec3.Zero;
 
             
             _effectiveMass = Body1.InverseMass + vec3.Dot(_jacobian[0, 1], Body1.InverseInertiaWorldspace * _jacobian[0, 1]) +

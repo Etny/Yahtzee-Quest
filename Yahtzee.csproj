@@ -18,6 +18,10 @@
     <None Remove="Resource\Models\Backpack\source_attribution.txt" />
     <None Remove="Resource\Models\Backpack\specular.jpg" />
     <None Remove="Resource\Models\Cube.obj" />
+    <None Remove="Resource\Models\Dice\D6Red\d6red.mtl" />
+    <None Remove="Resource\Models\Dice\D6Red\d6red.obj" />
+    <None Remove="Resource\Models\Dice\D6Red\dice.mtl" />
+    <None Remove="Resource\Models\Dice\D6Red\dietexture.jpg" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vis.frag" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vis.vert" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vispoint.frag" />
@@ -61,6 +65,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Models\Basic\Cube.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Dice\D6Red\d6red.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Dice\D6Red\d6red.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Dice\D6Red\dietexture.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\Debug\Visualizer\vis.frag">

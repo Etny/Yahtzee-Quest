@@ -18,16 +18,18 @@ namespace Yahtzee.Game.Physics
         public Entity Parent;
         public CollisionMesh Collision;
         public BoundingBox AABB;
+        private static readonly float AABBSkinSize = .1f;
         //public CollisionMesh aabbMesh;
 
         public bool Sleeping = false;
         public List<int> AABBOverlapCache = new List<int>();
-        private float posDelta = 0;
+        private vec3 posDelta = vec3.Zero;
+        private vec3 rotDelta = vec3.Zero;
         private float timeDelta = 0;
         private float sleepImmunity = SleepImmunityTime;
 
         private static readonly float PosDeltaSleepThreshold = .2f;
-        private static readonly float TimeDeltaSleepThreshold = 1f;
+        private static readonly float TimeDeltaSleepThreshold = 2f;
         private static readonly float SleepImmunityTime = 3f;
 
         public vec3 Position { get { return Parent.Position; } }
@@ -50,7 +52,7 @@ namespace Yahtzee.Game.Physics
         public mat3 InverseInertiaWorldspace = mat3.Identity;
 
         public float Friction = 1f;
-
+        public float Restitution = 0f;
 
         public vec3 ForcesExternal = vec3.Zero;
         public vec3 TorqueExternal = vec3.Zero;
@@ -62,6 +64,8 @@ namespace Yahtzee.Game.Physics
         private Transform _tempTransform;
         private Transform _projectedTransform;
         private bool _projectedTransformValid = false;
+
+        public bool PhysicsActive { get { return !Sleeping && !Static; } }
 
         public RigidBody(Entity parent, string collision)
         {
@@ -155,12 +159,13 @@ namespace Yahtzee.Game.Physics
         {
             if(sleepImmunity > 0) { sleepImmunity -= deltaTime.DeltaF; return; }
 
-            posDelta += (_tempTransform.Translation - Transform.Translation).Length;
-            posDelta += (float)(Transform.Orientation * _tempTransform.Orientation.Inverse).EulerAngles.Length;
+            posDelta += _tempTransform.Translation - Transform.Translation;
+            rotDelta += (vec3)(Transform.Orientation * _tempTransform.Orientation.Inverse).EulerAngles;
             
-            if(posDelta >= PosDeltaSleepThreshold)
+            if((posDelta.Length + rotDelta.Length) >= PosDeltaSleepThreshold)
             {
-                posDelta = 0;
+                posDelta = vec3.Zero;
+                rotDelta = vec3.Zero;
                 timeDelta = 0;
                 return;
             }
@@ -206,7 +211,7 @@ namespace Yahtzee.Game.Physics
                     float d = vec3.Dot(v, dir);
                     if (j != 0 && dots[i] >= d) continue;
                     dots[i] = d;
-                    verts[i] = v;
+                    verts[i] = v + (AABBSkinSize * dir);
                 }
             }
 

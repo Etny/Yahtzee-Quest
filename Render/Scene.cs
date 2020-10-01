@@ -76,10 +76,8 @@ namespace Yahtzee.Render
             e.Transform.Scale = new vec3(100, 1f, 100);
             e.RigidBody.Static = true;
             Entities.Add(e);
-            Backpack = new ModelEntity("Basic/Cube.obj") { Position = new vec3(10f, -1f, 0)};
-            Entities.Add(Backpack);
 
-            PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
+            //PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
             ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager);
         }
 
@@ -98,7 +96,7 @@ namespace Yahtzee.Render
             CurrentCamera.SetData(defaultShader);
             setLightingData();
             RenderScene(defaultShader);
-            PhysicsVisualizer.Draw();
+            //PhysicsVisualizer.Draw();
             PenetrationDepthVisualizer?.Draw();
             ContactPointVisualizer?.Draw();
 
@@ -195,7 +193,7 @@ namespace Yahtzee.Render
                 {
                     for(int j = 0; j < 3; j++)
                     {
-                        ModelEntity m = new ModelEntity("Basic/Cube.obj") { Position = o + new vec3(i * 1.2f, 0, j * 1.2f) };
+                        ModelEntity m = new ModelEntity("Dice/D6Red/d6red.obj") { Position = o + new vec3(i * 1.2f, 0, j * 1.2f) };
                         m.Transform.Rotate((float)r.NextDouble(), new vec3((float)r.NextDouble(), (float)r.NextDouble(), (float)r.NextDouble()));
                         Entities.Add(m);
                     }

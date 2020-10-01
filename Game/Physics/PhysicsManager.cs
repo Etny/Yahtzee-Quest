@@ -25,7 +25,6 @@ namespace Yahtzee.Game
         private ImmutableList<RigidBody> Bodies;
         private List<IConstraint> ConstraintCache;
 
-        private static int maxIterations = 50;
         private static int nextID = 0;
 
         public PhysicsManager()
@@ -59,7 +58,7 @@ namespace Yahtzee.Game
             => Bodies;
 
         public void Update(Time deltaTime)
-        {
+        {            
             var constraintsToSolve = new List<IConstraint>();
             //if (ConstraintCache.Count > 0) Console.WriteLine(ConstraintCache.Count);
             //return;

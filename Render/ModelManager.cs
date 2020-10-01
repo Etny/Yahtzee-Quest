@@ -36,7 +36,7 @@ namespace Yahtzee.Render
                     int amount = l.Count - i <= 100 ? l.Count - i : 100;
 
                     for (int c = 0; c < amount; c++)
-                        shader.SetMat4($"models[{i+c}]", l[i + c].Transform.ModelMatrix);
+                        shader.SetMat4($"models[{c}]", l[i + c].Transform.ModelMatrix);
 
                     l[0].Model.Draw(shader, amount);
                 }
