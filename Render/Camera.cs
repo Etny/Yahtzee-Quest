@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Numerics;
 using System.Text;
 using Yahtzee.Game;
+using Yahtzee.Game.Entities;
 using Yahtzee.Main;
 
 namespace Yahtzee.Render

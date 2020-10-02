@@ -7,6 +7,7 @@ using Yahtzee.Main;
 using GlmSharp;
 using Yahtzee.Render.Textures;
 using Silk.NET.GLFW;
+using Yahtzee.Game.Entities;
 
 namespace Yahtzee.Render
 {
@@ -72,9 +73,8 @@ namespace Yahtzee.Render
             testLight.SetShadowsEnabled(true);
             Lights.Add(testLight);
         
-            e = new ModelEntity("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
+            e = new EntityStaticBody("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
             e.Transform.Scale = new vec3(100, 1f, 100);
-            e.RigidBody.Static = true;
             Entities.Add(e);
 
             //PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
@@ -168,23 +168,18 @@ namespace Yahtzee.Render
             else if (key == Keys.V && action == InputAction.Press)
                 Backpack.Position += new vec3(0, 0.001f, 0);
 
-            else if (key == Keys.B && action == InputAction.Press)
-            {
-                vec3 PenDepth = Program.PhysicsManager.DepthDetector.GetPenetrationDepth(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody));
-                Backpack.Position -= PenDepth;
-            }
-            else if (key == Keys.C && action == InputAction.Press)
-            {
-                ContactPointVisualizer.SetResult(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody));
-                ContactPointVisualizer.UpdateContactPoints();
-            }
-            else if (key == Keys.Apostrophe && action == InputAction.Press)
-            {
-                if (PenetrationDepthVisualizer == null)
-                    PenetrationDepthVisualizer = new PenetrationDepthVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
+            //else if (key == Keys.C && action == InputAction.Press)
+            //{
+            //    ContactPointVisualizer.SetResult(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody));
+            //    ContactPointVisualizer.UpdateContactPoints();
+            //}
+            //else if (key == Keys.Apostrophe && action == InputAction.Press)
+            //{
+            //    if (PenetrationDepthVisualizer == null)
+            //        PenetrationDepthVisualizer = new PenetrationDepthVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
 
-                PenetrationDepthVisualizer.UpdateDepthTest();
-            }
+            //    PenetrationDepthVisualizer.UpdateDepthTest();
+            //}
             else if (key == Keys.P && action == InputAction.Press)
             {
                 vec3 o = new vec3(0, 4, 0);
@@ -193,11 +188,18 @@ namespace Yahtzee.Render
                 {
                     for(int j = 0; j < 3; j++)
                     {
-                        ModelEntity m = new ModelEntity("Dice/D6Red/d6red.obj") { Position = o + new vec3(i * 1.2f, 0, j * 1.2f) };
+                        EntityDie m = new EntityDie("Dice/D6Red/d6red.obj") { Position = o + new vec3(i * 1.2f, 0, j * 1.2f) };
                         m.Transform.Rotate((float)r.NextDouble(), new vec3((float)r.NextDouble(), (float)r.NextDouble(), (float)r.NextDouble()));
                         Entities.Add(m);
                     }
                 }
+            }
+            else if (key == Keys.O && action == InputAction.Press)
+            {
+                Random r = new Random();
+                EntityDie m = new EntityDie("Dice/D6Red/d6red.obj") { Position = new vec3(0, 4, 0) };
+                m.Transform.Rotate((float)r.NextDouble(), new vec3((float)r.NextDouble()*3, (float)r.NextDouble()*3, (float)r.NextDouble()*3));
+                Entities.Add(m);                 
             }
         }
     }

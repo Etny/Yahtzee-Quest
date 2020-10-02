@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using Yahtzee.Game.Debug;
+using Yahtzee.Game.Entities;
 using Yahtzee.Game.Physics.Constraints;
 using Yahtzee.Main;
 using Yahtzee.Render;
@@ -17,6 +18,7 @@ namespace Yahtzee.Game.Physics
 
         public Entity Parent;
         public CollisionMesh Collision;
+        public Transform CollisionTransform = Transform.Identity;
         public BoundingBox AABB;
         private static readonly float AABBSkinSize = .1f;
         //public CollisionMesh aabbMesh;
@@ -27,13 +29,15 @@ namespace Yahtzee.Game.Physics
         private vec3 rotDelta = vec3.Zero;
         private float timeDelta = 0;
         private float sleepImmunity = SleepImmunityTime;
+        public event EventHandler OnFallAsleep;
+        public event EventHandler OnWakeUp;
 
-        private static readonly float PosDeltaSleepThreshold = .2f;
-        private static readonly float TimeDeltaSleepThreshold = 2f;
+        private static readonly float PosDeltaSleepThreshold = .35f;
+        private static readonly float TimeDeltaSleepThreshold = 1f;
         private static readonly float SleepImmunityTime = 3f;
 
-        public vec3 Position { get { return Parent.Position; } }
-        public Transform Transform { get { return Parent.Transform; } }
+        public vec3 Position { get { return Transform.Translation; } }
+        public Transform Transform { get { return Parent.Transform * CollisionTransform; } }
         public List<int> Overlapping = new List<int>();
         public List<int> OverlappingAABB = new List<int>();
         public List<ConstraintCollision> InvolvedContacts = new List<ConstraintCollision>();
@@ -75,8 +79,7 @@ namespace Yahtzee.Game.Physics
             //aabbMesh = Model.LoadCollisionMesh(collision);
             UpdateAABB();
 
-
-            float tr = 1f/6f;
+            float tr = 1f / 6f * Parent.Transform.Scale.x;
             float of = 0;
             Inertia = new mat3(tr, of, of, of, tr, of, of, of, tr);
             InverseInertia = Inertia.Inverse;
@@ -152,6 +155,7 @@ namespace Yahtzee.Game.Physics
             Sleeping = false;
             AABBOverlapCache.Clear();
             sleepImmunity = SleepImmunityTime;
+            OnWakeUp?.Invoke(this, null);
             Collision.NormalColor = new vec3(1, 0.9f, 0);
         }
 
@@ -159,8 +163,8 @@ namespace Yahtzee.Game.Physics
         {
             if(sleepImmunity > 0) { sleepImmunity -= deltaTime.DeltaF; return; }
 
-            posDelta += _tempTransform.Translation - Transform.Translation;
-            rotDelta += (vec3)(Transform.Orientation * _tempTransform.Orientation.Inverse).EulerAngles;
+            posDelta += _tempTransform.Translation - Parent.Transform.Translation;
+            rotDelta += (vec3)(Parent.Transform.Orientation * _tempTransform.Orientation.Inverse).EulerAngles;
             
             if((posDelta.Length + rotDelta.Length) >= PosDeltaSleepThreshold)
             {
@@ -176,6 +180,8 @@ namespace Yahtzee.Game.Physics
             {
                 Sleeping = true;
                 AABBOverlapCache.AddRange(OverlappingAABB);
+                OnFallAsleep?.Invoke(this, null);
+
                 Collision.NormalColor = new vec3(.6f, .1f, .7f);
             }
         }
@@ -194,29 +200,7 @@ namespace Yahtzee.Game.Physics
         }
 
         private void UpdateAABB()
-        {
-            vec3[] dirs = { vec3.UnitX, vec3.UnitY, vec3.UnitZ,
-                           -vec3.UnitX, -vec3.UnitY, -vec3.UnitZ};
-
-            float[] dots = new float[6];
-            vec3[] verts = new vec3[6];
-
-            for (int j = 0; j < Collision.CollisionVertices.Length; j++)
-            {
-                var v = Transform * Collision.CollisionVertices[j];
-
-                for(int i = 0; i < 6; i++)
-                {
-                    var dir = dirs[i];
-                    float d = vec3.Dot(v, dir);
-                    if (j != 0 && dots[i] >= d) continue;
-                    dots[i] = d;
-                    verts[i] = v + (AABBSkinSize * dir);
-                }
-            }
-
-            AABB.Update(new vec3(verts[0].x, verts[1].y, verts[2].z), new vec3(verts[3].x, verts[4].y, verts[5].z));
-        }
+            => AABB = BoundingBox.FromCollisionMesh(Collision, Transform, AABBSkinSize);
 
         public void Impulse(vec3 impulse, bool wakeup = true)
             => Impulse(impulse, vec3.Zero, wakeup);

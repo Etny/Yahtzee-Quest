@@ -52,15 +52,12 @@ namespace Yahtzee.Game.Physics.Constraints
             return new ConstraintFriction[] { new ConstraintFriction(this, t), new ConstraintFriction(this, bt) };
         }
 
-        public bool StillValid() => Age <= 4 && (!Body1.Sleeping && !Body2.Sleeping);
+        public bool StillValid() => Age <= 4 && (Body1.PhysicsActive || Body2.PhysicsActive);
 
         public void Resolve(Time deltaTime, int iter)
         {
             if (iter == 0)
-            {
-                Age++;
-                CalculateJacobian();
-            }
+                { Age++; CalculateJacobian(); }
 
             if (_pendepth <= 0) return;
             if (!Body1.Overlapping.Contains(Body2.UID)) return;

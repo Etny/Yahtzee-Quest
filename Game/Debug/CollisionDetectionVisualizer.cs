@@ -6,6 +6,7 @@ using System.Text;
 using GlmSharp;
 using Silk.NET.OpenGL;
 using Yahtzee.Game.Debug;
+using Yahtzee.Game.Entities;
 using Yahtzee.Game.Physics;
 using Yahtzee.Render;
 

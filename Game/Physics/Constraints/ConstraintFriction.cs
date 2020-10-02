@@ -33,7 +33,7 @@ namespace Yahtzee.Game.Physics.Constraints
             if (iter != 0) return;
             if (Contact._pendepth < -0.2) return;
 
-            CalculateJacobian(deltaTime);
+            CalculateJacobian();
 
             float JV =  vec3.Dot(_jacobian[0, 0], Body1.Velocity) +
                         vec3.Dot(_jacobian[0, 1], Body1.AngularVelocity) +
@@ -63,7 +63,7 @@ namespace Yahtzee.Game.Physics.Constraints
             M.AngularVelocity += deltaRot;
         }
 
-        protected void CalculateJacobian(Time deltaTime)
+        protected void CalculateJacobian()
         {
             if (_jacobian == null) _jacobian = new vec3[2, 2];
 

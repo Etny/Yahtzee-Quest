@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using GlmSharp;
+using Yahtzee.Game.Physics;
+using Yahtzee.Render;
 
 namespace Yahtzee.Game
 {
@@ -9,26 +12,68 @@ namespace Yahtzee.Game
     {
         public vec3 Min, Max;
 
-        public BoundingBox(vec3 cA, vec3 cB)
+        public BoundingBox(vec3 min, vec3 max)
         {
-            Min = new vec3(cA.x - cB.x <= 0 ? cA.x : cB.x,
-                           cA.y - cB.y <= 0 ? cA.y : cB.y,
-                           cA.z - cB.z <= 0 ? cA.z : cB.z);
-
-            Max = new vec3(cA.x - cB.x <= 0 ? cB.x : cA.x,
-                           cA.y - cB.y <= 0 ? cB.y : cA.y,
-                           cA.z - cB.z <= 0 ? cB.z : cA.z);
+            Min = min;
+            Max = max;
         }
 
-        public void Update(vec3 cA, vec3 cB)
+        public static BoundingBox FromCorners(vec3 cA, vec3 cB)
         {
-            Min = new vec3(cA.x - cB.x <= 0 ? cA.x : cB.x,
-                           cA.y - cB.y <= 0 ? cA.y : cB.y,
-                           cA.z - cB.z <= 0 ? cA.z : cB.z);
+            var Min = new vec3(cA.x - cB.x <= 0 ? cA.x : cB.x,
+                               cA.y - cB.y <= 0 ? cA.y : cB.y,
+                               cA.z - cB.z <= 0 ? cA.z : cB.z);
 
-            Max = new vec3(cA.x - cB.x <= 0 ? cB.x : cA.x,
-                           cA.y - cB.y <= 0 ? cB.y : cA.y,
-                           cA.z - cB.z <= 0 ? cB.z : cA.z);
+            var Max = new vec3(cA.x - cB.x <= 0 ? cB.x : cA.x,
+                               cA.y - cB.y <= 0 ? cB.y : cA.y,
+                               cA.z - cB.z <= 0 ? cB.z : cA.z);
+
+            return new BoundingBox(Min, Max);
+        }
+
+        public static BoundingBox FromMesh(Mesh m, Transform t, float padding = 0)
+            => FromVertexPositions(m.Vertices.Select(v => v.Position).Distinct().ToArray(), t, padding);
+        
+        public static BoundingBox FromMesh(Mesh m,  float padding = 0)
+            => FromVertexPositions(m.Vertices.Select(v => v.Position).Distinct().ToArray(), padding);
+
+        public static BoundingBox FromCollisionMesh(CollisionMesh m, Transform t, float padding = 0)
+            => FromVertexPositions(m.CollisionVertices, t, padding);
+
+        public static BoundingBox FromCollisionMesh(CollisionMesh m, float padding = 0)
+            => FromVertexPositions(m.CollisionVertices, padding);
+
+        public static BoundingBox FromVertexPositions(vec3[] vs, float padding = 0)
+            => FromVertexPositions(vs, Transform.Identity, padding);
+
+        public static BoundingBox FromVertexPositions(vec3[] vs, Transform t, float padding = 0)
+        {
+            vec3[] dirs = { vec3.UnitX, vec3.UnitY, vec3.UnitZ,
+                           -vec3.UnitX, -vec3.UnitY, -vec3.UnitZ};
+
+            float[] dots = new float[6];
+            vec3[] verts = new vec3[6];
+
+            for (int j = 0; j < vs.Length; j++)
+            {
+                var v = t * vs[j];
+
+                for (int i = 0; i < 6; i++)
+                {
+                    var dir = dirs[i];
+                    float d = vec3.Dot(v, dir);
+                    if (j != 0 && dots[i] >= d) continue;
+                    dots[i] = d;
+                    verts[i] = v + (padding * dir);
+                }
+            }
+
+            return FromCorners(new vec3(verts[0].x, verts[1].y, verts[2].z), new vec3(verts[3].x, verts[4].y, verts[5].z));
+        }
+
+        public BoundingBox Translated(vec3 translation)
+        {
+            return new BoundingBox(Min + translation, Max + translation);
         }
 
         public bool Intersects(BoundingBox box)

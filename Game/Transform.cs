@@ -7,7 +7,7 @@ namespace Yahtzee.Game
 {
     struct Transform
     {
-        public static Transform Identity = new Transform() { Translation = vec3.Zero, Orientation = quat.Identity, Scale = new vec3(1) };
+        public static readonly Transform Identity = new Transform() { Translation = vec3.Zero, Orientation = quat.Identity, Scale = new vec3(1) };
 
         public vec3 Translation;
         public quat Orientation;
@@ -26,5 +26,13 @@ namespace Yahtzee.Game
             => (ModelMatrix * new vec4(v, 1)).xyz;
 
         public static vec3 operator *(Transform t, vec3 rhs) => t.Apply(rhs);
+        public static Transform operator *(Transform lhs, Transform rhs)
+        {
+            Transform t = Identity;
+            t.Translation = lhs.Translation + rhs.Translation;
+            t.Scale = lhs.Scale * rhs.Scale;
+            t.Orientation = rhs.Orientation * lhs.Orientation;
+            return t;
+        }
     }
 }

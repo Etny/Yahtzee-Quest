@@ -6,7 +6,7 @@ using GlmSharp;
 using Yahtzee.Main;
 using Yahtzee.Render;
 
-namespace Yahtzee.Game
+namespace Yahtzee.Game.Entities
 {
     abstract class Entity
     {
@@ -18,7 +18,7 @@ namespace Yahtzee.Game
 
         public Entity() { Transform = new Transform() { Translation = vec3.Zero, Orientation = quat.Identity, Scale = new vec3(1) }; }
 
-        public virtual void Update(Time deltaTime) 
+        public virtual void Update(Time deltaTime)
         {
             if (MovementController != null)
                 MovementController.UpdateMovement(deltaTime, this);

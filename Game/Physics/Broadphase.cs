@@ -20,7 +20,7 @@ namespace Yahtzee.Game.Physics
                 {
                     RigidBody body2 = bodies[j];
 
-                    if ((body1.Static || body1.Sleeping) && (body2.Static || body2.Sleeping)) continue;
+                    if (!body1.PhysicsActive && !body2.PhysicsActive) continue;
 
                     if (body1.AABB.Intersects(body2.AABB))
                     {

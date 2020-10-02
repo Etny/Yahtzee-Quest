@@ -19,6 +19,18 @@ namespace Yahtzee.Main
         public static float ToDeg(float rad)
             => (float)(rad / Math.PI) * 180;
 
+        public static vec3 ToRad(vec3 v)
+            => new vec3(v.x.AsRad(), v.y.AsRad(), v.z.AsRad());
+
+        public static vec3 ToDeg(vec3 v)
+            => new vec3(v.x.AsDeg(), v.y.AsDeg(), v.z.AsDeg());
+
+        public static vec3 asRad(this vec3 v)
+            => new vec3(v.x.AsRad(), v.y.AsRad(), v.z.AsRad());
+
+        public static vec3 asDeg(this vec3 v)
+            => new vec3(v.x.AsDeg(), v.y.AsDeg(), v.z.AsDeg());
+
         public static float AsRad(this float deg)
            => (float)((deg / 180) * Math.PI);
 

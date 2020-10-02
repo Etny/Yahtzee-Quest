@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Yahtzee.Game;
+using Yahtzee.Game.Entities;
 
 namespace Yahtzee.Render
 {
