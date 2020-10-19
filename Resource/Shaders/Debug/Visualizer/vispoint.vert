@@ -5,6 +5,7 @@ layout (location = 1) in vec3 aColor;
 layout (std140) uniform Matrices
 {
 	mat4 projection;
+	mat4 ortho;
 	mat4 view;
 };
 

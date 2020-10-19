@@ -22,6 +22,7 @@ namespace Yahtzee.Render
         public PointLight testPointLight;
         private ModelEntity Backpack;
         private ModelEntity e;
+        private DiceSet dice;
 
         private Shader lightingShaderOrtho;
         private Shader lightingShaderPersp;
@@ -76,6 +77,8 @@ namespace Yahtzee.Render
             e = new EntityStaticBody("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
             e.Transform.Scale = new vec3(100, 1f, 100);
             Entities.Add(e);
+
+            dice = new DiceSet();
 
             //PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
             ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager);
@@ -200,6 +203,10 @@ namespace Yahtzee.Render
                 EntityDie m = new EntityDie("Dice/D6Red/d6red.obj") { Position = new vec3(0, 4, 0) };
                 m.Transform.Rotate((float)r.NextDouble(), new vec3((float)r.NextDouble()*3, (float)r.NextDouble()*3, (float)r.NextDouble()*3));
                 Entities.Add(m);                 
+            }
+            else if (key == Keys.Q && action == InputAction.Press)
+            {
+                dice.Populate(5);
             }
         }
     }

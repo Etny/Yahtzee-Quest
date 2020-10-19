@@ -9,6 +9,7 @@ layout (location = 4) in vec3 aBitangent;
 layout (std140) uniform Matrices
 {
 	mat4 projection;
+	mat4 ortho;
 	mat4 view;
 };
 
@@ -56,10 +57,13 @@ out TangentData{
 	vec3 tangentPos[MaxLights];
 } tangentData;
 
+uniform bool RenderOrtho = false;
+
 void main()
 {
 	mat4 model = models[gl_InstanceID];
-	gl_Position = projection * view * model * vec4(aPos, 1.0);
+	mat4 project = RenderOrtho ? ortho : projection;
+	gl_Position = project * view * model * vec4(aPos, 1.0);
 	vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
 	vs_out.TexCoords = vec2(aTexCoords.x, aTexCoords.y);
 

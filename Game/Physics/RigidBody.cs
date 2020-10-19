@@ -63,6 +63,9 @@ namespace Yahtzee.Game.Physics
 
         public bool Static = false;
         public int? Index = null;
+
+        
+
         public int UID = -1;
 
         private Transform _tempTransform;
@@ -86,7 +89,9 @@ namespace Yahtzee.Game.Physics
             InverseInertiaWorldspace = InverseInertia;
         }
 
-        ~RigidBody() => Program.PhysicsManager.DeregisterRigidBody(this);
+        ~RigidBody() => Deregister();
+
+        public void Deregister() => Program.PhysicsManager.DeregisterRigidBody(this);
 
         public void Update(Time deltaTime)
         {

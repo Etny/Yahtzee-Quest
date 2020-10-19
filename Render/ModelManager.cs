@@ -1,4 +1,5 @@
-﻿using GlmSharp;
+﻿
+using GlmSharp;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -29,8 +30,9 @@ namespace Yahtzee.Render
         public static void DrawModels(Shader shader)
         {
 
-            foreach(var l in Entities.Values)
+            foreach(var e in Entities.Values)
             {
+                var l = e.FindAll(m => m.DrawInstanced);
                 for(int i = 0; i < l.Count; i += 100)
                 {
                     int amount = l.Count - i <= 100 ? l.Count - i : 100;

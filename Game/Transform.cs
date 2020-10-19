@@ -25,6 +25,17 @@ namespace Yahtzee.Game
         public vec3 Apply(vec3 v)
             => (ModelMatrix * new vec4(v, 1)).xyz;
 
+        public static Transform Lerp(Transform A, Transform B, float Ratio)
+        {
+            Transform t = Identity;
+
+            t.Translation = vec3.Lerp(A.Translation, B.Translation, Ratio);
+            t.Orientation = quat.Lerp(A.Orientation, B.Orientation, Ratio).NormalizedSafe;
+            t.Scale = vec3.Lerp(A.Scale, B.Scale, Ratio);
+
+            return t;
+        }
+
         public static vec3 operator *(Transform t, vec3 rhs) => t.Apply(rhs);
         public static Transform operator *(Transform lhs, Transform rhs)
         {

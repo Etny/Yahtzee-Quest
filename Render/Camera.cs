@@ -38,22 +38,27 @@ namespace Yahtzee.Render
 
             matricesBuffer = gl.CreateBuffer();
             gl.BindBuffer(BufferTargetARB.UniformBuffer, matricesBuffer);
-            gl.BufferData(BufferTargetARB.UniformBuffer, (uint)(2 * sizeof(mat4)), null, BufferUsageARB.StaticDraw);
+            gl.BufferData(BufferTargetARB.UniformBuffer, (uint)(3 * sizeof(mat4)), null, BufferUsageARB.StaticDraw);
             gl.BindBufferBase(BufferTargetARB.UniformBuffer, 0, matricesBuffer);
 
             Size windowSize = Program.Window.GetSize();
+            float aspectRatio = (float)windowSize.Height / (float)windowSize.Width;
+            float orthoSize = 5f;
+            mat4 orthoMatrix = mat4.Ortho(-orthoSize, orthoSize, -orthoSize * aspectRatio, orthoSize * aspectRatio, .1f, 1000f);
             mat4 projectionMatrix = mat4.PerspectiveFov(Util.ToRad(Fov), windowSize.Width, windowSize.Height, .1f, 1000f);
             gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, (uint)sizeof(mat4), &projectionMatrix);
+            gl.BufferSubData(BufferTargetARB.UniformBuffer, sizeof(mat4), (uint)sizeof(mat4), &orthoMatrix);
+
         }
 
         public mat4 LookAt() => mat4.LookAt(Position, Position + GetDirection(), Up);
-        public vec3 GetDirection() => Transform.Orientation * Front;
+        public vec3 GetDirection() => (Transform.Orientation * Front).NormalizedSafe;
 
         public void SetData(Shader shader)
         {
             mat4 viewMat = LookAt();
             gl.BindBuffer(BufferTargetARB.UniformBuffer, matricesBuffer);
-            gl.BufferSubData(BufferTargetARB.UniformBuffer, sizeof(mat4), (uint)sizeof(mat4), &viewMat);
+            gl.BufferSubData(BufferTargetARB.UniformBuffer, 2 * sizeof(mat4), (uint)sizeof(mat4), &viewMat);
             shader.SetVec3("viewPos", Position);
         }
 
