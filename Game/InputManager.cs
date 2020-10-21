@@ -1,4 +1,5 @@
-﻿using Silk.NET.GLFW;
+﻿using GlmSharp;
+using Silk.NET.GLFW;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,12 +10,17 @@ namespace Yahtzee.Game
     class InputManager
     {
         private List<Keys> Pressed = new List<Keys>();
-
+        public vec2 MousePosition { get; protected set; } = vec2.Zero;
 
         public InputManager()
         {
             Program.Window.OnButton += OnButton;
+            Program.Window.OnCursorMove += OnCursor;
         }
+
+        private void OnCursor(double x, double y, double deltaX, double deltaY)        
+            => MousePosition = new vec2((float)x, (float)y);
+        
 
         private void OnButton(Keys key, InputAction action, KeyModifiers mods)
         {

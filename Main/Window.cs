@@ -61,7 +61,7 @@ namespace Yahtzee.Main
             glfw.SetCursorEnterCallback(window, OnWindowCursorEnter);
             glfw.SetCursorPosCallback(window, OnWindowCursor);
             //glfw.SetScrollCallback(window, ScrollInput);
-            glfw.SetInputMode(window, CursorStateAttribute.Cursor, CursorModeValue.CursorDisabled);
+            //glfw.SetInputMode(window, CursorStateAttribute.Cursor, CursorModeValue.CursorDisabled);
 
             return true;
         }
