@@ -26,8 +26,7 @@ namespace Yahtzee.Game.Entities
         public vec3 CameraOffset = vec3.Zero;
 
         private int _rolledIndex = 0;
-
-        LineMesh dm;
+        
         public bool Center = false;
 
         public EntityDie(string modelPath) : base(modelPath)
@@ -37,7 +36,7 @@ namespace Yahtzee.Game.Entities
 
             MovementController = RigidBodyController;
 
-            dm = new LineMesh(colors: new vec3[] { new vec3(.7f, .2f, .3f), new vec3(.7f, .2f, .3f) });
+            //dm = new LineMesh(colors: new vec3[] { new vec3(.7f, .2f, .3f), new vec3(.7f, .2f, .3f) });
         }
 
         public void CalculateRolledIndex()
@@ -108,7 +107,8 @@ namespace Yahtzee.Game.Entities
         {
             //RigidBody.aabbMesh.DrawOutline(RigidBody.AABB.GetTransform());
             //((MovementControllerRigidBody)MovementController).Collision.DrawOutline(RigidBody.Transform);
-            dm.Draw(null);
+            //dm.Draw(null);
+
             base.Draw(shader);
         }
     }

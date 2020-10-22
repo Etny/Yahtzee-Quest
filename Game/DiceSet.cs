@@ -5,6 +5,7 @@ using Yahtzee.Game.Entities;
 using GlmSharp;
 using Yahtzee.Main;
 using Yahtzee.Game.Physics;
+using Yahtzee.Render;
 
 namespace Yahtzee.Game
 {
@@ -14,9 +15,39 @@ namespace Yahtzee.Game
 
         private int _sleepCount = 0;
 
+        Shader HighlightShader;
+
         public DiceSet()
         {
-            
+            HighlightShader = Program.PostProcessManager.AddPostProcessShader("glow");
+            HighlightShader.SetVec3("Color", new vec3(.8f, .3f, 0));
+            HighlightShader.SetFloat("MaxDistance", 200);
+        }
+
+        public void Update(Time deltaTime)
+        {
+            if (Dice.Count <= 0) return;
+
+            var camera = Program.Scene.CurrentCamera;
+
+            float dot = -2;
+            EntityDie closest = null;
+
+            foreach (var die in Dice)
+            {
+                float d = vec3.Dot(camera.GetMouseRay(), (die.Position - camera.Position).NormalizedSafe);
+                if (d < dot) continue;
+                dot = d;
+                closest = die;
+            }
+
+            var v1 = (camera.ProjectionMatrix * camera.ViewMatrix * closest.Transform.ModelMatrix * new vec4(vec3.Zero, 1));
+            var v2 = v1.xy / v1.w;
+            v2 = (v2 + vec2.Ones) / 2;
+            Program.Window.GetSize(out int screenW, out int screenH);
+            v2 *= new vec2(screenW, screenH);
+
+            HighlightShader.SetVec2("GlowCenter", v2);
         }
 
         public void Populate(int count)
@@ -37,6 +68,7 @@ namespace Yahtzee.Game
                 Dice.Add(d);
             }
 
+            HighlightShader.SetBool("Enabled", true);
 
             Program.Scene.Entities.AddRange(Dice);
         }

@@ -23,7 +23,10 @@ namespace Yahtzee.Game
         public void RotateZ(float angle) => Rotate(angle, vec3.UnitZ);
 
         public vec3 Apply(vec3 v)
-            => (ModelMatrix * new vec4(v, 1)).xyz;
+            => Apply(new vec4(v, 1)).xyz;
+
+        public vec4 Apply(vec4 v)
+            => ModelMatrix * v;
 
         public static Transform Lerp(Transform A, Transform B, float Ratio)
         {
@@ -37,6 +40,8 @@ namespace Yahtzee.Game
         }
 
         public static vec3 operator *(Transform t, vec3 rhs) => t.Apply(rhs);
+        public static vec4 operator *(Transform t, vec4 rhs) => t.Apply(rhs);
+
         public static Transform operator *(Transform lhs, Transform rhs)
         {
             Transform t = Identity;

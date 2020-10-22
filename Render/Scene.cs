@@ -77,8 +77,8 @@ namespace Yahtzee.Render
             e = new EntityStaticBody("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
             e.Transform.Scale = new vec3(100, 1f, 100);
             Entities.Add(e);
-            Backpack = new ModelEntity("Dice/D6Red/d6red.obj");
-            Backpack.Transform.Scale = new vec3(.1f);
+            //Backpack = new ModelEntity("Dice/D6Red/d6red.obj");
+            //Backpack.Transform.Scale = new vec3(.1f);
             dice = new DiceSet();
 
             //PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
@@ -145,9 +145,7 @@ namespace Yahtzee.Render
             Program.PhysicsManager.Update(deltaTime);
 
             flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
-
-
-            Backpack.Position = CurrentCamera.GetMouseRay();
+            dice.Update(deltaTime);
         }
 
         private void RenderScene(Shader shader)

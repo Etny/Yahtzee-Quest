@@ -27,6 +27,9 @@ namespace Yahtzee.Render
         public readonly float NearZ = .1f;
         public readonly float FarZ = 1000f;
 
+        public mat4 ProjectionMatrix { get; protected set; }
+        public mat4 ViewMatrix { get; protected set; }
+
         public Camera()
         {
             gl = GL.GetApi();
@@ -47,8 +50,9 @@ namespace Yahtzee.Render
             float aspectRatio = (float)windowSize.Height / (float)windowSize.Width;
             float orthoSize = 5f;
             mat4 orthoMatrix = mat4.Ortho(-orthoSize, orthoSize, -orthoSize * aspectRatio, orthoSize * aspectRatio, NearZ, FarZ);
-            mat4 projectionMatrix = mat4.PerspectiveFov(Util.ToRad(Fov), windowSize.Width, windowSize.Height, NearZ, FarZ);
-            gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, (uint)sizeof(mat4), &projectionMatrix);
+            ProjectionMatrix = mat4.PerspectiveFov(Util.ToRad(Fov), windowSize.Width, windowSize.Height, NearZ, FarZ);
+            var pm = ProjectionMatrix;
+            gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, (uint)sizeof(mat4), &pm);
             gl.BufferSubData(BufferTargetARB.UniformBuffer, sizeof(mat4), (uint)sizeof(mat4), &orthoMatrix);
 
         }
@@ -58,7 +62,8 @@ namespace Yahtzee.Render
 
         public void SetData(Shader shader)
         {
-            mat4 viewMat = LookAt();
+            ViewMatrix = LookAt();
+            var viewMat = ViewMatrix;
             gl.BindBuffer(BufferTargetARB.UniformBuffer, matricesBuffer);
             gl.BufferSubData(BufferTargetARB.UniformBuffer, 2 * sizeof(mat4), (uint)sizeof(mat4), &viewMat);
             shader.SetVec3("viewPos", Position);
@@ -69,13 +74,13 @@ namespace Yahtzee.Render
             var mPos = Program.InputManager.MousePosition;
             var screenSize = Program.Window.GetSize();
             float aspectRatio = (float)screenSize.Width / (float)screenSize.Height;
-            var screenPos = new vec2(Program.InputManager.MousePosition.x / screenSize.Width, Program.InputManager.MousePosition.y / screenSize.Height);
+            var screenPos = new vec2(mPos.x / screenSize.Width, mPos.y / screenSize.Height);
             var nearPlaneSize = NearZ * (float)(Math.Tan(Fov.AsRad() / 2));
 
             vec3 worldSpace = new vec3((2 * screenPos.x - 1) * aspectRatio * nearPlaneSize, (1 - 2 * screenPos.y) * nearPlaneSize, -NearZ);
             worldSpace = Transform * worldSpace;
 
-            return Position + (worldSpace - Position).NormalizedSafe;
+            return (worldSpace - Position).NormalizedSafe;
         }
 
 
