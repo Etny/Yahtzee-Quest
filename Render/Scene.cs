@@ -9,6 +9,7 @@ using Yahtzee.Render.Textures;
 using Silk.NET.GLFW;
 using Yahtzee.Game.Entities;
 using Yahtzee.Render.Models;
+using Yahtzee.Render.UI;
 
 namespace Yahtzee.Render
 {
@@ -36,6 +37,8 @@ namespace Yahtzee.Render
 
         private FrameBuffer renderFrameBuffer;
         private FrameBuffer lightingFrameBuffer;
+
+        private UILayer UI;
 
         private GL gl;
         int t = 0;
@@ -84,6 +87,8 @@ namespace Yahtzee.Render
 
             //PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
             ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager);
+
+            UI = new UILayer();
         }
 
         public Texture Render()
@@ -104,6 +109,8 @@ namespace Yahtzee.Render
             //PhysicsVisualizer.Draw();
             PenetrationDepthVisualizer?.Draw();
             ContactPointVisualizer?.Draw();
+
+            UI.Draw();
 
             return renderFrameBuffer.BoundTexture;
         }
@@ -147,6 +154,7 @@ namespace Yahtzee.Render
 
             flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
             dice.Update(deltaTime);
+            UI.Update(deltaTime);
         }
 
         private void RenderScene(Shader shader)
