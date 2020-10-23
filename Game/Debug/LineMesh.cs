@@ -4,10 +4,11 @@ using System.Text;
 using Yahtzee.Render;
 using GlmSharp;
 using Silk.NET.OpenGL;
+using Yahtzee.Render.Models;
 
 namespace Yahtzee.Game.Debug
 {
-    unsafe class LineMesh : Mesh
+    unsafe class LineMesh : Mesh<vec3>
     {
 
         private Shader shader, shaderPoint;
@@ -29,13 +30,13 @@ namespace Yahtzee.Game.Debug
             shader = ShaderRepository.GetShader("Debug/Visualizer/vis");
             shaderPoint = ShaderRepository.GetShader("Debug/Visualizer/vispoint");
 
-            setupMesh();
+            SetupMesh();
 
             if (points != null) SetPoints(Points);
             if (colors != null) SetColors(Colors);
         }
 
-        protected override void setupMesh()
+        protected override void SetupMesh()
         {
             VBO = gl.GenBuffer();
             VAO = gl.GenVertexArray();
@@ -45,6 +46,11 @@ namespace Yahtzee.Game.Debug
 
             gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(sizeof(vec3) * (MaxPoints * 2)), null, BufferUsageARB.DynamicDraw);
 
+            SetupVertexAttributePointers();
+        }
+
+        protected override void SetupVertexAttributePointers()
+        {
             gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, (uint)sizeof(vec3), (void*)(sizeof(vec3) * MaxPoints));
             gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, (uint)sizeof(vec3), (void*)0);
             gl.EnableVertexAttribArray(0);
@@ -80,7 +86,7 @@ namespace Yahtzee.Game.Debug
                 gl.BufferSubData(BufferTargetARB.ArrayBuffer, (sizeof(vec3) * MaxPoints), (uint)(sizeof(vec3) * Points.Length), i);
         }
 
-        public override unsafe void Draw(Shader unused, int count = 1)
+        public override unsafe void Draw(Shader unused = null, int count = 1)
         {
             if (Points.Length <= 0) return;
 
@@ -96,5 +102,6 @@ namespace Yahtzee.Game.Debug
 
             gl.Enable(EnableCap.CullFace);
         }
+
     }
 }

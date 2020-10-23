@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using Yahtzee.Game.Entities;
 
-namespace Yahtzee.Render
+namespace Yahtzee.Render.Models
 {
     class ModelManager
     {
@@ -30,10 +30,10 @@ namespace Yahtzee.Render
         public static void DrawModels(Shader shader)
         {
 
-            foreach(var e in Entities.Values)
+            foreach (var e in Entities.Values)
             {
                 var l = e.FindAll(m => m.DrawInstanced);
-                for(int i = 0; i < l.Count; i += 100)
+                for (int i = 0; i < l.Count; i += 100)
                 {
                     int amount = l.Count - i <= 100 ? l.Count - i : 100;
 

@@ -9,7 +9,7 @@ using Yahtzee.Game.Debug;
 using Yahtzee.Game.Entities;
 using Yahtzee.Game.Physics.Constraints;
 using Yahtzee.Main;
-using Yahtzee.Render;
+using Yahtzee.Render.Models;
 
 namespace Yahtzee.Game.Physics
 {

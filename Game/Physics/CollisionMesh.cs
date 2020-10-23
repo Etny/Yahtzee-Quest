@@ -6,10 +6,11 @@ using System.Drawing;
 using Yahtzee.Game;
 using Yahtzee.Main;
 using Yahtzee.Render;
+using Yahtzee.Render.Models;
 
 namespace Yahtzee.Game.Physics
 {
-    class CollisionMesh : Mesh
+    class CollisionMesh : Mesh<Vertex>
     {
         public vec3[] CollisionVertices;
         public vec3[] DrawVertices;
@@ -36,11 +37,10 @@ namespace Yahtzee.Game.Physics
 
             CollisionVertices = temp.ToArray();
 
-            setupCollisionMesh();
+            SetupMesh();
         }
 
-        [Conditional("DEBUG")]
-        protected unsafe void setupCollisionMesh()
+        protected unsafe override void SetupMesh()
         {
             VBO = gl.GenBuffer();
             if (Indices != null) EBO = gl.GenBuffer();
@@ -91,6 +91,14 @@ namespace Yahtzee.Game.Physics
 
         }
 
+        protected override void SetupVertexAttributePointers()
+        {
+            throw new System.NotImplementedException();
+        }
 
+        public override void Draw(Shader shader = null, int count = 1)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

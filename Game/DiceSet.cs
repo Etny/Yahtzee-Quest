@@ -41,13 +41,7 @@ namespace Yahtzee.Game
                 closest = die;
             }
 
-            var v1 = (camera.ProjectionMatrix * camera.ViewMatrix * closest.Transform.ModelMatrix * new vec4(vec3.Zero, 1));
-            var v2 = v1.xy / v1.w;
-            v2 = (v2 + vec2.Ones) / 2;
-            Program.Window.GetSize(out int screenW, out int screenH);
-            v2 *= new vec2(screenW, screenH);
-
-            HighlightShader.SetVec2("GlowCenter", v2);
+            HighlightShader.SetVec2("GlowCenter", Util.WorldSpaceToScreenSpace(closest.Transform, camera));
         }
 
         public void Populate(int count)

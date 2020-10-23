@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Yahtzee.Game;
 using Yahtzee.Render;
 
 namespace Yahtzee.Main
@@ -48,5 +49,32 @@ namespace Yahtzee.Main
     
         public static void ClearFramebuffer(this GL gl)
             => gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit));
+
+        public static vec2 WorldSpaceToScreenSpace(Transform transform, Camera camera)
+            => ToScreenSpace(vec3.Zero, transform, camera);
+
+        public static vec2 ToScreenSpace(this vec3 worldSpace, Transform transform, Camera camera)
+            => WorldSpaceToScreenSpace(worldSpace, transform, camera);
+
+        public static vec2 WorldSpaceToScreenSpace(vec3 worldSpace, Transform transform, Camera camera)
+        {
+            var v1 = (camera.ProjectionMatrix * camera.ViewMatrix * transform.ModelMatrix * new vec4(worldSpace, 1));
+            var v2 = v1.xy / v1.w;
+            v2 = (v2 + vec2.Ones) / 2;
+            Program.Window.GetSize(out int screenW, out int screenH);
+            v2 *= new vec2(screenW, screenH);
+
+            return v2;
+        }
+
+        public static vec2 ToNDC(this vec2 v)
+        {
+            Program.Window.GetSize(out int width, out int height);
+
+            v /= new vec2(width, height);
+            v = (v * 2) - vec2.Ones;
+
+            return v;
+        }
     }
 }

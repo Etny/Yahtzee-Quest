@@ -5,6 +5,7 @@ using Yahtzee.Render;
 using Yahtzee.Main;
 using GlmSharp;
 using Yahtzee.Game.Physics;
+using Yahtzee.Render.Models;
 
 namespace Yahtzee.Game.Entities
 {

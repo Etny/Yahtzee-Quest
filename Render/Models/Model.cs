@@ -9,24 +9,24 @@ using Yahtzee.Render.Textures;
 using Yahtzee.Game;
 using Yahtzee.Game.Physics;
 
-namespace Yahtzee.Render
+namespace Yahtzee.Render.Models
 {
     class Model
     {
 
         private GL gl;
 
-        public List<Mesh> Meshes;
+        public List<Mesh<Vertex>> Meshes;
         private List<ImageTexture> loadedTextures;
 
         private string directory;
         public readonly string Key;
 
-        private delegate Mesh MeshLoader(ai.Mesh mesh, ai.Scene scene);
+        private delegate Mesh<Vertex> MeshLoader(ai.Mesh mesh, ai.Scene scene);
 
         public Model(string filePath, bool collision = false)
         {
-            this.gl = GL.GetApi();
+            gl = GL.GetApi();
 
             Key = filePath + (collision ? "col" : "");
 
@@ -39,7 +39,7 @@ namespace Yahtzee.Render
             var mesh = (CollisionMesh)new Model(filePath, true).Meshes[0];
             return mesh;
         }
-        
+
 
         private void loadModel(string path, MeshLoader loader)
         {
@@ -55,12 +55,12 @@ namespace Yahtzee.Render
 
             directory = path.Substring(0, path.LastIndexOf("/") + 1);
             loadedTextures = new List<ImageTexture>();
-            Meshes = new List<Mesh>();
+            Meshes = new List<Mesh<Vertex>>();
 
             proccessNode(scene.RootNode, scene, loader);
         }
 
-        private void loadCollisionModel(String path, MeshLoader loader)
+        private void loadCollisionModel(string path, MeshLoader loader)
         {
             var assimp = new ai.AssimpContext();
 
@@ -73,7 +73,7 @@ namespace Yahtzee.Render
             }
 
             directory = path.Substring(0, path.LastIndexOf("/") + 1);
-            Meshes = new List<Mesh>();
+            Meshes = new List<Mesh<Vertex>>();
 
             proccessNode(scene.RootNode, scene, loader);
         }
@@ -90,7 +90,7 @@ namespace Yahtzee.Render
                 proccessNode(child, scene, loader);
         }
 
-        private Mesh proccessMesh(ai.Mesh mesh, ai.Scene scene)
+        private Mesh<Vertex> proccessMesh(ai.Mesh mesh, ai.Scene scene)
         {
             //Vertex[] vertices = new Vertex[mesh.VertexCount];
             //uint[] indices = new uint[mesh.FaceCount * 3];
@@ -149,7 +149,7 @@ namespace Yahtzee.Render
             else
                 textures = new ImageTexture[0];
 
-            return new Mesh(vertices.ToArray(), indices.ToArray(), textures);
+            return new ModelMesh(vertices.ToArray(), indices.ToArray(), textures);
         }
 
         private ImageTexture[] loadMaterialTextures(ai.Material material, ai.TextureType type, TextureType textureType)
@@ -182,7 +182,7 @@ namespace Yahtzee.Render
             return textures;
         }
 
-        private CollisionMesh proccessCollisionMesh(ai.Mesh mesh, ai.Scene scene)
+        private Mesh<Vertex> proccessCollisionMesh(ai.Mesh mesh, ai.Scene scene)
         {
             List<vec3> vertices = new List<vec3>();
             List<uint> indices = new List<uint>();
@@ -191,7 +191,8 @@ namespace Yahtzee.Render
             {
                 ai.Vector3D mvp = mesh.Vertices[i];
                 vec3 v = new vec3(mvp.X, mvp.Y, mvp.Z);
-                /*if(!vertices.Contains(v))*/ vertices.Add(v);
+                /*if(!vertices.Contains(v))*/
+                vertices.Add(v);
             }
 
             for (int i = 0; i < mesh.FaceCount; i++)
@@ -206,7 +207,7 @@ namespace Yahtzee.Render
             // meshes[0].Draw(shader);
             // return;
 
-            foreach (Mesh mesh in Meshes)
+            foreach (ModelMesh mesh in Meshes)
                 mesh.Draw(shader, count);
         }
     }

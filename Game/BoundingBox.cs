@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using GlmSharp;
 using Yahtzee.Game.Physics;
-using Yahtzee.Render;
+using Yahtzee.Render.Models;
 
 namespace Yahtzee.Game
 {
@@ -31,10 +31,10 @@ namespace Yahtzee.Game
             return new BoundingBox(Min, Max);
         }
 
-        public static BoundingBox FromMesh(Mesh m, Transform t, float padding = 0)
+        public static BoundingBox FromMesh(ModelMesh m, Transform t, float padding = 0)
             => FromVertexPositions(m.Vertices.Select(v => v.Position).Distinct().ToArray(), t, padding);
         
-        public static BoundingBox FromMesh(Mesh m,  float padding = 0)
+        public static BoundingBox FromMesh(ModelMesh m,  float padding = 0)
             => FromVertexPositions(m.Vertices.Select(v => v.Position).Distinct().ToArray(), padding);
 
         public static BoundingBox FromCollisionMesh(CollisionMesh m, Transform t, float padding = 0)

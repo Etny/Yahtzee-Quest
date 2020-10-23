@@ -8,6 +8,7 @@ using GlmSharp;
 using Yahtzee.Render.Textures;
 using Silk.NET.GLFW;
 using Yahtzee.Game.Entities;
+using Yahtzee.Render.Models;
 
 namespace Yahtzee.Render
 {
@@ -166,10 +167,10 @@ namespace Yahtzee.Render
         {
             //if (action != InputAction.Press) return;
 
-            if (key == Keys.ControlLeft && action == InputAction.Press)
-                PhysicsVisualizer.UpdateGJK();
+            //if (key == Keys.ControlLeft && action == InputAction.Press)
+            //    PhysicsVisualizer.UpdateGJK();
 
-            else if (key == Keys.V && action == InputAction.Press)
+            if (key == Keys.V && action == InputAction.Press)
                 Backpack.Position += new vec3(0, 0.001f, 0);
 
             //else if (key == Keys.C && action == InputAction.Press)
