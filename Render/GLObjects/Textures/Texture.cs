@@ -1,4 +1,5 @@
-﻿using Silk.NET.OpenGL;
+﻿using GlmSharp;
+using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
@@ -17,6 +18,8 @@ namespace Yahtzee.Render.Textures
 
         protected TextureTarget textureTarget = TextureTarget.Texture2D;
 
+        public uvec2 Size { get; protected set; }
+
         public int BoundTextureUnit { get; protected set; } = -1;
 
         public Texture() : base() { ID = gl.GenTexture(); }
@@ -28,7 +31,13 @@ namespace Yahtzee.Render.Textures
             gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             gl.BindTexture(TextureTarget.Texture2D, 0);
+
+            Size = new uvec2(width, height);
         }
+
+
+        public vec2 GetAspectRatio()
+            => new vec2((float)Size.x / (float)Size.y, (float)Size.y / (float)Size.x);
 
         public void BindToUnit(int unit)
         {
@@ -48,7 +57,6 @@ namespace Yahtzee.Render.Textures
 
         public override void Dispose()
             => gl.DeleteTexture(ID);
-
 
     }
 

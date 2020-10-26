@@ -9,6 +9,8 @@ uniform mat4 model = mat4(1.0, 0.0, 0.0, 0.0,
                           0.0, 0.0, 1.0, 0.0,
 						  0.0, 0.0, 0.0, 1.0);
 
+//uniform mat3 model;
+
 uniform float depth = 0;
 
 void main()

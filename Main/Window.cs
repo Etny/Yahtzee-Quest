@@ -1,4 +1,5 @@
-﻿using Silk.NET.Core.Loader;
+﻿using GlmSharp;
+using Silk.NET.Core.Loader;
 using Silk.NET.Core.Platform;
 using Silk.NET.GLFW;
 using System;
@@ -130,6 +131,13 @@ namespace Yahtzee.Main
         {
             glfw.GetWindowSize(window, out width, out height);
         }
+
+        public ivec2 GetSizeVec()
+        {
+            glfw.GetWindowSize(window, out int width, out int height);
+            return new ivec2(width, height);
+        }
+            
 
         public Size GetSize()
         {

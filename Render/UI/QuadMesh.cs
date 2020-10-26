@@ -14,11 +14,16 @@ namespace Yahtzee.Render.UI
         private static readonly vec2[] BaseTexCoords = { new vec2(0, 0), new vec2(0, 1), new vec2(1, 1), new vec2(1, 0) };
         private static readonly uint[] BaseIndices = { 1, 0, 3, 1, 3, 2};
 
+        public static readonly QuadMesh ScreenQuad = new QuadMesh(1, 1);
+
+
         public vec2 Size { get; protected set; }
 
-        public QuadMesh(float width, float height) : base()
+        public QuadMesh(float width, float height) : this(new vec2(width, height)) { }
+
+        public QuadMesh(vec2 size) : base()
         {
-            Size = new vec2(width, height);
+            Size = size;
 
             QuadVertex[] verts = new QuadVertex[4];
             for (int i = 0; i < 4; i++) 

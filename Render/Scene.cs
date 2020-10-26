@@ -13,7 +13,7 @@ using Yahtzee.Render.UI;
 
 namespace Yahtzee.Render
 {
-    class Scene
+    class Scene : IRenderable
     {
         public List<Entity> Entities = new List<Entity>();
         List<Light> Lights = new List<Light>();
@@ -34,11 +34,9 @@ namespace Yahtzee.Render
         private PenetrationDepthVisualizer PenetrationDepthVisualizer = null;
         public ContactPointVisualizer ContactPointVisualizer = null;
 
-
-        private FrameBuffer renderFrameBuffer;
         private FrameBuffer lightingFrameBuffer;
 
-        private UILayer UI;
+        public UILayer UI;
 
         private GL gl;
         int t = 0;
@@ -60,10 +58,6 @@ namespace Yahtzee.Render
             lightingShaderOrtho = ShaderRepository.GetShader("Lighting/lightingShader", "Lighting/lightingShaderOrtho");
             lightingShaderPersp = ShaderRepository.GetShader("Lighting/lightingShader", "Lighting/lightingShaderPersp");
             lightingShaderPersp.SetFloat("farPlane", far);
-
-            renderFrameBuffer = new FrameBuffer(windowWidth, windowHeight);
-            renderFrameBuffer.CreateRenderBuffer((uint)windowWidth, (uint)windowHeight);
-            Program.Window.OnResize += OnResize;
 
             lightingFrameBuffer = new FrameBuffer();
             lightingFrameBuffer.Use();
@@ -91,7 +85,7 @@ namespace Yahtzee.Render
             UI = new UILayer();
         }
 
-        public Texture Render()
+        public FrameBuffer Render(FrameBuffer renderFrameBuffer)
         {
             LightingPass();
 
@@ -99,7 +93,6 @@ namespace Yahtzee.Render
             gl.Viewport(0, 0, (uint)windowWidth, (uint)windowHeight);
 
             renderFrameBuffer.Use();
-            gl.ClearFramebuffer();
             gl.CullFace(CullFaceMode.Back);
 
             defaultShader.Use();
@@ -110,9 +103,7 @@ namespace Yahtzee.Render
             PenetrationDepthVisualizer?.Draw();
             ContactPointVisualizer?.Draw();
 
-            UI.Draw();
-
-            return renderFrameBuffer.BoundTexture;
+            return renderFrameBuffer;
         }
 
         private void LightingPass()
@@ -163,11 +154,7 @@ namespace Yahtzee.Render
             ModelManager.DrawModels(shader);
         }
 
-        private void OnResize(int width, int height)
-        {
-            renderFrameBuffer.CreateTexture((uint)width, (uint)height);
-            renderFrameBuffer.CreateRenderBuffer((uint)width, (uint)height);
-        }
+        
 
 
 

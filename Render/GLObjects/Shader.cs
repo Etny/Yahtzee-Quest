@@ -43,6 +43,7 @@ namespace Yahtzee.Render
                 gl.UniformBlockBinding(ID, gl.GetUniformBlockIndex(ID, "Matrices"), 0);
         }
 
+
         private void LoadShader(ref uint shader, ShaderType type, string path)
         {
             shader = gl.CreateShader(type);
@@ -97,6 +98,12 @@ namespace Yahtzee.Render
         {
             Use();
             gl.Uniform4(gl.GetUniformLocation(ID, uniform), vec.x, vec.y, vec.z, vec.w);
+        }
+
+        public unsafe void SetMat3(string uniform, mat3 mat3)
+        {
+            Use();
+            gl.UniformMatrix3(gl.GetUniformLocation(ID, uniform), 1, false, (float*)&mat3);
         }
 
         public unsafe void SetMat4(string uniform, mat4 mat4)

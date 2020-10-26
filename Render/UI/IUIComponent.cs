@@ -9,7 +9,7 @@ namespace Yahtzee.Render.UI
     interface IUIComponent
     {
 
-        public abstract void Update(Time deltaTime);
-        public abstract void Draw();
+        void Update(Time deltaTime);
+        void Draw();
     }
 }

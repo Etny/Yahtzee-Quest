@@ -17,6 +17,7 @@ namespace Yahtzee.Main
         public static PostProcessManager PostProcessManager;
         public static Settings Settings;
         public static PhysicsManager PhysicsManager;
+        public static Renderer Renderer;
 
         private static GL gl;
 
@@ -39,6 +40,11 @@ namespace Yahtzee.Main
             PostProcessManager = new PostProcessManager();
             PhysicsManager = new PhysicsManager();
             Scene = new Scene();
+            Renderer = new Renderer();
+
+            Renderer.AddRenderable(Scene);
+            Renderer.AddRenderable(PostProcessManager);
+            Renderer.AddRenderable(Scene.UI);
 
             PostProcessManager.AddPostProcessShader("gammaCorrect");
 
@@ -59,7 +65,8 @@ namespace Yahtzee.Main
         private static void Tick(Time deltaTime)
         {
             Scene.Update(deltaTime);
-            PostProcessManager.RenderPostProcess(Scene.Render());
+
+            Renderer.RenderPipeline();
 
             Window.EndRender();
         }

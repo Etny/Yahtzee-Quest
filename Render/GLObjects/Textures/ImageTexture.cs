@@ -16,7 +16,8 @@ namespace Yahtzee.Render.Textures
         {
             {TextureType.Diffuse, InternalFormat.Srgb},
             {TextureType.Specular, InternalFormat.Rgba},
-            {TextureType.Normal, InternalFormat.Rgba}
+            {TextureType.Normal, InternalFormat.Rgba},
+            {TextureType.Other, InternalFormat.Rgba}
         };
 
         public static readonly Dictionary<TextureType, string> ShaderName = new Dictionary<TextureType, string>()
@@ -53,6 +54,8 @@ namespace Yahtzee.Render.Textures
         {
             Image<Rgba32> img = (Image<Rgba32>)Image.Load(path);
             img.Mutate(x => x.Flip(FlipMode.Vertical));
+
+            Size = new GlmSharp.uvec2((uint)img.Width, (uint)img.Height);
 
             InternalFormat format = InternalFormat.Rgb;
             encodings.TryGetValue(TextureType, out format);

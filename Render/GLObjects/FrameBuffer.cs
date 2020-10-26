@@ -14,6 +14,7 @@ namespace Yahtzee.Render
         public RenderBuffer BoundRenderBuffer { get; protected set; }
         private bool createdRenderBuffer = false;
 
+        public static readonly FrameBuffer Default = new FrameBuffer { ID = 0 };
 
         public FrameBuffer() : base() { ID = gl.GenFramebuffer(); }
         public FrameBuffer(int width, int height) : this() { CreateTexture((uint)width, (uint)height); }
@@ -42,11 +43,11 @@ namespace Yahtzee.Render
             createdTexture = true;
         }
 
-        public void BindTexture(Texture texture, GLEnum attachment = GLEnum.ColorAttachment0, GLEnum target = GLEnum.Texture2D)
+        public void BindTexture(Texture texture, GLEnum attachment = GLEnum.ColorAttachment0, GLEnum target = GLEnum.Texture2D, bool dispose = true)
         {
             Use();
 
-            if (createdTexture && BoundTexture != null)
+            if (dispose && createdTexture && BoundTexture != null)
             {
                 createdTexture = false;
                 BoundTexture.Dispose();
@@ -58,11 +59,11 @@ namespace Yahtzee.Render
 
         public void BindRenderBuffer(RenderBuffer buffer) => BindRenderBuffer(buffer, RenderBufferConfiguration.Full);
 
-        public void BindRenderBuffer(RenderBuffer buffer, RenderBufferConfiguration config)
+        public void BindRenderBuffer(RenderBuffer buffer, RenderBufferConfiguration config, bool dispose = true)
         {
             Use();
 
-            if(createdRenderBuffer && BoundRenderBuffer != null)
+            if(dispose && createdRenderBuffer && BoundRenderBuffer != null)
             {
                 createdRenderBuffer = false;
                 BoundRenderBuffer.Dispose();

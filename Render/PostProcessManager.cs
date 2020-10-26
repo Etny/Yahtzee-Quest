@@ -9,9 +9,8 @@ using Yahtzee.Render.UI;
 
 namespace Yahtzee.Render
 {
-    class PostProcessManager
+    class PostProcessManager : IRenderable
     {
-        private QuadMesh screenQuad;
 
         private List<Shader> postProcessShaders = new List<Shader>();
         private Shader defaultShader;
@@ -21,8 +20,6 @@ namespace Yahtzee.Render
 
         public PostProcessManager()
         {
-            screenQuad = new QuadMesh(1, 1);
-
             System.Drawing.Size windowSize = Program.Window.GetSize();
             texture1 = new Texture((uint)windowSize.Width, (uint)windowSize.Height);
             texture2 = new Texture((uint)windowSize.Width, (uint)windowSize.Height);
@@ -32,16 +29,13 @@ namespace Yahtzee.Render
             defaultShader.SetInt("screen", 0);
         }
 
-        public void RenderPostProcess(Texture renderTexture)
+        public FrameBuffer Render(FrameBuffer renderFrameBuffer)
         {
-            if(postProcessShaders.Count <= 0)
-            {
-                FrameBuffer.UseDefault();
-                Util.GLClear();
-                renderTexture.BindToUnit(0);
-                screenQuad.Draw(defaultShader);
-                return;
-            }
+            Texture renderTexture = renderFrameBuffer.BoundTexture;
+
+            if(postProcessShaders.Count <= 0)  
+                return renderFrameBuffer;
+            
 
             var destination = texture2;
             var source = renderTexture;
@@ -57,11 +51,11 @@ namespace Yahtzee.Render
                     postProBuffer.BindTexture(destination);
                 }
                 else
-                    FrameBuffer.UseDefault();
+                    renderFrameBuffer.Use();
 
                 Util.GLClear();
                 source.BindToUnit(0);
-                screenQuad.Draw(shader);
+                QuadMesh.ScreenQuad.Draw(shader);
 
                 if (lastShader)
                     break;
@@ -73,6 +67,8 @@ namespace Yahtzee.Render
                 destination = source;
                 source = temp;
             }
+
+            return renderFrameBuffer;
         }
 
         public Shader AddPostProcessShader(string fragmentPath)
