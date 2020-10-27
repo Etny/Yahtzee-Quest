@@ -6,6 +6,7 @@ using GlmSharp;
 using Yahtzee.Main;
 using Yahtzee.Game.Physics;
 using Yahtzee.Render;
+using Yahtzee.Core;
 
 namespace Yahtzee.Game
 {

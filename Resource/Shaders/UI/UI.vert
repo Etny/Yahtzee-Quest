@@ -9,12 +9,13 @@ uniform mat4 model = mat4(1.0, 0.0, 0.0, 0.0,
                           0.0, 0.0, 1.0, 0.0,
 						  0.0, 0.0, 0.0, 1.0);
 
-//uniform mat3 model;
+uniform vec2 screenSize = vec2(1920, 1080);
 
 uniform float depth = 0;
 
 void main()
 {
-	gl_Position = vec4((model * vec4(aPos, 0, 1)).xy, depth, 1);
+	vec2 pixelPos = (model * vec4(aPos, 0, 1)).xy;
+	gl_Position = vec4(pixelPos / screenSize, depth, 1);
 	TexCoords = aTexCoords;
 }

@@ -10,7 +10,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using Yahtzee.Main;
+using Yahtzee.Core;
 using db = System.Diagnostics.Debug;
 
 

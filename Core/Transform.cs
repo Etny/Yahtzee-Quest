@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using GlmSharp;
 
-namespace Yahtzee.Game
+namespace Yahtzee.Core
 {
     struct Transform
     {
@@ -13,7 +13,7 @@ namespace Yahtzee.Game
         public quat Orientation;
         public vec3 Scale;
 
-        public mat4 ModelMatrix { get { return mat4.Translate(Translation) * Orientation.ToMat4 * mat4.Scale(Scale);} }
+        public mat4 ModelMatrix { get { return mat4.Translate(Translation) * Orientation.ToMat4 * mat4.Scale(Scale); } }
 
         public void Rotate(float angle, vec3 axis) => Orientation = Orientation.Rotated(angle, axis);
 

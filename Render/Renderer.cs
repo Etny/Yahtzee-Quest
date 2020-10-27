@@ -3,8 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
+using Yahtzee.Core;
 using Yahtzee.Main;
-using Yahtzee.Render.UI;
+using Yahtzee.Render.Models;
 
 namespace Yahtzee.Render
 {

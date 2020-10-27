@@ -5,6 +5,8 @@ using System.Collections.Immutable;
 using System.Text;
 using Yahtzee.Main;
 using GlmSharp;
+using Yahtzee.Core;
+using Yahtzee.Render.Models;
 
 namespace Yahtzee.Render.UI
 {
@@ -30,7 +32,7 @@ namespace Yahtzee.Render.UI
             _copyShader = ShaderRepository.GetShader("PostProcess/postPro", "PostProcess/postProDefault");
             _copyShader.SetInt("screen", 0);
 
-            Components = Components.Add(new QuadComponent(this));
+            Components = Components.Add(new ButtonComponent(this, "Resource/Images/UI/Buttons/Reroll.png"));
         }
 
         private void OnResize(int width, int height)

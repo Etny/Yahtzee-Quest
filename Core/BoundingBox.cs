@@ -6,7 +6,7 @@ using GlmSharp;
 using Yahtzee.Game.Physics;
 using Yahtzee.Render.Models;
 
-namespace Yahtzee.Game
+namespace Yahtzee.Core
 {
     struct BoundingBox
     {
@@ -33,8 +33,8 @@ namespace Yahtzee.Game
 
         public static BoundingBox FromMesh(ModelMesh m, Transform t, float padding = 0)
             => FromVertexPositions(m.Vertices.Select(v => v.Position).Distinct().ToArray(), t, padding);
-        
-        public static BoundingBox FromMesh(ModelMesh m,  float padding = 0)
+
+        public static BoundingBox FromMesh(ModelMesh m, float padding = 0)
             => FromVertexPositions(m.Vertices.Select(v => v.Position).Distinct().ToArray(), padding);
 
         public static BoundingBox FromCollisionMesh(CollisionMesh m, Transform t, float padding = 0)
@@ -64,7 +64,7 @@ namespace Yahtzee.Game
                     float d = vec3.Dot(v, dir);
                     if (j != 0 && dots[i] >= d) continue;
                     dots[i] = d;
-                    verts[i] = v + (padding * dir);
+                    verts[i] = v + padding * dir;
                 }
             }
 
@@ -77,10 +77,10 @@ namespace Yahtzee.Game
         }
 
         public bool Intersects(BoundingBox box)
-            =>  (Min.x <= box.Max.x && box.Min.x <= Max.x) &&
-                (Min.y <= box.Max.y && box.Min.y <= Max.y) &&
-                (Min.z <= box.Max.z && box.Min.z <= Max.z);
-        
+            => Min.x <= box.Max.x && box.Min.x <= Max.x &&
+                Min.y <= box.Max.y && box.Min.y <= Max.y &&
+                Min.z <= box.Max.z && box.Min.z <= Max.z;
+
         public vec3[] GetPoints()
         {
             return new vec3[] {Min, new vec3(Max.x, Min.y, Min.z), new vec3(Min.x, Max.y, Min.z), new vec3(Min.x, Min.y, Max.z),
@@ -92,7 +92,7 @@ namespace Yahtzee.Game
         {
             Transform t = Transform.Identity;
             t.Translation = (Min + Max) / 2;
-            t.Scale = (Max - Min);
+            t.Scale = Max - Min;
             return t;
         }
     }

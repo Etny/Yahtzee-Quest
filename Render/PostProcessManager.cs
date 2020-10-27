@@ -5,7 +5,8 @@ using Yahtzee.Main;
 using GlmSharp;
 using Silk.NET.OpenGL;
 using Yahtzee.Render.Textures;
-using Yahtzee.Render.UI;
+using Yahtzee.Core;
+using Yahtzee.Render.Models;
 
 namespace Yahtzee.Render
 {

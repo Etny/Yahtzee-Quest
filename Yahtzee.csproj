@@ -40,6 +40,7 @@
     <None Remove="Resource\Shaders\PostProcess\postPro.vert" />
     <None Remove="Resource\Shaders\PostProcess\postProDefault.frag" />
     <None Remove="Resource\Shaders\UI\UI.vert" />
+    <None Remove="Resource\Shaders\UI\UIBlurImage.frag" />
     <None Remove="Resource\Shaders\UI\UIDefault.frag" />
   </ItemGroup>
 
@@ -131,10 +132,13 @@
     <Content Include="Resource\Shaders\PostProcess\postProDefault.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resource\Shaders\UI\UIDefault.frag">
+    <Content Include="Resource\Shaders\UI\UIBlurImage.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\UI\UI.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\UI\UIDefault.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

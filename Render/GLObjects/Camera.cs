@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
 using System.Text;
+using Yahtzee.Core;
 using Yahtzee.Game;
 using Yahtzee.Game.Entities;
 using Yahtzee.Main;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using GlmSharp;
+using Yahtzee.Core;
 using Yahtzee.Main;
 using Yahtzee.Render;
 

@@ -10,6 +10,8 @@ using Silk.NET.GLFW;
 using Yahtzee.Game.Entities;
 using Yahtzee.Render.Models;
 using Yahtzee.Render.UI;
+using Yahtzee.Core.Debug;
+using Yahtzee.Core;
 
 namespace Yahtzee.Render
 {

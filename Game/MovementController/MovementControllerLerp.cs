@@ -3,6 +3,7 @@ using Silk.NET.GLFW;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Yahtzee.Core;
 using Yahtzee.Game.Entities;
 using Yahtzee.Main;
 

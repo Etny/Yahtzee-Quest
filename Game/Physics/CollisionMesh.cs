@@ -3,7 +3,7 @@ using Silk.NET.OpenGL;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using Yahtzee.Game;
+using Yahtzee.Core;
 using Yahtzee.Main;
 using Yahtzee.Render;
 using Yahtzee.Render.Models;

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Text;
-using Yahtzee.Game.Debug;
+using Yahtzee.Core;
 using Yahtzee.Game.Entities;
 using Yahtzee.Game.Physics.Constraints;
 using Yahtzee.Main;

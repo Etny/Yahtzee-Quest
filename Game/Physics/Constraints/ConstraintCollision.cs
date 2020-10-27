@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using GlmSharp;
-using Yahtzee.Game.Debug;
+using Yahtzee.Core.Debug;
 using Yahtzee.Main;
 using db = System.Diagnostics.Debug;
 

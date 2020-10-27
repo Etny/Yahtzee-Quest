@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using Yahtzee.Main;
 
-namespace Yahtzee.Game
+namespace Yahtzee.Core
 {
     class InputManager
     {
@@ -18,9 +18,9 @@ namespace Yahtzee.Game
             Program.Window.OnCursorMove += OnCursor;
         }
 
-        private void OnCursor(double x, double y, double deltaX, double deltaY)        
+        private void OnCursor(double x, double y, double deltaX, double deltaY)
             => MousePosition = new vec2((float)x, (float)y);
-        
+
 
         private void OnButton(Keys key, InputAction action, KeyModifiers mods)
         {
