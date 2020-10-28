@@ -28,7 +28,7 @@ namespace Yahtzee.Render.UI
         {
             _layer = layer;
 
-            Quad = new QuadMesh(size);
+            Quad = new QuadMesh(size.ScaleToScreen());
             _shader = ShaderRepository.GetShader("UI/UI", "UI/UIDefault");
         }
 

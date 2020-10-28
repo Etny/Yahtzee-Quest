@@ -32,7 +32,7 @@ namespace Yahtzee.Render.UI
             _copyShader = ShaderRepository.GetShader("PostProcess/postPro", "PostProcess/postProDefault");
             _copyShader.SetInt("screen", 0);
 
-            Components = Components.Add(new ButtonComponent(this, "Resource/Images/UI/Buttons/Reroll.png"));
+            //Components = Components.Add(new ButtonComponent(this, "Resource/Images/UI/Buttons/Reroll.png"));
         }
 
         private void OnResize(int width, int height)

@@ -29,6 +29,9 @@ namespace Yahtzee.Main
         public delegate void Button(Keys key, InputAction action, KeyModifiers mods);
         public event Button OnButton;
 
+        public delegate void MouseClick(MouseButton button, InputAction action, KeyModifiers mods);
+        public event MouseClick OnMouseButton;
+
         private double lastFrame = 0.0f;
         private double deltaTime = 0.0f;
         private double currentFrame = 0.0f;
@@ -61,11 +64,15 @@ namespace Yahtzee.Main
             glfw.SetKeyCallback(window, OnWindowButtonPress);
             glfw.SetCursorEnterCallback(window, OnWindowCursorEnter);
             glfw.SetCursorPosCallback(window, OnWindowCursor);
+            glfw.SetMouseButtonCallback(window, OnWindowMouseButton);
             //glfw.SetScrollCallback(window, ScrollInput);
             //glfw.SetInputMode(window, CursorStateAttribute.Cursor, CursorModeValue.CursorDisabled);
 
             return true;
         }
+
+        private void OnWindowMouseButton(WindowHandle* window, MouseButton button, InputAction action, KeyModifiers mods)
+            => OnMouseButton?.Invoke(button, action, mods);            
 
         private void OnWindowCursorEnter(WindowHandle* window, bool entered)
         {
@@ -97,6 +104,7 @@ namespace Yahtzee.Main
 
             while (!glfw.WindowShouldClose(window))
             {
+                glfw.PollEvents();
                 currentFrame = glfw.GetTimerValue();
                 deltaTime = (currentFrame - lastFrame) / glfw.GetTimerFrequency();
                 lastFrame = currentFrame;
@@ -115,7 +123,6 @@ namespace Yahtzee.Main
         public void EndRender()
         {
             glfw.SwapBuffers(window);
-            glfw.PollEvents();
         }
 
         public void SetVSync(bool vsync)

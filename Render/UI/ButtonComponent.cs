@@ -1,4 +1,5 @@
 ﻿using GlmSharp;
+using Silk.NET.GLFW;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,40 +10,24 @@ using Yahtzee.Render.Textures;
 
 namespace Yahtzee.Render.UI
 {
-    class ButtonComponent : QuadComponent
+    abstract class ButtonComponent : QuadComponent
     {
+        protected bool Hovered = false;
 
-        public Texture Image { get; protected set; }
-
-        private bool hovered = false;
-
-        public ButtonComponent(UILayer layer, string imgPath) : base(layer)
-        {
-            Image = new ImageTexture(layer.Gl, imgPath, TextureType.Other);
-
-            Quad = new QuadMesh(((vec2)Image.Size).ScaleToScreen());
-
-            //_shader = ShaderRepository.GetShader("UI/UI", "UI/UIBlurImage");
-            //_shader.SetInt("screen", 0);
-
-            Transform.Translation -= new vec2(0, Util.BaseScreenSize.y/4).ScaleToScreen();
+        public ButtonComponent(UILayer layer, vec2 size) : base(layer, size)
+        { 
+            Program.Window.OnCursorMove += OnMouseMove;
+            Program.Window.OnMouseButton += OnMouseButton;
         }
 
-        public override void Draw()
+        ~ButtonComponent() { Program.Window.OnMouseButton -= OnMouseButton; Program.Window.OnCursorMove -= OnMouseMove; }
+
+
+        private void OnMouseMove(double x, double y, double deltaX, double deltaY)
         {
-            //Image.BindToUnit(1);
-            //_shader.SetInt("image", 1);
-            _shader.SetVec3("color", hovered ? new vec3(1, 0, 0) : new vec3(0, 0, 1));
-            base.Draw();
-        }
+            vec2 mPos = new vec2((float)x, (float)y).ToUISpace();
 
-        public override void Update(Time deltaTime)
-        {
-            Transform.Orientation += (float)Math.Sin(deltaTime.DeltaF);
-
-            vec2 mPos = Program.InputManager.MousePosition.ToUISpace();
-
-            if (Transform.Orientation % Math.PI > float.Epsilon) 
+            if (Transform.Orientation % Math.PI > float.Epsilon)
                 mPos = Transform.Translation + (quat.FromAxisAngle(-Transform.Orientation, vec3.UnitZ) * new vec3(mPos - Transform.Translation, 0)).xy;
 
             var size = Quad.Size;
@@ -50,7 +35,20 @@ namespace Yahtzee.Render.UI
             var min = Transform.Translation - (size / 2);
             var max = Transform.Translation + (size / 2);
 
-            hovered = mPos.x >= min.x && mPos.x <= max.x && mPos.y >= min.y && mPos.y <= max.y;
+            Hovered = mPos.x >= min.x - 1 && mPos.x <= max.x + 1 && mPos.y >= min.y - 1 && mPos.y <= max.y + 1;
         }
+
+        private void OnMouseButton(MouseButton button, InputAction action, KeyModifiers mods)
+        {
+            if (button == MouseButton.Left && Hovered)
+            {
+                if (action == InputAction.Press) OnClick();
+                else if (action == InputAction.Release) OnSelect();
+            }
+                
+        }
+
+        protected abstract void OnSelect();
+        protected abstract void OnClick();
     }
 }
