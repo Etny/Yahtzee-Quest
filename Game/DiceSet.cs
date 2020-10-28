@@ -29,7 +29,7 @@ namespace Yahtzee.Game
         {
             if (Dice.Count <= 0) return;
 
-            var camera = Program.Scene.CurrentCamera;
+            var camera = Program.CurrentScene.CurrentCamera;
 
             float dot = -2;
             EntityDie closest = null;
@@ -65,7 +65,7 @@ namespace Yahtzee.Game
 
             HighlightShader.SetBool("Enabled", true);
 
-            Program.Scene.Entities.AddRange(Dice);
+            Program.CurrentScene.Entities.AddRange(Dice);
         }
 
         private void Die_OnFallAsleep(object sender, EventArgs e)

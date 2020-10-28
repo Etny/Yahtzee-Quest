@@ -15,95 +15,68 @@ using Yahtzee.Core;
 
 namespace Yahtzee.Render
 {
-    class Scene : IRenderable
+    abstract class Scene : IRenderable
     {
         public List<Entity> Entities = new List<Entity>();
-        List<Light> Lights = new List<Light>();
+        public List<Light> Lights = new List<Light>();
 
         public Camera CurrentCamera;
-        public SpotLight flashLight;
-        public DirectionalLight testLight;
-        public PointLight testPointLight;
-        private ModelEntity Backpack;
-        private ModelEntity e;
-        private DiceSet dice;
 
-        private Shader lightingShaderOrtho;
-        private Shader lightingShaderPersp;
-        private Shader defaultShader;
+        protected Shader DefaultShader;
+        protected readonly GL Gl;
 
-        private CollisionDetectionVisualizer PhysicsVisualizer;
-        private PenetrationDepthVisualizer PenetrationDepthVisualizer = null;
-        public ContactPointVisualizer ContactPointVisualizer = null;
-
-        private FrameBuffer lightingFrameBuffer;
+        private readonly Shader _lightingShaderOrtho;
+        private readonly Shader _lightingShaderPersp;
+        private readonly FrameBuffer _lightingFrameBuffer;
 
         public UILayer UI;
 
-        private GL gl;
-        int t = 0;
 
         public Scene()
         {
-            gl = GL.GetApi();
+            Gl = GL.GetApi();
 
             Program.Settings.GetLightRange(out float near, out float far);
             Program.Window.GetSize(out int windowWidth, out int windowHeight);
 
             Program.Window.OnButton += OnButton;
 
-            defaultShader = ShaderRepository.GetShader("Default/default");
-            defaultShader.SetFloat("material.shininess", 32.0f);
-            defaultShader.SetFloat("lightNearPlane", near);
-            defaultShader.SetFloat("lightFarPlane", far);
+            DefaultShader = ShaderRepository.GetShader("Default/default");
+            DefaultShader.SetFloat("material.shininess", 32.0f);
+            DefaultShader.SetFloat("lightNearPlane", near);
+            DefaultShader.SetFloat("lightFarPlane", far);
 
-            lightingShaderOrtho = ShaderRepository.GetShader("Lighting/lightingShader", "Lighting/lightingShaderOrtho");
-            lightingShaderPersp = ShaderRepository.GetShader("Lighting/lightingShader", "Lighting/lightingShaderPersp");
-            lightingShaderPersp.SetFloat("farPlane", far);
+            _lightingShaderOrtho = ShaderRepository.GetShader("Lighting/lightingShader", "Lighting/lightingShaderOrtho");
+            _lightingShaderPersp = ShaderRepository.GetShader("Lighting/lightingShader", "Lighting/lightingShaderPersp");
+            _lightingShaderPersp.SetFloat("farPlane", far);
 
-            lightingFrameBuffer = new FrameBuffer();
-            lightingFrameBuffer.Use();
-            gl.DrawBuffer(DrawBufferMode.None);
-            gl.ReadBuffer(ReadBufferMode.None);
+            _lightingFrameBuffer = new FrameBuffer();
+            _lightingFrameBuffer.Use();
+            Gl.DrawBuffer(DrawBufferMode.None);
+            Gl.ReadBuffer(ReadBufferMode.None);
 
             CurrentCamera = new Camera();
             Entities.Add(CurrentCamera);
-            flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRad(25), Util.ToRad(30)) { Direction = new vec3(0, -1, 1) };
-            //Lights.Add(flashLight);
-            testLight = new DirectionalLight(new vec3(.1f, -.5f, -.5f));
-            testLight.SetShadowsEnabled(true);
-            Lights.Add(testLight);
-        
-            e = new EntityStaticBody("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
-            e.Transform.Scale = new vec3(100, 1f, 100);
-            Entities.Add(e);
-            //Backpack = new ModelEntity("Dice/D6Red/d6red.obj");
-            //Backpack.Transform.Scale = new vec3(.1f);
-            dice = new DiceSet();
-
-            //PhysicsVisualizer = new CollisionDetectionVisualizer(Backpack, e, Program.PhysicsManager);
-            ContactPointVisualizer = new ContactPointVisualizer(Program.PhysicsManager);
 
             UI = new UILayer();
         }
+            
+        ~Scene() { _lightingFrameBuffer.Dispose(); Program.Window.OnButton -= OnButton; }
 
         public FrameBuffer Render(FrameBuffer renderFrameBuffer)
         {
             LightingPass();
 
             Program.Window.GetSize(out int windowWidth, out int windowHeight);
-            gl.Viewport(0, 0, (uint)windowWidth, (uint)windowHeight);
+            Gl.Viewport(0, 0, (uint)windowWidth, (uint)windowHeight);
 
             renderFrameBuffer.Use();
-            gl.CullFace(CullFaceMode.Back);
+            Gl.CullFace(CullFaceMode.Back);
 
-            defaultShader.Use();
-            CurrentCamera.SetData(defaultShader);
-            setLightingData();
-            RenderScene(defaultShader);
-            //PhysicsVisualizer.Draw();
-            PenetrationDepthVisualizer?.Draw();
-            ContactPointVisualizer?.Draw();
+            DefaultShader.Use();
+            CurrentCamera.SetData(DefaultShader);
+            SetLightingData();
+            RenderScene(DefaultShader);
 
             return renderFrameBuffer;
         }
@@ -113,41 +86,37 @@ namespace Yahtzee.Render
             if (!Lights.Exists(x => x.ShadowsEnabled))
                 return;
 
-            gl.CullFace(CullFaceMode.Front);
+            Gl.CullFace(CullFaceMode.Front);
 
             Program.Settings.GetShadowMapSize(out int width, out int height);
-            gl.Viewport(0, 0, (uint)width, (uint)height);
-            lightingFrameBuffer.Use();
+            Gl.Viewport(0, 0, (uint)width, (uint)height);
+            _lightingFrameBuffer.Use();
 
             foreach (Light l in Lights.FindAll(x => x.ShadowsEnabled))
-                l.CalculateShadows(lightingFrameBuffer, l is PointLight ? lightingShaderPersp : lightingShaderOrtho, RenderScene);
+                l.CalculateShadows(_lightingFrameBuffer, l is PointLight ? _lightingShaderPersp : _lightingShaderOrtho, RenderScene);
         }
 
-        private void setLightingData()
+        private void SetLightingData()
         {
             int lights = 0;
             int shadowMapUnit = 0;
             
             foreach(Light light in Lights)
-                light.SetValues(defaultShader, lights++, ref shadowMapUnit);
+                light.SetValues(DefaultShader, lights++, ref shadowMapUnit);
 
-            defaultShader.SetInt("lightCount", lights);
+            DefaultShader.SetInt("lightCount", lights);
 
             //This is to prevent a black screen on AMD hardware 
             if (!Lights.Exists(x => x is PointLight && x.ShadowsEnabled))
-                defaultShader.SetInt("shadowCube", 30);
+                DefaultShader.SetInt("shadowCube", 30);
             /*while(pointLights < Program.Settings.MaxLights)
                 defaultShader.SetInt($"pointLights[{pointLights++}].shadowMap", 30);*/
         }
 
-        public void Update(Time deltaTime)
+        public virtual void Update(Time deltaTime)
         { 
             Entities.ForEach(e => e.Update(deltaTime));
             Program.PhysicsManager.Update(deltaTime);
-
-            flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
-            dice.Update(deltaTime);
-            UI.Update(deltaTime);
         }
 
         private void RenderScene(Shader shader)
@@ -156,57 +125,7 @@ namespace Yahtzee.Render
             ModelManager.DrawModels(shader);
         }
 
-        
-
-
-
-        private void OnButton(Keys key, InputAction action, KeyModifiers mods)
-        {
-            //if (action != InputAction.Press) return;
-
-            //if (key == Keys.ControlLeft && action == InputAction.Press)
-            //    PhysicsVisualizer.UpdateGJK();
-
-            if (key == Keys.V && action == InputAction.Press)
-                Backpack.Position += new vec3(0, 0.001f, 0);
-
-            //else if (key == Keys.C && action == InputAction.Press)
-            //{
-            //    ContactPointVisualizer.SetResult(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody));
-            //    ContactPointVisualizer.UpdateContactPoints();
-            //}
-            //else if (key == Keys.Apostrophe && action == InputAction.Press)
-            //{
-            //    if (PenetrationDepthVisualizer == null)
-            //        PenetrationDepthVisualizer = new PenetrationDepthVisualizer(Program.PhysicsManager.Collisions.GJKResult(Backpack.RigidBody, e.RigidBody), Program.PhysicsManager);
-
-            //    PenetrationDepthVisualizer.UpdateDepthTest();
-            //}
-            else if (key == Keys.P && action == InputAction.Press)
-            {
-                vec3 o = new vec3(0, 4, 0);
-                Random r = new Random();
-                for(int i = 0; i < 3; i++)
-                {
-                    for(int j = 0; j < 3; j++)
-                    {
-                        EntityDie m = new EntityDie("Dice/D6Red/d6red.obj") { Position = o + new vec3(i * 1.2f, 0, j * 1.2f) };
-                        m.Transform.Rotate((float)r.NextDouble(), new vec3((float)r.NextDouble(), (float)r.NextDouble(), (float)r.NextDouble()));
-                        Entities.Add(m);
-                    }
-                }
-            }
-            else if (key == Keys.O && action == InputAction.Press)
-            {
-                Random r = new Random();
-                EntityDie m = new EntityDie("Dice/D6Red/d6red.obj") { Position = new vec3(0, 4, 0) };
-                m.Transform.Rotate((float)r.NextDouble(), new vec3((float)r.NextDouble()*3, (float)r.NextDouble()*3, (float)r.NextDouble()*3));
-                Entities.Add(m);                 
-            }
-            else if (key == Keys.Q && action == InputAction.Press)
-            {
-                dice.Populate(5);
-            }
-        }
+       protected abstract void OnButton(Keys key, InputAction action, KeyModifiers mods);
+     
     }
 }

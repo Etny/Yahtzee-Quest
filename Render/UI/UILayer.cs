@@ -41,6 +41,17 @@ namespace Yahtzee.Render.UI
             UIFrameBuffer.CreateRenderBuffer((uint)width, (uint)height);
         }
 
+        public IUIComponent AddComponent(IUIComponent component)
+        {
+            Components = Components.Add(component);
+            return component;
+        }
+
+        public IUIComponent RemoveComponent(IUIComponent component)
+        {
+            Components = Components.Remove(component);
+            return component;
+        }
 
         public FrameBuffer Render(FrameBuffer frameBuffer)
         {

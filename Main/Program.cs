@@ -4,6 +4,7 @@ using System;
 using System.Drawing;
 using Yahtzee.Core;
 using Yahtzee.Game;
+using Yahtzee.Game.Scenes;
 using Yahtzee.Render;
 
 
@@ -13,7 +14,7 @@ namespace Yahtzee.Main
     {
 
         public static Window Window;
-        public static Scene Scene;
+        public static Scene CurrentScene;
         public static InputManager InputManager;
         public static PostProcessManager PostProcessManager;
         public static Settings Settings;
@@ -40,16 +41,27 @@ namespace Yahtzee.Main
             InputManager = new InputManager();
             PostProcessManager = new PostProcessManager();
             PhysicsManager = new PhysicsManager();
-            Scene = new Scene();
+            CurrentScene = new SceneDiceRoll();
             Renderer = new Renderer();
 
-            Renderer.AddRenderable(Scene);
+            Renderer.AddRenderable(CurrentScene);
             Renderer.AddRenderable(PostProcessManager);
-            Renderer.AddRenderable(Scene.UI);
+            Renderer.AddRenderable(CurrentScene.UI);
 
             PostProcessManager.AddPostProcessShader("gammaCorrect");
 
             Window.StartLoop();
+        }
+
+        public static void SwitchScene(Scene newScene)
+        {
+            Renderer.RemoveRenderable(CurrentScene);
+            Renderer.RemoveRenderable(CurrentScene.UI);
+
+            CurrentScene = newScene;
+
+            Renderer.InsertRenderable(CurrentScene, 1);
+            Renderer.InsertRenderable(CurrentScene.UI, 2);
         }
 
         private static void OnResize(int width, int height)
@@ -65,7 +77,7 @@ namespace Yahtzee.Main
 
         private static void Tick(Time deltaTime)
         {
-            Scene.Update(deltaTime);
+            CurrentScene.Update(deltaTime);
 
             Renderer.RenderPipeline();
 

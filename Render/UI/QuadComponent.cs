@@ -7,40 +7,41 @@ using Yahtzee.Game;
 using Yahtzee.Main;
 using Yahtzee.Render.Models;
 using Yahtzee.Render.Textures;
+using Yahtzee.Render.UI.RenderComponent;
 
 namespace Yahtzee.Render.UI
 {
-    abstract class QuadComponent : IUIComponent
+    class QuadComponent : IUIComponent
     {
         public Transform2D Transform = Transform2D.Identity;
         public vec2 Position { get { return Transform.Translation; } set { Transform.Translation = value; } }
 
         public QuadMesh Quad { get; protected set; }
 
-        protected Shader _shader;
+        public RenderComponent.RenderComponent RenderComponent { get; }
 
-        protected UILayer _layer;
+        public readonly UILayer Layer;
 
 
-        public QuadComponent(UILayer layer) { _layer = layer; _shader = ShaderRepository.GetShader("UI/UI", "UI/UIDefault"); }
+        public QuadComponent(UILayer layer) { Layer = layer; RenderComponent = new BasicRenderComponent(); }
 
-        public QuadComponent(UILayer layer, vec2 size)
+        public QuadComponent(UILayer layer, vec2 size) : this(layer)
         {
-            _layer = layer;
-
             Quad = new QuadMesh(size.ScaleToScreen());
-            _shader = ShaderRepository.GetShader("UI/UI", "UI/UIDefault");
+        }
+
+        public QuadComponent(UILayer layer, vec2 size, RenderComponent.RenderComponent component)
+        {
+            Layer = layer;
+            Quad = new QuadMesh(size.ScaleToScreen());
+            RenderComponent = component;
         }
 
 
         public virtual void Draw()
-        {
-            _shader.SetMat4("model", Transform.ModelMatrixUI);
-            _shader.SetVec2("screenSize", _layer.UIFrameBuffer.BoundTexture.Size);
-            Quad.Draw(_shader);
-        }
-        
+            => RenderComponent.Draw(this);
 
-        public abstract void Update(Time deltaTime);
+
+        public virtual void Update(Time deltaTime) { }
     }
 }

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <None Remove="Resource\Images\UI\Buttons\Reroll.png" />
+    <None Remove="Resource\Images\UI\Other\scorePaper.png" />
     <None Remove="Resource\Models\Backpack\ao.jpg" />
     <None Remove="Resource\Models\Backpack\backpack.mtl" />
     <None Remove="Resource\Models\Backpack\backpack.obj" />
@@ -42,10 +43,14 @@
     <None Remove="Resource\Shaders\UI\UI.vert" />
     <None Remove="Resource\Shaders\UI\UIBlurImage.frag" />
     <None Remove="Resource\Shaders\UI\UIDefault.frag" />
+    <None Remove="Resource\Shaders\UI\UIImage.frag" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Resource\Images\UI\Buttons\Reroll.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Images\UI\Other\scorePaper.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Models\Backpack\ao.jpg">
@@ -130,6 +135,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\postProDefault.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\UI\UIImage.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\UI\UIBlurImage.frag">

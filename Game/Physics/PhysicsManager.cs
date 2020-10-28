@@ -104,7 +104,7 @@ namespace Yahtzee.Game
                     if (c is ConstraintCollision)
                     {
                         ((ConstraintCollision)c).EndTimestep();
-                        Program.Scene.ContactPointVisualizer.RemovePoints(((ConstraintCollision)c).meshes);
+                        //Program.Scene.ContactPointVisualizer.RemovePoints(((ConstraintCollision)c).meshes);
                     }
                 }
 

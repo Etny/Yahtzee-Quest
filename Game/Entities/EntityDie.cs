@@ -62,7 +62,7 @@ namespace Yahtzee.Game.Entities
 
         public void StartLerpToCamera()
         {
-            var camera = Program.Scene.CurrentCamera;
+            var camera = Program.CurrentScene.CurrentCamera;
             Transform targetTransform = Transform;
 
             targetTransform.Scale = new vec3(.35f);
