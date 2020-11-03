@@ -1,7 +1,7 @@
 ﻿using GlmSharp;
 using Silk.NET.OpenGL;
 using Silk.NET.Vulkan;
-using SixLabors.Primitives;
+using SixLabors;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;

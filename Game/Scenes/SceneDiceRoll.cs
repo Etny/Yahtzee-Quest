@@ -47,15 +47,8 @@ namespace Yahtzee.Game.Scenes
             dice = new DiceSet();
 
             UI = new UILayer();
-            rc = new ImageRenderComponent(Gl, "Resource/Images/UI/Other/scorePaper.png");
-            button = new ButtonComponent(UI, rc.Image.Size, rc);
-            button.OnHover += testClick;
-            UI.AddComponent(button);
-        }
-
-        private void testClick(object sender, EventArgs e)
-        {
-            Console.WriteLine("YUUUp");
+            
+            UI.AddComponent(new TextComponent(UI, "Test _text"));
         }
 
         public override void Update(Time deltaTime)
@@ -67,7 +60,7 @@ namespace Yahtzee.Game.Scenes
             UI.Update(deltaTime);
 
 
-            rc.SetTint(button.Hovered ? new vec4(.3f, .3f, .7f, .8f) : new vec4(0));
+            //rc.SetTint(button.Hovered ? new vec4(.3f, .3f, .7f, .8f) : new vec4(0));
         }
 
 

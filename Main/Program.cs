@@ -2,17 +2,20 @@
 using Silk.NET.OpenGL;
 using System;
 using System.Drawing;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Yahtzee.Core;
+using Yahtzee.Core.Font;
 using Yahtzee.Game;
 using Yahtzee.Game.Scenes;
 using Yahtzee.Render;
 
-
 namespace Yahtzee.Main
 {
+
     class Program
     {
-
         public static Window Window;
         public static Scene CurrentScene;
         public static InputManager InputManager;
@@ -21,10 +24,13 @@ namespace Yahtzee.Main
         public static PhysicsManager PhysicsManager;
         public static Renderer Renderer;
 
+        public static FontRepository FontRepository;
+
         private static GL gl;
 
         static void Main(string[] args)
         {
+
             Settings = new Settings();
 
             Window = new Window();
@@ -37,6 +43,8 @@ namespace Yahtzee.Main
             Window.OnResize += OnResize;
 
             SetupGL();
+
+            FontRepository = new FontRepository(gl);
 
             InputManager = new InputManager();
             PostProcessManager = new PostProcessManager();
@@ -51,6 +59,7 @@ namespace Yahtzee.Main
             PostProcessManager.AddPostProcessShader("gammaCorrect");
 
             Window.StartLoop();
+
         }
 
         public static void SwitchScene(Scene newScene)
@@ -89,6 +98,8 @@ namespace Yahtzee.Main
             gl.Enable(EnableCap.CullFace);
             gl.Enable(EnableCap.DepthTest);
             gl.Enable(EnableCap.ProgramPointSize);
+            gl.Enable(EnableCap.Blend); //TODO: Turn Off!!!
+            gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         }
 
     }

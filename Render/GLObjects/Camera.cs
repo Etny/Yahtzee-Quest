@@ -55,7 +55,6 @@ namespace Yahtzee.Render
             var pm = ProjectionMatrix;
             gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, (uint)sizeof(mat4), &pm);
             gl.BufferSubData(BufferTargetARB.UniformBuffer, sizeof(mat4), (uint)sizeof(mat4), &orthoMatrix);
-
         }
 
         public mat4 LookAt() => mat4.LookAt(Position, Position + GetDirection(), Up);

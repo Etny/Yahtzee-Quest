@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="freetype6.dll" />
+    <None Remove="Resource\Fonts\arial.ttf" />
+    <None Remove="Resource\Fonts\orange_juice_2.ttf" />
     <None Remove="Resource\Images\UI\Buttons\Reroll.png" />
     <None Remove="Resource\Images\UI\Other\scorePaper.png" />
     <None Remove="Resource\Models\Backpack\ao.jpg" />
@@ -44,9 +47,22 @@
     <None Remove="Resource\Shaders\UI\UIBlurImage.frag" />
     <None Remove="Resource\Shaders\UI\UIDefault.frag" />
     <None Remove="Resource\Shaders\UI\UIImage.frag" />
+    <None Remove="Resource\Shaders\UI\UIText.frag" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Resource\Fonts\arial.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="freetype6.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Fonts\orange_juice_2.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resource\Images\UI\Buttons\Reroll.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -137,6 +153,9 @@
     <Content Include="Resource\Shaders\PostProcess\postProDefault.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resource\Shaders\UI\UIText.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resource\Shaders\UI\UIImage.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -154,8 +173,9 @@
   <ItemGroup>
     <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
     <PackageReference Include="GlmSharp" Version="0.9.8" />
+    <PackageReference Include="SharpFont.NetStandard" Version="1.0.2" />
     <PackageReference Include="Silk.NET" Version="1.2.1" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.1" />
   </ItemGroup>
 
 </Project>

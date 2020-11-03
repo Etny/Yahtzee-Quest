@@ -15,22 +15,14 @@ namespace Yahtzee.Main
 
         private WindowHandle* window;
 
-        public delegate void Tick(Time time);
-        public event Tick OnTick;
-
-        public delegate void Resize(int width, int height);
-        public event Resize OnResize;
-
         private bool firstMove = true;
         private double lastX = -1, lastY = -1;
-        public delegate void CursorMove(double x, double y, double deltaX, double deltaY);
-        public event CursorMove OnCursorMove;
 
-        public delegate void Button(Keys key, InputAction action, KeyModifiers mods);
-        public event Button OnButton;
-
-        public delegate void MouseClick(MouseButton button, InputAction action, KeyModifiers mods);
-        public event MouseClick OnMouseButton;
+        public event Action<Time> OnTick;
+        public event Action<int, int> OnResize;
+        public event Action<double, double, double, double> OnCursorMove;
+        public event Action<Keys, InputAction, KeyModifiers> OnButton;
+        public event Action<MouseButton, InputAction, KeyModifiers> OnMouseButton;
 
         private double lastFrame = 0.0f;
         private double deltaTime = 0.0f;

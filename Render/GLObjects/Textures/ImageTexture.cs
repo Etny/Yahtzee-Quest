@@ -30,6 +30,8 @@ namespace Yahtzee.Render.Textures
         public string path;
         public TextureType TextureType;
 
+        protected ImageTexture() : base() { }
+
         public ImageTexture(GL gl, string imgPath, TextureType type) : base()
         {
             this.TextureType = type;
@@ -60,7 +62,7 @@ namespace Yahtzee.Render.Textures
             InternalFormat format = InternalFormat.Rgb;
             encodings.TryGetValue(TextureType, out format);
 
-            fixed (void* i = &MemoryMarshal.GetReference(img.GetPixelSpan()))
+            fixed (void* i = &MemoryMarshal.GetReference(img.GetPixelRowSpan(0)))
                 gl.TexImage2D(TextureTarget.Texture2D, 0, (int)format, (uint)img.Width, (uint)img.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, i);
 
             img.Dispose();

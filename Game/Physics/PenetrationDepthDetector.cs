@@ -1,6 +1,6 @@
 ﻿using GlmSharp;
 using Silk.NET.OpenGL;
-using SixLabors.Primitives;
+using SixLabors;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

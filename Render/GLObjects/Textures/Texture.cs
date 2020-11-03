@@ -35,6 +35,8 @@ namespace Yahtzee.Render.Textures
             Size = new uvec2(width, height);
         }
 
+        ~Texture() => Dispose();
+
 
         public vec2 GetAspectRatio()
             => new vec2((float)Size.x / (float)Size.y, (float)Size.y / (float)Size.x);
