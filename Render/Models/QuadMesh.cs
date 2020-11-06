@@ -24,14 +24,21 @@ namespace Yahtzee.Render.Models
         {
             Size = size;
 
-            QuadVertex[] verts = new QuadVertex[4];
-            for (int i = 0; i < 4; i++)
-                verts[i] = new QuadVertex() { Position = BaseVerts[i] * Size, TexCoords = BaseTexCoords[i] };
-
-            Vertices = verts;
+            SetSize(size);
+            
             Indices = BaseIndices;
 
             SetupMesh();
+        }
+
+        private void SetSize(vec2 size)
+        {
+            QuadVertex[] verts = new QuadVertex[4];
+            for (int i = 0; i < 4; i++)
+                verts[i] = new QuadVertex() { Position = BaseVerts[i] * size, TexCoords = BaseTexCoords[i] };
+
+            Vertices = verts;
+            Indices = BaseIndices;
         }
 
         protected unsafe override void SetupVertexAttributePointers()

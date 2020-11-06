@@ -14,6 +14,7 @@ using Yahtzee.Core.Debug;
 using Yahtzee.Core;
 using Yahtzee.Render;
 using Yahtzee.Render.UI.RenderComponent;
+using Yahtzee.Core.Font;
 
 namespace Yahtzee.Game.Scenes
 {
@@ -27,8 +28,7 @@ namespace Yahtzee.Game.Scenes
         private ModelEntity e;
         private DiceSet dice;
 
-        private ImageRenderComponent rc;
-        private ButtonComponent button;
+        private TextComponent tc;
 
         public SceneDiceRoll() : base()
         {
@@ -47,8 +47,14 @@ namespace Yahtzee.Game.Scenes
             dice = new DiceSet();
 
             UI = new UILayer();
-            
-            UI.AddComponent(new TextComponent(UI, "Test _text"));
+
+            tc = new TextComponent(UI, Program.FontRepository.GetFont("orange_juice_2.ttf", 60), "Test, text. Does this now work?\nPlease tell me it works.\nI think it does!\nNice!")
+            {
+                Alignment = TextAlignment.Centered,
+                Color = new vec3(0.2f, 1f, 0.2f)
+            };
+            //tc.Transform.Translation -= new vec2(600, 0);
+            UI.AddComponent(tc);
         }
 
         public override void Update(Time deltaTime)
@@ -59,8 +65,9 @@ namespace Yahtzee.Game.Scenes
             dice.Update(deltaTime);
             UI.Update(deltaTime);
 
-
-            //rc.SetTint(button.Hovered ? new vec4(.3f, .3f, .7f, .8f) : new vec4(0));
+            //var i = .25f * (float)Math.Sin(deltaTime.Total);
+            //var j = .5f * (float)Math.Cos(deltaTime.Total);
+            //tc.Transform.Scale = new vec2(.5f + i, 1f + j);
         }
 
 

@@ -50,7 +50,6 @@ namespace Yahtzee.Core.Font
 
         private Glyph CreateGlyph(char c)
         {
-            // = 'T';
             _face.LoadGlyph(_face.GetCharIndex(c), LoadFlags.Default, LoadTarget.Normal);
             var g = _face.Glyph;
 

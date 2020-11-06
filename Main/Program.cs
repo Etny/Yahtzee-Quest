@@ -98,7 +98,6 @@ namespace Yahtzee.Main
             gl.Enable(EnableCap.CullFace);
             gl.Enable(EnableCap.DepthTest);
             gl.Enable(EnableCap.ProgramPointSize);
-            gl.Enable(EnableCap.Blend); //TODO: Turn Off!!!
             gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         }
 

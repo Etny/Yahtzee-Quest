@@ -23,6 +23,8 @@ namespace Yahtzee.Core.Font
 
         public Font GetFont(string fontName)
         {
+            fontName = "Resource/Fonts/" + fontName;
+
             if (_fonts.ContainsKey(fontName))
                 return _fonts.GetValueOrDefault(fontName);
 
@@ -31,8 +33,17 @@ namespace Yahtzee.Core.Font
             return f;
         }
 
+        public Font GetFont(string fontName, float size)
+        {
+            var f = GetFont(fontName);
+            f.Size = size;
+            return f;
+        }
+
         public bool DisposeFont(string fontName)
         {
+            fontName = "Resource/Fonts/" + fontName;
+
             if (!_fonts.ContainsKey(fontName)) return false;
             _fonts.GetValueOrDefault(fontName).Dispose();
             _fonts.Remove(fontName);
