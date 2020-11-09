@@ -7,7 +7,7 @@ using Silk.NET.OpenGL;
 using GlmSharp;
 using Yahtzee.Render.Textures;
 using Yahtzee.Game;
-using Yahtzee.Game.Physics;
+using Yahtzee.Core.Physics;
 
 namespace Yahtzee.Render.Models
 {

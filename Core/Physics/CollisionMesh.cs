@@ -8,7 +8,7 @@ using Yahtzee.Main;
 using Yahtzee.Render;
 using Yahtzee.Render.Models;
 
-namespace Yahtzee.Game.Physics
+namespace Yahtzee.Core.Physics
 {
     class CollisionMesh : Mesh<Vertex>
     {
@@ -25,14 +25,14 @@ namespace Yahtzee.Game.Physics
 
         public CollisionMesh(vec3[] vertices, uint[] indices) : base()
         {
-            this.DrawVertices = vertices;
-            this.Indices = indices;
+            DrawVertices = vertices;
+            Indices = indices;
 
-            this.shader = ShaderRepository.GetShader("Debug/Line/line");
+            shader = ShaderRepository.GetShader("Debug/Line/line");
 
             List<vec3> temp = new List<vec3>();
 
-            foreach(vec3 v in vertices)
+            foreach (vec3 v in vertices)
                 if (!temp.Contains(v)) temp.Add(v);
 
             CollisionVertices = temp.ToArray();

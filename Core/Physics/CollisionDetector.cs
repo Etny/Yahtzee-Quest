@@ -4,7 +4,7 @@ using System.Text;
 using GlmSharp;
 using Silk.NET.Vulkan;
 
-namespace Yahtzee.Game.Physics
+namespace Yahtzee.Core.Physics
 {
     class CollisionDetector
     {

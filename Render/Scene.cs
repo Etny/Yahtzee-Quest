@@ -25,9 +25,9 @@ namespace Yahtzee.Render
         protected Shader DefaultShader;
         protected readonly GL Gl;
 
-        private readonly Shader _lightingShaderOrtho;
-        private readonly Shader _lightingShaderPersp;
-        private readonly FrameBuffer _lightingFrameBuffer;
+        private Shader _lightingShaderOrtho;
+        private Shader _lightingShaderPersp;
+        private FrameBuffer _lightingFrameBuffer;
 
         public UILayer UI;
 
@@ -35,7 +35,12 @@ namespace Yahtzee.Render
         public Scene()
         {
             Gl = GL.GetApi();
+        }
+            
+        ~Scene() { _lightingFrameBuffer.Dispose(); Program.Window.OnButton -= OnButton; }
 
+        public virtual void Init()
+        {
             Program.Settings.GetLightRange(out float near, out float far);
             Program.Window.GetSize(out int windowWidth, out int windowHeight);
 
@@ -60,8 +65,6 @@ namespace Yahtzee.Render
 
             UI = new UILayer();
         }
-            
-        ~Scene() { _lightingFrameBuffer.Dispose(); Program.Window.OnButton -= OnButton; }
 
         public FrameBuffer Render(FrameBuffer renderFrameBuffer)
         {
@@ -77,6 +80,7 @@ namespace Yahtzee.Render
             CurrentCamera.SetData(DefaultShader);
             SetLightingData();
             RenderScene(DefaultShader);
+            RenderExtras(renderFrameBuffer);
 
             return renderFrameBuffer;
         }
@@ -117,13 +121,16 @@ namespace Yahtzee.Render
         { 
             Entities.ForEach(e => e.Update(deltaTime));
             Program.PhysicsManager.Update(deltaTime);
+            UI.Update(deltaTime);
         }
 
         private void RenderScene(Shader shader)
         { 
-            Entities.ForEach(e => e.Draw(shader));
+            Entities.ForEach(e => { if (!(e is ModelEntity && (e as ModelEntity).DrawInstanced)) e.Draw(shader); });
             ModelManager.DrawModels(shader);
         }
+
+        protected virtual void RenderExtras(FrameBuffer frameBuffer) { }
 
        protected abstract void OnButton(Keys key, InputAction action, KeyModifiers mods);
      

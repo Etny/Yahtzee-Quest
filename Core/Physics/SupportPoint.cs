@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Yahtzee.Game.Physics
+namespace Yahtzee.Core.Physics
 {
     struct SupportPoint
     {
@@ -14,7 +14,7 @@ namespace Yahtzee.Game.Physics
         {
             this.A = A;
             this.B = B;
-            this.Sup = A - B;
+            Sup = A - B;
         }
 
     }

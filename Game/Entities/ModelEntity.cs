@@ -30,7 +30,6 @@ namespace Yahtzee.Game.Entities
 
         public override void Draw(Shader shader)
         {
-            if (DrawInstanced) return;
             shader.SetMat4("models[0]", Transform.ModelMatrix);
             Model.Draw(shader);
         }

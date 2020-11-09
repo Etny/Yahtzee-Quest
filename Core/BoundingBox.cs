@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using GlmSharp;
-using Yahtzee.Game.Physics;
+using Yahtzee.Core.Physics;
 using Yahtzee.Render.Models;
 
 namespace Yahtzee.Core

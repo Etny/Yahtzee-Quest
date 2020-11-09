@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using Yahtzee.Core;
+using Yahtzee.Core.Physics.Constraints;
 using Yahtzee.Game.Entities;
-using Yahtzee.Game.Physics.Constraints;
 using Yahtzee.Main;
 using Yahtzee.Render.Models;
 
-namespace Yahtzee.Game.Physics
+namespace Yahtzee.Core.Physics
 {
     class RigidBody
     {
@@ -29,12 +29,13 @@ namespace Yahtzee.Game.Physics
         private vec3 rotDelta = vec3.Zero;
         private float timeDelta = 0;
         private float sleepImmunity = SleepImmunityTime;
+
         public event EventHandler OnFallAsleep;
         public event EventHandler OnWakeUp;
 
-        private static readonly float PosDeltaSleepThreshold = .35f;
-        private static readonly float TimeDeltaSleepThreshold = 1f;
-        private static readonly float SleepImmunityTime = 3f;
+        private const float PosDeltaSleepThreshold = .35f;
+        private const float TimeDeltaSleepThreshold = 1f;
+        private const float SleepImmunityTime = 3f;
 
         public vec3 Position { get { return Transform.Translation; } }
         public Transform Transform { get { return Parent.Transform * CollisionTransform; } }
@@ -64,7 +65,7 @@ namespace Yahtzee.Game.Physics
         public bool Static = false;
         public int? Index = null;
 
-        
+
 
         public int UID = -1;
 
@@ -118,7 +119,7 @@ namespace Yahtzee.Game.Physics
             Parent.Transform.Translation += dt * Velocity;
 
             AngularVelocity += TorqueExternal;
-            Parent.Transform.Orientation = 
+            Parent.Transform.Orientation =
                 (quat.FromAxisAngle((dt * AngularVelocity).Length, AngularVelocity.NormalizedSafe) * Parent.Transform.Orientation).NormalizedSafe;
 
             ForcesExternal = vec3.Zero;
@@ -138,7 +139,7 @@ namespace Yahtzee.Game.Physics
             var dt = deltaTime.DeltaF;
 
             Parent.Transform.Translation += dt * Velocity;
-            Parent.Transform.Orientation = 
+            Parent.Transform.Orientation =
                 (quat.FromAxisAngle((dt * AngularVelocity).Length, AngularVelocity.NormalizedSafe) * Parent.Transform.Orientation).NormalizedSafe;
 
             UpdateInertia();
@@ -154,6 +155,13 @@ namespace Yahtzee.Game.Physics
             InverseInertiaWorldspace = worldspaceMat.Transposed * InverseInertia * worldspaceMat;
         }
 
+        public void ResetVelocities()
+        {
+            Velocity = vec3.Zero;
+            AngularVelocity = vec3.Zero;
+            sleepImmunity = SleepImmunityTime;
+        }
+
         public void WakeUp()
         {
             if (!Sleeping) return;
@@ -166,12 +174,12 @@ namespace Yahtzee.Game.Physics
 
         private void CheckSleep(Time deltaTime)
         {
-            if(sleepImmunity > 0) { sleepImmunity -= deltaTime.DeltaF; return; }
+            if (sleepImmunity > 0) { sleepImmunity -= deltaTime.DeltaF; return; }
 
             posDelta += _tempTransform.Translation - Parent.Transform.Translation;
             rotDelta += (vec3)(Parent.Transform.Orientation * _tempTransform.Orientation.Inverse).EulerAngles;
-            
-            if((posDelta.Length + rotDelta.Length) >= PosDeltaSleepThreshold)
+
+            if (posDelta.Length + rotDelta.Length >= PosDeltaSleepThreshold)
             {
                 posDelta = vec3.Zero;
                 rotDelta = vec3.Zero;
@@ -181,7 +189,7 @@ namespace Yahtzee.Game.Physics
 
             timeDelta += deltaTime.DeltaF;
 
-            if(timeDelta > TimeDeltaSleepThreshold)
+            if (timeDelta > TimeDeltaSleepThreshold)
             {
                 Sleeping = true;
                 AABBOverlapCache.AddRange(OverlappingAABB);
@@ -219,7 +227,7 @@ namespace Yahtzee.Game.Physics
             if (wakeup) WakeUp();
 
             ForcesExternal += impulse / Mass;
-            if(point != vec3.Zero) TorqueExternal += InverseInertiaWorldspace * vec3.Cross(point, impulse);
+            if (point != vec3.Zero) TorqueExternal += InverseInertiaWorldspace * vec3.Cross(point, impulse);
         }
 
     }

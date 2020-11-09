@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Yahtzee.Core;
 using Yahtzee.Core.Font;
-using Yahtzee.Game;
+using Yahtzee.Core.Physics;
 using Yahtzee.Game.Scenes;
 using Yahtzee.Render;
 
@@ -52,11 +52,12 @@ namespace Yahtzee.Main
             CurrentScene = new SceneDiceRoll();
             Renderer = new Renderer();
 
+            CurrentScene.Init();
+            PostProcessManager.AddPostProcessShader("gammaCorrect");
+
             Renderer.AddRenderable(CurrentScene);
             Renderer.AddRenderable(PostProcessManager);
             Renderer.AddRenderable(CurrentScene.UI);
-
-            PostProcessManager.AddPostProcessShader("gammaCorrect");
 
             Window.StartLoop();
 
@@ -68,6 +69,7 @@ namespace Yahtzee.Main
             Renderer.RemoveRenderable(CurrentScene.UI);
 
             CurrentScene = newScene;
+            newScene.Init();
 
             Renderer.InsertRenderable(CurrentScene, 1);
             Renderer.InsertRenderable(CurrentScene.UI, 2);

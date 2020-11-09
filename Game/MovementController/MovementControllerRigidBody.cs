@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Yahtzee.Core.Physics;
 using Yahtzee.Game.Entities;
 using Yahtzee.Main;
 using Yahtzee.Render;

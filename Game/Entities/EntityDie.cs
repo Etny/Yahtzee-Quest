@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Yahtzee.Core;
+using Yahtzee.Core.Physics;
 using Yahtzee.Game.Physics;
 using Yahtzee.Main;
 using Yahtzee.Render;
@@ -26,17 +27,21 @@ namespace Yahtzee.Game.Entities
         public vec3 CameraOffset = vec3.Zero;
 
         private int _rolledIndex = 0;
-        
-        public bool Center = false;
 
         public EntityDie(string modelPath) : base(modelPath)
         {
             RigidBodyController = new MovementControllerRigidBody(this);
             RigidBody.CollisionTransform.Scale = new vec3(.97f);
 
-            MovementController = RigidBodyController;
+            //MovementController = RigidBodyController;
 
             //dm = new LineMesh(colors: new vec3[] { new vec3(.7f, .2f, .3f), new vec3(.7f, .2f, .3f) });
+        }
+
+        public void EnablePhysics()
+        {
+            RigidBodyController.RigidBody.ResetVelocities();
+            MovementController = RigidBodyController;
         }
 
         public void CalculateRolledIndex()
@@ -65,7 +70,7 @@ namespace Yahtzee.Game.Entities
             var camera = Program.CurrentScene.CurrentCamera;
             Transform targetTransform = Transform;
 
-            targetTransform.Scale = new vec3(.35f);
+            //targetTransform.Scale = new vec3(.35f);
 
             targetTransform.Translation = camera.Transform * CameraOffset;
 

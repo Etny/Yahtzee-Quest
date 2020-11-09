@@ -54,7 +54,7 @@ namespace Yahtzee.Render
                 else
                     renderFrameBuffer.Use();
 
-                Util.GLClear();
+                //Util.GLClear();
                 source.BindToUnit(0);
                 QuadMesh.ScreenQuad.Draw(shader);
 
@@ -70,7 +70,7 @@ namespace Yahtzee.Render
             }
 
             return renderFrameBuffer;
-        }
+        }            
 
         public Shader AddPostProcessShader(string fragmentPath)
         {

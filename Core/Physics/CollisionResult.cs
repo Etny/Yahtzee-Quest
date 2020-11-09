@@ -7,7 +7,7 @@ using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using Yahtzee.Main;
 using db = System.Diagnostics.Debug;
 
-namespace Yahtzee.Game.Physics
+namespace Yahtzee.Core.Physics
 {
     class CollisionResult
     {

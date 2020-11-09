@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 
-namespace Yahtzee.Game.Physics
+namespace Yahtzee.Core.Physics
 {
     class Broadphase
     {
@@ -26,7 +26,7 @@ namespace Yahtzee.Game.Physics
                     {
                         if (body1.Sleeping && !body1.AABBOverlapCache.Contains(body2.UID)) body1.WakeUp();
                         if (body2.Sleeping && !body2.AABBOverlapCache.Contains(body1.UID)) body2.WakeUp();
-                        
+
                         body1.OverlappingAABB.Add(body2.UID);
                         body2.OverlappingAABB.Add(body1.UID);
                         pairs.Add((body1, body2));
@@ -34,7 +34,7 @@ namespace Yahtzee.Game.Physics
                 }
             }
 
-                return pairs;
+            return pairs;
         }
     }
 }

@@ -21,53 +21,43 @@ namespace Yahtzee.Game.Scenes
     class SceneDiceRoll : Scene
     {
         
-        public SpotLight flashLight;
-        public DirectionalLight testLight;
-        public PointLight testPointLight;
-        private ModelEntity Backpack;
-        private ModelEntity e;
-        private DiceSet dice;
+        public SpotLight Flashlight;
+        public DirectionalLight Sun;
 
-        private TextComponent tc;
+        private DiceSet _dice;
 
-        public SceneDiceRoll() : base()
+
+        public SceneDiceRoll() : base() { }
+
+        public override void Init()
         {
-           
-            flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRad(25), Util.ToRad(30)) { Direction = new vec3(0, -1, 1) };
-            //Lights.Add(flashLight);
-            testLight = new DirectionalLight(new vec3(.1f, -.5f, -.5f));
-            testLight.SetShadowsEnabled(true);
-            Lights.Add(testLight);
+            base.Init();
 
-            e = new EntityStaticBody("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
+            //flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRad(25), Util.ToRad(30)) { Direction = new vec3(0, -1, 1) };
+            //Lights.Add(flashLight);
+            Sun = new DirectionalLight(new vec3(.1f, -.5f, -.5f));
+            Sun.SetShadowsEnabled(true);
+            Lights.Add(Sun);
+
+            var e = new EntityStaticBody("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
             e.Transform.Scale = new vec3(100, 1f, 100);
             Entities.Add(e);
-            //Backpack = new ModelEntity("Dice/D6Red/d6red.obj");
-            //Backpack.Transform.Scale = new vec3(.1f);
-            dice = new DiceSet();
 
-            UI = new UILayer();
-
-            tc = new TextComponent(UI, Program.FontRepository.GetFont("orange_juice_2.ttf", 60), "Test, text. Does this now work?\nPlease tell me it works.\nI think it does!\nNice!")
-            {
-                Alignment = TextAlignment.Centered,
-                Color = new vec3(0.2f, 1f, 0.2f)
-            };
-            //tc.Transform.Translation -= new vec2(600, 0);
-            UI.AddComponent(tc);
+            _dice = new DiceSet(Gl);
+            _dice.Populate(5);
         }
 
         public override void Update(Time deltaTime)
         {
             base.Update(deltaTime);
 
-            flashLight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
-            dice.Update(deltaTime);
-            UI.Update(deltaTime);
+            //Flashlight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
+            _dice.Update(deltaTime);
+        }
 
-            //var i = .25f * (float)Math.Sin(deltaTime.Total);
-            //var j = .5f * (float)Math.Cos(deltaTime.Total);
-            //tc.Transform.Scale = new vec2(.5f + i, 1f + j);
+        protected override void RenderExtras(FrameBuffer frameBuffer)
+        {
+            _dice.Draw();
         }
 
 
@@ -97,7 +87,8 @@ namespace Yahtzee.Game.Scenes
             }
             else if (key == Keys.Q && action == InputAction.Press)
             {
-                dice.Populate(5);
+                //_dice.Populate(5);
+                _dice.Roll();
             }
         }
     }

@@ -4,14 +4,13 @@ using System.Text;
 using Yahtzee.Render;
 using GlmSharp;
 using Yahtzee.Main;
-using Yahtzee.Game.Physics;
 using Silk.NET.Vulkan;
 using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyModel;
 using db = System.Diagnostics.Debug;
-using Yahtzee.Game.Physics.Constraints;
+using Yahtzee.Core.Physics.Constraints;
 
-namespace Yahtzee.Game
+namespace Yahtzee.Core.Physics
 {
     class PhysicsManager
     {
@@ -54,14 +53,15 @@ namespace Yahtzee.Game
             => Bodies;
 
         public void Update(Time deltaTime)
-        {            
+        {
             var constraintsToSolve = new List<IConstraint>();
             //if (ConstraintCache.Count > 0) Console.WriteLine(ConstraintCache.Count);
             //return;
 
             Bodies.ForEach(b => b.ApplyInitialForces(deltaTime));
 
-            foreach (var pair in Broadphase.GetColliderPairs(Bodies)) {
+            foreach (var pair in Broadphase.GetColliderPairs(Bodies))
+            {
                 var body1 = pair.Item1;
                 var body2 = pair.Item2;
 
@@ -81,9 +81,9 @@ namespace Yahtzee.Game
                     constraintsToSolve.Add(col);
                     constraintsToSolve.AddRange(col.GetFrictionConstraints());
                 }
-            }        
+            }
 
-            foreach (IConstraint c in ConstraintCache) if(c.StillValid()) constraintsToSolve.Add(c);
+            foreach (IConstraint c in ConstraintCache) if (c.StillValid()) constraintsToSolve.Add(c);
             ConstraintCache.Clear();
 
             if (constraintsToSolve.Count > 0)

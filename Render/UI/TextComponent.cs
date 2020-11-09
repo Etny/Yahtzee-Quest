@@ -53,8 +53,7 @@ namespace Yahtzee.Render.UI
         private void SetText(string text)
         {
             string trimmed = new string((
-               from a in text
-               where
+               from a in text where
                char.IsLetterOrDigit(a) || char.IsWhiteSpace(a) || char.IsPunctuation(a) || a == '\n'
                select a).ToArray());
 

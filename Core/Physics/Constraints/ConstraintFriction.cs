@@ -2,9 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Yahtzee.Core.Physics;
 using Yahtzee.Main;
 
-namespace Yahtzee.Game.Physics.Constraints
+namespace Yahtzee.Core.Physics.Constraints
 {
     class ConstraintFriction : IConstraint
     {
@@ -16,7 +17,7 @@ namespace Yahtzee.Game.Physics.Constraints
 
         protected float _effectiveMass = 0;
         protected float _totalLambda = 0;
-        
+
 
 
         public ConstraintFriction(ConstraintCollision contact, vec3 normal)
@@ -35,14 +36,14 @@ namespace Yahtzee.Game.Physics.Constraints
 
             CalculateJacobian();
 
-            float JV =  vec3.Dot(_jacobian[0, 0], Body1.Velocity) +
+            float JV = vec3.Dot(_jacobian[0, 0], Body1.Velocity) +
                         vec3.Dot(_jacobian[0, 1], Body1.AngularVelocity) +
                         vec3.Dot(_jacobian[1, 0], Body2.Velocity) +
                         vec3.Dot(_jacobian[1, 1], Body2.AngularVelocity);
 
             float lambda = _effectiveMass * -JV;
 
-            float totalFriction = (Body1.Friction * Body2.Friction) * Contact.TotalLambda;
+            float totalFriction = Body1.Friction * Body2.Friction * Contact.TotalLambda;
 
             float oldLambda = _totalLambda;
             _totalLambda = Math.Clamp(_totalLambda + lambda, -totalFriction, totalFriction);

@@ -6,10 +6,9 @@ using System.Text;
 using Assimp;
 using GlmSharp;
 using Silk.NET.OpenGL;
-using Yahtzee.Game;
-using Yahtzee.Game.Physics;
+using Yahtzee.Core.Physics;
 using Yahtzee.Render;
-using static Yahtzee.Game.Physics.PenetrationDepthDetector;
+using static Yahtzee.Core.Physics.PenetrationDepthDetector;
 
 namespace Yahtzee.Core.Debug
 {

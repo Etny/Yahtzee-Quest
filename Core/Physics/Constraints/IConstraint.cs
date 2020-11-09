@@ -4,7 +4,7 @@ using System.Text;
 using GlmSharp;
 using Yahtzee.Main;
 
-namespace Yahtzee.Game.Physics.Constraints
+namespace Yahtzee.Core.Physics.Constraints
 {
     interface IConstraint
     {
@@ -13,6 +13,6 @@ namespace Yahtzee.Game.Physics.Constraints
 
         public void Resolve(Time deltaTime, int iter);
 
-    
+
     }
 }

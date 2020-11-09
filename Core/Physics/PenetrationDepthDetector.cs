@@ -14,7 +14,7 @@ using Yahtzee.Core;
 using db = System.Diagnostics.Debug;
 
 
-namespace Yahtzee.Game.Physics
+namespace Yahtzee.Core.Physics
 {
     class PenetrationDepthDetector
     {
@@ -24,7 +24,7 @@ namespace Yahtzee.Game.Physics
 
         public PenetrationDepthDetector(PhysicsManager physicsManager)
         {
-            this._pm = physicsManager;
+            _pm = physicsManager;
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Yahtzee.Game.Physics
         public vec3 GetPenetrationDepth(CollisionResult result)
             => GetPenetrationInfo(result).Item1.ClosestPoint();
 
-        public (vec3,vec3) GetContactInfo((Triangle, vec3) info)
+        public (vec3, vec3) GetContactInfo((Triangle, vec3) info)
         {
             var tri = info.Item1;
             db.Assert(tri != null);
@@ -60,7 +60,7 @@ namespace Yahtzee.Game.Physics
         {
             if (!result.Colliding) return (null, vec3.NaN);
 
-            vec3 center = (result.Simplex[0].Sup / 4) + (result.Simplex[1].Sup / 4) + (result.Simplex[2].Sup / 4) + (result.Simplex[3].Sup / 4);
+            vec3 center = result.Simplex[0].Sup / 4 + result.Simplex[1].Sup / 4 + result.Simplex[2].Sup / 4 + result.Simplex[3].Sup / 4;
 
             List<Triangle> tris = new List<Triangle>
             {
@@ -95,7 +95,7 @@ namespace Yahtzee.Game.Physics
 
                 //else
                 //    foreach (vec3 p in closestTri.Vec3Points) Console.WriteLine("Error: " + Math.Abs(vec3.Dot(closestTri.Normal, (newPoint.Sup - p).NormalizedSafe)));
-                
+
 
                 List<Triangle> trisToRemove = tris.FindAll(t => vec3.Dot(t.Normal, newPoint.Sup - t.Vec3Points[0]) > 0);
 
@@ -133,7 +133,7 @@ namespace Yahtzee.Game.Physics
 
 
 #if DEBUG
-            //Used for debugging
+        //Used for debugging
         public vec3 GetPenetrationDepthStep(CollisionResult result, ref List<Triangle> tris, ref List<vec3> removed, ref Triangle closestTri, ref SupportPoint newPoint, ref int counter)
         {
             //if (!result.Colliding) return vec3.Zero;
@@ -172,7 +172,7 @@ namespace Yahtzee.Game.Physics
                 if (closestTri.OnSupportPlane(newPoint.Sup))
                     return newPoint.Sup;
                 else
-                    foreach(vec3 p in closestTri.Vec3Points) Console.WriteLine("Error: " + (Math.Acos(vec3.Dot(closestTri.Normal, (newPoint.Sup - p).NormalizedSafe)) - Util.ToRad(90)));
+                    foreach (vec3 p in closestTri.Vec3Points) Console.WriteLine("Error: " + (Math.Acos(vec3.Dot(closestTri.Normal, (newPoint.Sup - p).NormalizedSafe)) - Util.ToRad(90)));
 
                 var tempPoint = newPoint;
                 if (tris.Exists(t => t.Vec3Points.Contains(tempPoint.Sup)))
@@ -181,7 +181,7 @@ namespace Yahtzee.Game.Physics
             }
             else if (counter == 3)
             {
-                
+
                 var tempPoint = newPoint;
                 List<Triangle> facingNewPoint = tris.FindAll(t => vec3.Dot(t.Normal, tempPoint.Sup - t.Vec3Points[0]) > 0);
 
@@ -230,10 +230,10 @@ namespace Yahtzee.Game.Physics
 
             public vec3 Center { get { return Points[0].Sup / 3 + Points[1].Sup / 3 + Points[2].Sup / 3; } }
 
-            public Triangle(SupportPoint A, SupportPoint B, SupportPoint C, vec3 center) 
+            public Triangle(SupportPoint A, SupportPoint B, SupportPoint C, vec3 center)
             {
                 //Ensure the normal is facing outwards
-                if(vec3.Dot(vec3.Cross(B.Sup - A.Sup, C.Sup - A.Sup), A.Sup - center) <= 0)
+                if (vec3.Dot(vec3.Cross(B.Sup - A.Sup, C.Sup - A.Sup), A.Sup - center) <= 0)
                     Points = new SupportPoint[] { A, C, B };
                 else
                     Points = new SupportPoint[] { A, B, C };
@@ -264,14 +264,14 @@ namespace Yahtzee.Game.Physics
 
                 if (barycentric == vec3.NaN) return vec3.NaN;
 
-                closest = (A * barycentric.x) + (B * barycentric.y) + (C * barycentric.z);
+                closest = A * barycentric.x + B * barycentric.y + C * barycentric.z;
 
                 return closest;
             }
 
             public float DistToOrigin()
             {
-                if(!dist.HasValue)
+                if (!dist.HasValue)
                     dist = vec3.Dot(Normal, Points[0].Sup);
 
                 return dist.Value;

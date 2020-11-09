@@ -4,25 +4,25 @@ using System.Text;
 using Yahtzee.Game.Entities;
 using GlmSharp;
 using Yahtzee.Main;
-using Yahtzee.Game.Physics;
 using Yahtzee.Render;
 using Yahtzee.Core;
+using Yahtzee.Core.Physics;
+using Silk.NET.OpenGL;
 
 namespace Yahtzee.Game
 {
     class DiceSet
     {
-        List<EntityDie> Dice = new List<EntityDie>();
+        public readonly List<EntityDie> Dice = new List<EntityDie>();
 
         private int _sleepCount = 0;
+        private readonly Outliner outliner;
+        private static readonly float _highlightCutoff = (float)Math.Cos(12f.AsRad());
 
-        Shader HighlightShader;
-
-        public DiceSet()
+        public DiceSet(GL gl)
         {
-            HighlightShader = Program.PostProcessManager.AddPostProcessShader("glow");
-            HighlightShader.SetVec3("Color", new vec3(.8f, .3f, 0));
-            HighlightShader.SetFloat("MaxDistance", 200);
+
+            outliner = new Outliner(gl);
         }
 
         public void Update(Time deltaTime)
@@ -37,12 +37,14 @@ namespace Yahtzee.Game
             foreach (var die in Dice)
             {
                 float d = vec3.Dot(camera.GetMouseRay(), (die.Position - camera.Position).NormalizedSafe);
-                if (d < dot) continue;
+                if (d < _highlightCutoff) continue;
+                if (d < dot ) continue;
                 dot = d;
                 closest = die;
             }
 
-            HighlightShader.SetVec2("GlowCenter", Util.WorldSpaceToScreenSpace(closest.Transform, camera));
+            outliner.Entity = closest;
+            outliner.Enabled = true;
         }
 
         public void Populate(int count)
@@ -63,23 +65,27 @@ namespace Yahtzee.Game
                 Dice.Add(d);
             }
 
-            HighlightShader.SetBool("Enabled", true);
 
             Program.CurrentScene.Entities.AddRange(Dice);
         }
 
+        public void Roll()
+        {
+            Dice.ForEach(d => d.EnablePhysics());
+        }
+
+        public void Draw()
+            => outliner.Draw();
+
         private void Die_OnFallAsleep(object sender, EventArgs e)
         {
             RigidBody b = sender as RigidBody;
-            EntityDie die = b.Parent as EntityDie;
-            if (die == null) return;
+            if (!(b.Parent is EntityDie die)) return;
 
             die.CalculateRolledIndex();
 
-            
-            die.CameraOffset = new vec3(-.8f + (.4f * _sleepCount), -.5f, -1f);
+            die.CameraOffset = new vec3(-2.1f + (1.05f * _sleepCount), -1.2f, -2.5f);
             _sleepCount++;
-            if (_sleepCount == 3) die.Center = true;
 
             die.StartLerpToCamera();
         }
