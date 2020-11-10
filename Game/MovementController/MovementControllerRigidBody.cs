@@ -15,11 +15,11 @@ namespace Yahtzee.Game.Physics
         public RigidBody RigidBody;
         public CollisionMesh Collision { get { return RigidBody.Collision; } }
 
-        public MovementControllerRigidBody(Entity e)
+        public MovementControllerRigidBody(Entity e, bool register = true)
         {
             RigidBody = new RigidBody(e, "Basic/Cube.obj");
 
-            Register();
+            if(register) Register();
         }
 
         public void UpdateMovement(Time deltaTime, Entity e)

@@ -35,7 +35,7 @@ namespace Yahtzee.Render.UI
             if (Transform.Orientation % Math.PI > float.Epsilon)
                 mPos = Transform.Translation + (quat.FromAxisAngle(-Transform.Orientation, vec3.UnitZ) * new vec3(mPos - Transform.Translation, 0)).xy;
 
-            var size = Quad.Size;
+            var size = Transform.Scale * Quad.Size;
 
             var min = Transform.Translation - (size / 2);
             var max = Transform.Translation + (size / 2);

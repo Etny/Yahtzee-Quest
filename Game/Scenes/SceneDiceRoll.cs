@@ -21,11 +21,11 @@ namespace Yahtzee.Game.Scenes
     class SceneDiceRoll : Scene
     {
         
-        public SpotLight Flashlight;
         public DirectionalLight Sun;
 
         private DiceSet _dice;
-
+        private Font _font;
+        private ScoreSheet _sheet;
 
         public SceneDiceRoll() : base() { }
 
@@ -33,8 +33,6 @@ namespace Yahtzee.Game.Scenes
         {
             base.Init();
 
-            //flashLight = new SpotLight(new vec3(0, 3, -2), Util.ToRad(25), Util.ToRad(30)) { Direction = new vec3(0, -1, 1) };
-            //Lights.Add(flashLight);
             Sun = new DirectionalLight(new vec3(.1f, -.5f, -.5f));
             Sun.SetShadowsEnabled(true);
             Lights.Add(Sun);
@@ -45,14 +43,18 @@ namespace Yahtzee.Game.Scenes
 
             _dice = new DiceSet(Gl);
             _dice.Populate(5);
+
+            _font = Program.FontRepository.GetFont("arial.ttf");
+
+            _sheet = new ScoreSheet(UI, _font);
         }
 
         public override void Update(Time deltaTime)
         {
             base.Update(deltaTime);
 
-            //Flashlight.SetPositionAndDirection(CurrentCamera.Position, CurrentCamera.GetDirection());
             _dice.Update(deltaTime);
+            _sheet.Update(deltaTime);
         }
 
         protected override void RenderExtras(FrameBuffer frameBuffer)

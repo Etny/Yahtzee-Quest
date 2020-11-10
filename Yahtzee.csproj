@@ -14,6 +14,7 @@
     <None Remove="Resource\Fonts\orange_juice_2.ttf" />
     <None Remove="Resource\Images\UI\Buttons\Reroll.png" />
     <None Remove="Resource\Images\UI\Other\scorePaper.png" />
+    <None Remove="Resource\Images\UI\Other\scorePaper2.png" />
     <None Remove="Resource\Models\Backpack\ao.jpg" />
     <None Remove="Resource\Models\Backpack\backpack.mtl" />
     <None Remove="Resource\Models\Backpack\backpack.obj" />
@@ -68,6 +69,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Images\UI\Other\scorePaper.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Images\UI\Other\scorePaper2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Models\Backpack\ao.jpg">

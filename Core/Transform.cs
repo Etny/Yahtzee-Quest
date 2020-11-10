@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using GlmSharp;
+using Yahtzee.Core.Curve;
 
 namespace Yahtzee.Core
 {
@@ -29,12 +30,15 @@ namespace Yahtzee.Core
             => ModelMatrix * v;
 
         public static Transform Lerp(Transform A, Transform B, float Ratio)
+            => Lerp(A, B, Ratio, new LinearCurve());
+
+        public static Transform Lerp(Transform A, Transform B, float Ratio, ICurve curve)
         {
             Transform t = Identity;
 
-            t.Translation = vec3.Lerp(A.Translation, B.Translation, Ratio);
-            t.Orientation = quat.Lerp(A.Orientation, B.Orientation, Ratio).NormalizedSafe;
-            t.Scale = vec3.Lerp(A.Scale, B.Scale, Ratio);
+            t.Translation = vec3.Lerp(A.Translation, B.Translation, curve[Ratio]);
+            t.Orientation = quat.Lerp(A.Orientation, B.Orientation, curve[Ratio]).NormalizedSafe;
+            t.Scale = vec3.Lerp(A.Scale, B.Scale, curve[Ratio]);
 
             return t;
         }

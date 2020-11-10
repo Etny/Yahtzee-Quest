@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Yahtzee.Core;
+using Yahtzee.Core.Curve;
 using Yahtzee.Core.Physics;
 using Yahtzee.Game.Physics;
 using Yahtzee.Main;
@@ -20,6 +21,9 @@ namespace Yahtzee.Game.Entities
         public MovementControllerLerp LerpController;
         public MovementControllerRigidBody RigidBodyController;
 
+        public ICurve LerpCurve;
+        public float LerpDuration = .6f;
+
         public readonly vec3[] NumberFaces = new vec3[]{vec3.UnitX, vec3.UnitY, vec3.UnitZ,
                                                         -vec3.UnitX, -vec3.UnitY, -vec3.UnitZ};
         public readonly int[] Numbers = new int[] { 6, 2, 3, 5, 4, 1 };
@@ -30,10 +34,10 @@ namespace Yahtzee.Game.Entities
 
         public EntityDie(string modelPath) : base(modelPath)
         {
-            RigidBodyController = new MovementControllerRigidBody(this);
+            RigidBodyController = new MovementControllerRigidBody(this, false);
             RigidBody.CollisionTransform.Scale = new vec3(.97f);
 
-            //MovementController = RigidBodyController;
+            LerpCurve = new BezierCurve(new vec2(1, 0), new vec2(.61f, .94f));
 
             //dm = new LineMesh(colors: new vec3[] { new vec3(.7f, .2f, .3f), new vec3(.7f, .2f, .3f) });
         }
@@ -41,7 +45,16 @@ namespace Yahtzee.Game.Entities
         public void EnablePhysics()
         {
             RigidBodyController.RigidBody.ResetVelocities();
+            RigidBodyController.Register();
             MovementController = RigidBodyController;
+        }
+
+        public void DisablePhysics()
+        {
+            if (UsingRigidBody)
+                MovementController = null;
+
+            RigidBodyController.Deregister();
         }
 
         public void CalculateRolledIndex()
@@ -67,10 +80,10 @@ namespace Yahtzee.Game.Entities
 
         public void StartLerpToCamera()
         {
+            DisablePhysics();
+
             var camera = Program.CurrentScene.CurrentCamera;
             Transform targetTransform = Transform;
-
-            //targetTransform.Scale = new vec3(.35f);
 
             targetTransform.Translation = camera.Transform * CameraOffset;
 
@@ -81,9 +94,7 @@ namespace Yahtzee.Game.Entities
             targetTransform.Orientation = faceRot;
             targetTransform.Orientation = (camera.Transform.Orientation * targetTransform.Orientation).NormalizedSafe;
 
-            RigidBody.Deregister();
-
-            LerpController = new MovementControllerLerp(Transform, targetTransform, speed: .6f) { Lerping = true };
+            LerpController = new MovementControllerLerp(Transform, targetTransform, speed: LerpDuration) { Curve = LerpCurve, Lerping = true };
             MovementController = LerpController;
         }
 
