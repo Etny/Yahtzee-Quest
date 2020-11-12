@@ -19,6 +19,12 @@ namespace Yahtzee.Render.UI
         public event EventHandler OnRelease;
         public event EventHandler OnHover;
 
+        protected ButtonComponent(UILayer layer) : base(layer)
+        {
+            Program.Window.OnCursorMove += OnMouseMove;
+            Program.Window.OnMouseButton += OnMouseButton;
+        }
+
         public ButtonComponent(UILayer layer, vec2 size, RenderComponent.RenderComponent component) : base(layer, size, component)
         {
             Program.Window.OnCursorMove += OnMouseMove;

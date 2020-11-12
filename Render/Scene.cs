@@ -32,6 +32,7 @@ namespace Yahtzee.Render
         public UILayer UI;
 
 
+
         public Scene()
         {
             Gl = GL.GetApi();
@@ -54,11 +55,14 @@ namespace Yahtzee.Render
             _lightingShaderOrtho = ShaderRepository.GetShader("Lighting/lightingShader", "Lighting/lightingShaderOrtho");
             _lightingShaderPersp = ShaderRepository.GetShader("Lighting/lightingShader", "Lighting/lightingShaderPersp");
             _lightingShaderPersp.SetFloat("farPlane", far);
+            _lightingShaderOrtho.LightingShader = true;
+            _lightingShaderPersp.LightingShader = true;
 
             _lightingFrameBuffer = new FrameBuffer();
             _lightingFrameBuffer.Use();
             Gl.DrawBuffer(DrawBufferMode.None);
             Gl.ReadBuffer(ReadBufferMode.None);
+            FrameBuffer.UseDefault();
 
             CurrentCamera = new Camera();
             Entities.Add(CurrentCamera);
@@ -81,6 +85,7 @@ namespace Yahtzee.Render
             SetLightingData();
             RenderScene(DefaultShader);
             RenderExtras(renderFrameBuffer);
+
 
             return renderFrameBuffer;
         }

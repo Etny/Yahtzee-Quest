@@ -33,9 +33,10 @@ namespace Yahtzee.Game.Scenes
         {
             base.Init();
 
-            Sun = new DirectionalLight(new vec3(.1f, -.5f, -.5f));
+            Sun = new DirectionalLight(new vec3(0, -1f, -.3f).NormalizedSafe);
             Sun.SetShadowsEnabled(true);
             Lights.Add(Sun);
+
 
             var e = new EntityStaticBody("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
             e.Transform.Scale = new vec3(100, 1f, 100);
@@ -47,6 +48,7 @@ namespace Yahtzee.Game.Scenes
             _font = Program.FontRepository.GetFont("arial.ttf");
 
             _sheet = new ScoreSheet(UI, _font);
+            UI.AddComponent(_sheet);
         }
 
         public override void Update(Time deltaTime)
@@ -54,7 +56,6 @@ namespace Yahtzee.Game.Scenes
             base.Update(deltaTime);
 
             _dice.Update(deltaTime);
-            _sheet.Update(deltaTime);
         }
 
         protected override void RenderExtras(FrameBuffer frameBuffer)

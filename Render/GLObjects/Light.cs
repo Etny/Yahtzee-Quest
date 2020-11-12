@@ -10,7 +10,6 @@ using Yahtzee.Render.Textures;
 
 namespace Yahtzee.Render
 {
-    delegate void SceneRender(Shader shader);
 
     abstract class Light
     {
@@ -40,7 +39,7 @@ namespace Yahtzee.Render
 
             if (!shadows)
             {
-                ShadowMap.Dispose();
+                ShadowMap?.Dispose();
                 ShadowMap = null;
             }
             else
@@ -50,7 +49,7 @@ namespace Yahtzee.Render
             }
         }
 
-        public virtual void CalculateShadows(FrameBuffer fb, Shader depthShader, SceneRender render)
+        public virtual void CalculateShadows(FrameBuffer fb, Shader depthShader, Action<Shader> render)
         {
             fb.BindTexture(ShadowMap, GLEnum.DepthAttachment);
             depthShader.SetMat4("lightSpace", LightSpace);
@@ -121,8 +120,11 @@ namespace Yahtzee.Render
         {
             Program.Settings.GetLightRange(out float near, out float far);
 
+            Transform t = Transform.Identity;
+            t.Orientation = quat.FromAxisAngle((float)Math.Acos(vec3.Dot(Direction.NormalizedSafe, vec3.UnitZ)), vec3.Cross(Direction, vec3.UnitZ).NormalizedSafe);
+
             mat4 Projection = mat4.Ortho(-10, 10, -10, 10, near, far);
-            mat4 LookAt = mat4.LookAt(Direction * -10, vec3.Zero, vec3.UnitY);
+            mat4 LookAt = mat4.LookAt(Direction * -10, vec3.Zero, t * vec3.UnitY);
             LightSpace = Projection * LookAt;
         }
     }
@@ -194,7 +196,7 @@ namespace Yahtzee.Render
             ShadowMap = new CubeMap(width, height, InternalFormat.DepthComponent, PixelFormat.DepthComponent, PixelType.Float);
         }
 
-        public override void CalculateShadows(FrameBuffer fb, Shader shader, SceneRender render)
+        public override void CalculateShadows(FrameBuffer fb, Shader shader, Action<Shader> render)
         {
             shader.SetVec3("lightPos", Position);
 
@@ -296,8 +298,11 @@ namespace Yahtzee.Render
             Program.Settings.GetShadowMapSize(out int width, out int height);
             Program.Settings.GetLightRange(out float near, out float far);
 
-            mat4 Projection = mat4.PerspectiveFov(OuterCutoff, width, height, near, far);
-            mat4 LookAt = mat4.LookAt(Position, Position + Direction, new vec3(0, 1, 0));
+            Transform t = Transform.Identity;
+            t.Orientation = quat.FromAxisAngle((float)Math.Acos(vec3.Dot(Direction.NormalizedSafe, vec3.UnitZ)), vec3.Cross(Direction, vec3.UnitZ).NormalizedSafe);
+
+            mat4 Projection = mat4.PerspectiveFov((float)(2 * Math.Acos(OuterCutoff)), width, height, near, far);
+            mat4 LookAt = mat4.LookAt(Position, Position + Direction, t * vec3.UnitY);
             LightSpace = Projection * LookAt;
         }
     }

@@ -45,6 +45,7 @@
     <None Remove="Resource\Shaders\PostProcess\postPro.vert" />
     <None Remove="Resource\Shaders\PostProcess\postProColor.frag" />
     <None Remove="Resource\Shaders\PostProcess\postProDefault.frag" />
+    <None Remove="Resource\Shaders\PostProcess\showDepth.frag" />
     <None Remove="Resource\Shaders\UI\UI.vert" />
     <None Remove="Resource\Shaders\UI\UIBlurImage.frag" />
     <None Remove="Resource\Shaders\UI\UIDefault.frag" />
@@ -147,6 +148,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\glow.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\PostProcess\showDepth.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\pixelate.frag">

@@ -43,41 +43,44 @@ namespace Yahtzee.Render.Models
         }
 
         public override unsafe void Draw(Shader shader, int count = 1)
-        {
-            int diffuseNumber = 1;
-            int specularNumber = 1;
-            int normalNumber = 1;
-
+        { 
             shader.Use();
 
-            for (int i = 0; i < Textures.Length; i++)
+            if (!shader.LightingShader)
             {
-                string textureName = "unknown";
+                int diffuseNumber = 1;
+                int specularNumber = 1;
+                int normalNumber = 1;
 
-                switch (Textures[i].TextureType)
+                for (int i = 0; i < Textures.Length; i++)
                 {
-                    case TextureType.Diffuse:
-                        textureName = "texture_diffuse" + diffuseNumber++;
-                        break;
-                    case TextureType.Specular:
-                        textureName = "texture_specular" + specularNumber++;
-                        break;
-                    case TextureType.Normal:
-                        textureName = "texture_normal" + normalNumber++;
-                        break;
+                    string textureName = "unknown";
+
+                    switch (Textures[i].TextureType)
+                    {
+                        case TextureType.Diffuse:
+                            textureName = "texture_diffuse" + diffuseNumber++;
+                            break;
+                        case TextureType.Specular:
+                            textureName = "texture_specular" + specularNumber++;
+                            break;
+                        case TextureType.Normal:
+                            textureName = "texture_normal" + normalNumber++;
+                            break;
+                    }
+
+                    shader.SetInt($"material.{textureName}", i);
+
+                    Textures[i].BindToUnit(i);
                 }
 
-                shader.SetInt($"material.{textureName}", i);
+                shader.SetBool("material.usingDiffuseMap", diffuseNumber > 1);
+                shader.SetBool("material.usingSpecularMap", specularNumber > 1);
+                shader.SetBool("material.usingNormalMap", normalNumber > 1);
 
-                Textures[i].BindToUnit(i);
+                if (diffuseNumber == 1) shader.SetVec3("material.diffuseColor", new vec3(0.5f));
+                if (specularNumber == 1) shader.SetFloat("material.specularComponent", 0.5f);
             }
-
-            shader.SetBool("material.usingDiffuseMap", diffuseNumber > 1);
-            shader.SetBool("material.usingSpecularMap", specularNumber > 1);
-            shader.SetBool("material.usingNormalMap", normalNumber > 1);
-
-            if (diffuseNumber == 1) shader.SetVec3("material.diffuseColor", new vec3(0.5f));
-            if (specularNumber == 1) shader.SetFloat("material.specularComponent", 0.5f);
 
             gl.ActiveTexture(TextureUnit.Texture0);
 

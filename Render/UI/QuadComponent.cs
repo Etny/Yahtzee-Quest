@@ -18,7 +18,7 @@ namespace Yahtzee.Render.UI
 
         public QuadMesh Quad { get; protected set; }
 
-        public RenderComponent.RenderComponent RenderComponent { get; }
+        public RenderComponent.RenderComponent RenderComponent { get; protected set; }
 
         public readonly UILayer Layer;
 

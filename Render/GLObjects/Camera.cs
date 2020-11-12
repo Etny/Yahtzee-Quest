@@ -38,7 +38,7 @@ namespace Yahtzee.Render
             Program.Window.OnResize += OnResize;
             //Program.Window.OnCursorMove += OnCursorMove;
 
-            MovementController = new MovementControllerWASD(2.5f, GetDirection);
+            //MovementController = new MovementControllerWASD(2.5f, GetDirection);
 
             Position = new vec3(0, 0, 3);
 

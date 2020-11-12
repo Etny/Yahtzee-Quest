@@ -11,6 +11,9 @@ namespace Yahtzee.Render
 {
     class Shader : GLObject
     {
+
+        public bool LightingShader = false;
+
         public Shader(string shaderPath) : this(shaderPath, null, shaderPath) { }
         public Shader(string vertexPath, string fragmentPath) : this(vertexPath, null, fragmentPath) { }
 
