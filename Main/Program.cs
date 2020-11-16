@@ -34,7 +34,7 @@ namespace Yahtzee.Main
             Settings = new Settings();
 
             Window = new Window();
-            if (!Window.OpenWindow("Yahtzee Quest", new Size(1280, 720)))
+            if (!Window.OpenWindow("Yahtzee Quest", new Size((int)Settings.CurrentScreenSize.x, (int)Settings.CurrentScreenSize.y)))
                 return;
             gl = GL.GetApi();
             Window.SetVSync(true);

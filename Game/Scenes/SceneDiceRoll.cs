@@ -44,18 +44,23 @@ namespace Yahtzee.Game.Scenes
 
             _dice = new DiceSet(Gl);
             _dice.Populate(5);
+            _dice.OnRolled += Dice_OnRolled;
 
-            _font = Program.FontRepository.GetFont("arial.ttf");
+            _font = Program.FontRepository.GetFont("orange_juice_2.ttf");
 
             _sheet = new ScoreSheet(UI, _font);
-            UI.AddComponent(_sheet);
+        }
+
+        private void Dice_OnRolled(object sender, EventArgs e)
+        {
+            _sheet.UpdateRolled(_dice.Rolled);
         }
 
         public override void Update(Time deltaTime)
         {
             base.Update(deltaTime);
 
-            _dice.Update(deltaTime);
+            _dice.Update(deltaTime, !_sheet.Hovered);
         }
 
         protected override void RenderExtras(FrameBuffer frameBuffer)

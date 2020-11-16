@@ -14,7 +14,6 @@ namespace Yahtzee.Core
     static class Util
     {
 
-        public static readonly vec2 BaseScreenSize = new vec2(1920, 1080);
         public static float ToRad(float deg)
            => (float)(deg / 180 * Math.PI);
 
@@ -89,7 +88,7 @@ namespace Yahtzee.Core
         /// <param name="v"></param>
         /// <returns>scaled vector for 16:9 window.</returns>
         public static vec2 ScaleToScreen(this vec2 v)
-            => v * (Program.Window.GetSizeVec() / BaseScreenSize);
+            => v * Settings.ScreenRatio;
 
         public static vec2 ScaleToPixels(this vec2 v)
             => v * Program.Window.GetSizeVec();

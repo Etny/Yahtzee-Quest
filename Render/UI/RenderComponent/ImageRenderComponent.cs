@@ -25,6 +25,7 @@ namespace Yahtzee.Render.UI.RenderComponent
             Image.BindToUnit(1);
             _shader.SetVec4("tint", Tint);
             _shader.SetInt("image", 1);
+            _shader.SetFloat("depth", comp.Transform.Depth);
 
             base.Draw(comp);
         }

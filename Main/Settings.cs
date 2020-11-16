@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GlmSharp;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,8 +8,12 @@ namespace Yahtzee.Main
     //This will eventually read from some kind of settings file
     class Settings
     {
-        private static int ShadowWidth = 2048, ShadowHeight = 2048;
+        private static int ShadowWidth = 512, ShadowHeight = 512;
         private static float LightNear = .1f, LightFar = 50f;
+
+        public static readonly vec2 BaseScreenSize = new vec2(1920, 1080);
+        public static readonly vec2 CurrentScreenSize = new vec2(1280, 720);
+        public static vec2 ScreenRatio { get { return CurrentScreenSize / BaseScreenSize; } }
 
         public readonly int MaxLights = 4;
 

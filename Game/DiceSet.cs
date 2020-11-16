@@ -20,17 +20,20 @@ namespace Yahtzee.Game
         private static readonly float _highlightCutoff = (float)Math.Cos(12f.AsRad());
 
         public bool Rolling { get; private set; } = false;
+        public int[] Rolled;
+        public event EventHandler OnRolled;
 
         public DiceSet(GL gl)
         {
             outliner = new Outliner(gl);
         }
 
-        public void Update(Time deltaTime)
+        public void Update(Time deltaTime, bool useMouse = true)
         {
             if (Dice.Count <= 0) return;
 
-            CalculateHighlight();
+            if (useMouse) CalculateHighlight();
+            else outliner.Enabled = false;
 
             if (!Rolling) return;
 
@@ -38,6 +41,7 @@ namespace Yahtzee.Game
             {
                 MoveDiceToCamera();
                 Rolling = false;
+                OnRolled?.Invoke(this, null);
             }
         }
 
@@ -66,12 +70,13 @@ namespace Yahtzee.Game
             Dice.ForEach(d => d.CalculateRolledIndex());
 
             var ds = (from die in Dice orderby die.GetRolledNumber() select die).ToArray();
+            Rolled = (from d in ds select d.GetRolledNumber()).ToArray();
 
             for(int i = 0; i < ds.Length; i++)
             {
                 var d = ds[i];
 
-                d.LerpDuration = .6f + (i * .2f);
+                d.LerpDuration = .6f + (i * .15f);
                 d.CameraOffset = new vec3(-2.1f + (1.05f * i), -1.2f, -2.5f);
                 d.StartLerpToCamera();
             }

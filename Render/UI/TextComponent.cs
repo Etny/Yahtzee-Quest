@@ -44,6 +44,8 @@ namespace Yahtzee.Render.UI
 
             _quad = new QuadMesh(vec2.Ones);
             _shader = ShaderRepository.GetShader("UI/UI", "UI/UIText");
+
+            Transform.Depth = 0;
         }
 
         public TextComponent(UILayer layer, Font f, string text) : this(layer, f) { SetText(text); }
@@ -85,7 +87,7 @@ namespace Yahtzee.Render.UI
         {
             _layer.Gl.Enable(Silk.NET.OpenGL.EnableCap.Blend);
 
-            float advanceY = 0;
+            float advanceY = Alignment == TextAlignment.Centered ? -(Font['T'].Bearing.y / 2) : 0;
             var scale = Transform.Scale;
             _shader.SetVec2("screenSize", _layer.UIFrameBuffer.BoundTexture.Size);
             _shader.SetVec3("color", Color);
