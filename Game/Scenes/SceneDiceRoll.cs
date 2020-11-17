@@ -23,7 +23,7 @@ namespace Yahtzee.Game.Scenes
         
         public DirectionalLight Sun;
 
-        private DiceSet _dice;
+        private DiceManager _dice;
         private Font _font;
         private ScoreSheet _sheet;
 
@@ -42,18 +42,17 @@ namespace Yahtzee.Game.Scenes
             e.Transform.Scale = new vec3(100, 1f, 100);
             Entities.Add(e);
 
-            _dice = new DiceSet(Gl);
-            _dice.Populate(5);
-            _dice.OnRolled += Dice_OnRolled;
 
             _font = Program.FontRepository.GetFont("orange_juice_2.ttf");
-
             _sheet = new ScoreSheet(UI, _font);
-        }
 
-        private void Dice_OnRolled(object sender, EventArgs e)
-        {
-            _sheet.UpdateRolled(_dice.Rolled);
+            _dice = new DiceManager(Gl);
+            _dice.Populate(5);
+            _dice.OnRolled += _sheet.UpdateRolled;
+
+
+            CurrentCamera.Transform.Translation = new vec3(0, 6.5f, 3.5f);
+            CurrentCamera.Transform.RotateX(-45f.AsRad());
         }
 
         public override void Update(Time deltaTime)
@@ -95,8 +94,16 @@ namespace Yahtzee.Game.Scenes
             }
             else if (key == Keys.Q && action == InputAction.Press)
             {
-                //_dice.Populate(5);
                 _dice.Roll();
+            }
+            else if (key == Keys.R && action == InputAction.Press)
+            {
+                _dice.PrepareRoll();
+            }
+
+            else if (key == Keys.E && action != InputAction.Repeat)
+            {
+                _dice.Shake(action == InputAction.Press);
             }
         }
     }

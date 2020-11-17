@@ -26,11 +26,13 @@ namespace Yahtzee.Game.SheetFields
         public static Func<int[], int> Straight(int l, Func<int[], int> returnValue)
             => nums =>
                 {
-                    int streak = 0;
-                    for (int i = 1; i < nums.Length; i++)
+                    for(int i = 1; i <= 6 - (l-1); i++)
                     {
-                        if (nums[i] == nums[i - 1] + 1) streak++; else streak = 0;
-                        if (streak >= l - 1) return returnValue(nums);
+                        for(int j = 0; j < l; j++)
+                        {
+                            if (!nums.Contains(i + j)) break;
+                            if (j == l - 1) return returnValue(nums);
+                        }
                     }
 
                     return 0;

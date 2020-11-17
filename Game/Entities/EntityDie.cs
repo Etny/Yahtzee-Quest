@@ -44,8 +44,8 @@ namespace Yahtzee.Game.Entities
 
         public void EnablePhysics()
         {
-            RigidBodyController.RigidBody.ResetVelocities();
             RigidBodyController.Register();
+            RigidBodyController.RigidBody.Reset();
             MovementController = RigidBodyController;
         }
 
@@ -94,8 +94,22 @@ namespace Yahtzee.Game.Entities
             targetTransform.Orientation = faceRot;
             targetTransform.Orientation = (camera.Transform.Orientation * targetTransform.Orientation).NormalizedSafe;
 
-            LerpController = new MovementControllerLerp(Transform, targetTransform, speed: LerpDuration) { Curve = LerpCurve, Lerping = true };
+            Lerp(targetTransform, LerpDuration);
+        }
+
+        public void Lerp(Transform t, float duration)
+        {
+            DisablePhysics();
+
+            LerpController = new MovementControllerLerp(Transform, t, speed: duration) { Curve = LerpCurve, Lerping = true };
             MovementController = LerpController;
+        }
+
+        public void LerpToPoint(vec3 point, float duration)
+        {
+            Transform t = Transform;
+            t.Translation = point;
+            Lerp(t, duration);
         }
 
         public override void Update(Time deltaTime)

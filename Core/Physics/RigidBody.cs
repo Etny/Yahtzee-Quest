@@ -155,11 +155,18 @@ namespace Yahtzee.Core.Physics
             InverseInertiaWorldspace = worldspaceMat.Transposed * InverseInertia * worldspaceMat;
         }
 
-        public void ResetVelocities()
+        public void Reset()
         {
             Velocity = vec3.Zero;
             AngularVelocity = vec3.Zero;
-            sleepImmunity = SleepImmunityTime;
+            ForcesExternal = vec3.Zero;
+            TorqueExternal = vec3.Zero;
+            _tempTransform = Parent.Transform;
+            posDelta = vec3.Zero;
+            rotDelta = vec3.Zero;
+            timeDelta = 0;
+
+            WakeUp();
         }
 
         public void WakeUp()
@@ -168,6 +175,7 @@ namespace Yahtzee.Core.Physics
             Sleeping = false;
             AABBOverlapCache.Clear();
             sleepImmunity = SleepImmunityTime;
+            _projectedTransformValid = false;
             OnWakeUp?.Invoke(this, null);
             Collision.NormalColor = new vec3(1, 0.9f, 0);
         }
