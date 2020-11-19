@@ -46,6 +46,7 @@ namespace Yahtzee.Render
             Program.Window.GetSize(out int windowWidth, out int windowHeight);
 
             Program.Window.OnButton += OnButton;
+            Program.Window.OnMouseButton += OnMouseButton;
 
             DefaultShader = ShaderRepository.GetShader("Default/default");
             DefaultShader.SetFloat("material.shininess", 32.0f);
@@ -137,7 +138,9 @@ namespace Yahtzee.Render
 
         protected virtual void RenderExtras(FrameBuffer frameBuffer) { }
 
-       protected abstract void OnButton(Keys key, InputAction action, KeyModifiers mods);
-     
+        protected virtual void OnButton(Keys key, InputAction action, KeyModifiers mods) { }
+
+        protected virtual void OnMouseButton(MouseButton button, InputAction action, KeyModifiers mods) { }
+
     }
 }

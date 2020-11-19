@@ -31,7 +31,7 @@ namespace Yahtzee.Game
 
         ~Outliner() => Dispose();
 
-        public void Draw()
+        public void Draw(bool alwaysInFront = true)
         {
             if (Entity == null || !Enabled) return;
 
@@ -52,7 +52,9 @@ namespace Yahtzee.Game
             _gl.StencilFunc(StencilFunction.Notequal, 1, 0xff);
             _gl.StencilMask(0x00);
             _gl.ColorMask(true, true, true, true);
+            if(!alwaysInFront) _gl.Enable(EnableCap.DepthTest);
 
+            _shader.SetVec3("Color", Color);
             var s = Entity.Transform.Scale;
             Entity.Transform.Scale = s * (1 + OutlineSize);
             Entity.Draw(_shader);

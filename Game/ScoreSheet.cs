@@ -71,7 +71,9 @@ namespace Yahtzee.Game
                                                  sff.TotalOfRange(fields, true, 9, 6),
                                                  sff.TotalOfFields(fields, false, 8, 16)};
         private int[] nonLockableIndices = new int[] { 6, 7, 8, 16, 17};
-        private int[] Rolled;
+
+        public Func<bool> CanScore = () => true;
+        public event Action OnSelect;
 
         public ScoreSheet(UILayer layer, Font font) : base(layer)
         {
@@ -95,11 +97,12 @@ namespace Yahtzee.Game
             }
 
             OnClick += SheetClicked;
+            ClearFields();
         }
 
         private void SheetClicked(object sender, EventArgs e)
         {
-            if (Transform.Scale != maxScale) return;
+            if (Transform.Scale != maxScale || !CanScore()) return;
 
             var mp = Program.InputManager.MousePosition.ToUISpace();
 
@@ -114,8 +117,9 @@ namespace Yahtzee.Game
                 closest = f;
             }
 
+            OnSelect?.Invoke();
             closest.Lock();
-            UpdateRolled(Rolled);
+            ClearFields();
         } 
 
         public override void Update(Time deltaTime)
@@ -142,9 +146,13 @@ namespace Yahtzee.Game
             fields.ForEach(f => f.Update());
         }
 
+        public void ClearFields()
+        {
+            fields.ForEach(f => { if (f.Lockable) f.Clear(); else f.UpdateText(null); });
+        }
+
         public void UpdateRolled(int[] rolled)
         {
-           Rolled = rolled;
            fields.ForEach(f => f.UpdateText(rolled));
         }
     }

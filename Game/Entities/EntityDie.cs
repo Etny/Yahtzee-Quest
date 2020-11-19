@@ -1,4 +1,5 @@
 ﻿using GlmSharp;
+using Silk.NET.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,6 +22,8 @@ namespace Yahtzee.Game.Entities
         public MovementControllerLerp LerpController;
         public MovementControllerRigidBody RigidBodyController;
 
+        public Outliner Outliner;
+
         public ICurve LerpCurve;
         public float LerpDuration = .6f;
 
@@ -32,12 +35,19 @@ namespace Yahtzee.Game.Entities
 
         private int _rolledIndex = 0;
 
-        public EntityDie(string modelPath) : base(modelPath)
+        public EntityDie(GL gl, string modelPath) : base(modelPath)
         {
             RigidBodyController = new MovementControllerRigidBody(this, false);
             RigidBody.CollisionTransform.Scale = new vec3(.97f);
 
             LerpCurve = new BezierCurve(new vec2(1, 0), new vec2(.61f, .94f));
+
+            Outliner = new Outliner(gl, this)
+            {
+                Enabled = false
+            };
+
+            DrawInstanced = false;
 
             //dm = new LineMesh(colors: new vec3[] { new vec3(.7f, .2f, .3f), new vec3(.7f, .2f, .3f) });
         }
@@ -102,6 +112,7 @@ namespace Yahtzee.Game.Entities
             DisablePhysics();
 
             LerpController = new MovementControllerLerp(Transform, t, speed: duration) { Curve = LerpCurve, Lerping = true };
+            LerpController.OnComplete += RemoveLerp;
             MovementController = LerpController;
         }
 
@@ -111,6 +122,9 @@ namespace Yahtzee.Game.Entities
             t.Translation = point;
             Lerp(t, duration);
         }
+
+        private void RemoveLerp()
+            => MovementController = null;
 
         public override void Update(Time deltaTime)
         {
@@ -135,9 +149,6 @@ namespace Yahtzee.Game.Entities
 
         public override void Draw(Shader shader)
         {
-            //RigidBody.aabbMesh.DrawOutline(RigidBody.AABB.GetTransform());
-            //((MovementControllerRigidBody)MovementController).Collision.DrawOutline(RigidBody.Transform);
-            //dm.Draw(null);
 
             base.Draw(shader);
         }

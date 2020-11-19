@@ -15,6 +15,7 @@ using Yahtzee.Core;
 using Yahtzee.Render;
 using Yahtzee.Render.UI.RenderComponent;
 using Yahtzee.Core.Font;
+using System.Linq;
 
 namespace Yahtzee.Game.Scenes
 {
@@ -27,6 +28,8 @@ namespace Yahtzee.Game.Scenes
         private Font _font;
         private ScoreSheet _sheet;
 
+        private List<EntityProxWall> _proxWalls = new List<EntityProxWall>();
+
         public SceneDiceRoll() : base() { }
 
         public override void Init()
@@ -37,12 +40,6 @@ namespace Yahtzee.Game.Scenes
             Sun.SetShadowsEnabled(true);
             Lights.Add(Sun);
 
-
-            var e = new EntityStaticBody("Basic/Cube.obj") { Position = new vec3(0f, -3f, 0) };
-            e.Transform.Scale = new vec3(100, 1f, 100);
-            Entities.Add(e);
-
-
             _font = Program.FontRepository.GetFont("orange_juice_2.ttf");
             _sheet = new ScoreSheet(UI, _font);
 
@@ -50,9 +47,39 @@ namespace Yahtzee.Game.Scenes
             _dice.Populate(5);
             _dice.OnRolled += _sheet.UpdateRolled;
 
+            _sheet.CanScore = _dice.CanScore;
+            _sheet.OnSelect += _dice.NewRoll;
 
             CurrentCamera.Transform.Translation = new vec3(0, 6.5f, 3.5f);
             CurrentCamera.Transform.RotateX(-45f.AsRad());
+
+
+            CreateLevel();
+        }
+
+        private void CreateLevel()
+        {
+            void AddCube(bool drawn, vec3 pos, vec3 scale)
+            {
+                var e = new EntityStaticBody("Basic/Cube.obj", drawn) { Position = pos };
+                e.Transform.Scale = scale;
+                Entities.Add(e);
+
+                if (!drawn)
+                {
+                    var w = new EntityProxWall(Gl, "Basic/Cube.obj", _dice.Dice) { Position = pos };
+                    w.Transform.Scale = scale;
+                    _proxWalls.Add(w);
+                }
+            }
+
+            AddCube(true, new vec3(0, -3, 0), new vec3(100, 1, 100));
+
+            AddCube(false, new vec3(-65, 0, 0), new vec3(100, 100, 100));
+            AddCube(false, new vec3(65, 0, 0), new vec3(100, 100, 100));
+            AddCube(false, new vec3(0, 0, -60), new vec3(100, 100, 100));
+            AddCube(false, new vec3(0, 60, 0), new vec3(100, 100, 100));
+            AddCube(false, new vec3(0, 0, 53), new vec3(100, 100, 100));
         }
 
         public override void Update(Time deltaTime)
@@ -65,34 +92,14 @@ namespace Yahtzee.Game.Scenes
         protected override void RenderExtras(FrameBuffer frameBuffer)
         {
             _dice.Draw();
+            _proxWalls.ForEach(p => p.Draw(null));
         }
 
 
         protected override void OnButton(Keys key, InputAction action, KeyModifiers mods)
         {
             
-            if (key == Keys.P && action == InputAction.Press)
-            {
-                vec3 o = new vec3(0, 4, 0);
-                Random r = new Random();
-                for (int i = 0; i < 3; i++)
-                {
-                    for (int j = 0; j < 3; j++)
-                    {
-                        EntityDie m = new EntityDie("Dice/D6Red/d6red.obj") { Position = o + new vec3(i * 1.2f, 0, j * 1.2f) };
-                        m.Transform.Rotate((float)r.NextDouble(), new vec3((float)r.NextDouble(), (float)r.NextDouble(), (float)r.NextDouble()));
-                        Entities.Add(m);
-                    }
-                }
-            }
-            else if (key == Keys.O && action == InputAction.Press)
-            {
-                Random r = new Random();
-                EntityDie m = new EntityDie("Dice/D6Red/d6red.obj") { Position = new vec3(0, 4, 0) };
-                m.Transform.Rotate((float)r.NextDouble(), new vec3((float)r.NextDouble() * 3, (float)r.NextDouble() * 3, (float)r.NextDouble() * 3));
-                Entities.Add(m);
-            }
-            else if (key == Keys.Q && action == InputAction.Press)
+            if (key == Keys.Q && action == InputAction.Press)
             {
                 _dice.Roll();
             }
@@ -100,10 +107,13 @@ namespace Yahtzee.Game.Scenes
             {
                 _dice.PrepareRoll();
             }
+        }
 
-            else if (key == Keys.E && action != InputAction.Repeat)
+        protected override void OnMouseButton(MouseButton button, InputAction action, KeyModifiers mods)
+        {
+            if(button == MouseButton.Left && action != InputAction.Repeat)
             {
-                _dice.Shake(action == InputAction.Press);
+                _dice.MouseButton(action == InputAction.Press);
             }
         }
     }

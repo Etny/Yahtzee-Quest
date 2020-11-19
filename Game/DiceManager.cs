@@ -9,6 +9,7 @@ using Yahtzee.Core;
 using Yahtzee.Core.Physics;
 using Silk.NET.OpenGL;
 using System.Linq;
+using Yahtzee.Core.Curve;
 
 namespace Yahtzee.Game
 {
@@ -16,8 +17,15 @@ namespace Yahtzee.Game
     {
         public readonly List<EntityDie> Dice = new List<EntityDie>();
 
-        private readonly Outliner outliner;
         private static readonly float _highlightCutoff = (float)Math.Cos(12f.AsRad());
+        private readonly vec3 _hoverColor = new vec3(1);
+        private readonly vec3 _rerollColor = new vec3(.7f, .3f, .1f);
+        private readonly float _hoverThickness = .1f;
+        private readonly float _rerollThickness = .07f;
+        private EntityDie _hoveredDie;
+
+        private int _rollsPerTry = 3;
+        private int _currentRolls = 3;
 
         private RollState State = RollState.Scoring;
         private List<EntityDie> Rolling = new List<EntityDie>();
@@ -32,13 +40,20 @@ namespace Yahtzee.Game
         private float _cupShakeCooldown = 0;
         private bool _shaking = false;
         private vec2 _shakeCenter;
-        private readonly float _shakeScale = .01f;
+        private readonly float _shakeScale = .008f;
+        private readonly vec2 _maxShakeDist = new vec2(1920 / 2, 1080 / 2).ScaleToScreen();
+        private readonly ICurve _shakeCurve = new BezierCurve(new vec2(0, .39f), new vec2(.14f, .74f));
+        private readonly float _maxShakeMove = 3.2f;
         private vec3 _lastShakeMomentum;
         private vec2 _lastShakePos;
+        private readonly float _shakeRotSpeed = 220f.AsRad();
+        private quat _shakeRotAxis = quat.Identity;
+
+        private GL _gl;
 
         public DiceManager(GL gl)
         {
-            outliner = new Outliner(gl);
+            _gl = gl;
         }
 
         public void Update(Time deltaTime, bool useMouse = true)
@@ -49,12 +64,24 @@ namespace Yahtzee.Game
             {
                 case RollState.Preparing:
 
-                    if(_cupShakeCooldown > 0) { _cupShakeCooldown -= deltaTime.DeltaF; return; }
+                    if (_cupShakeCooldown > 0) { _cupShakeCooldown -= deltaTime.DeltaF; return; }
+
+                    var shakeSpeed = _shakeRotSpeed + (_shaking ? (_lastShakeMomentum.Length + 1) : 0);
+
+                    foreach (var r in Rolling)
+                        r.Transform.Orientation = r.Transform.Orientation.Rotated(shakeSpeed * deltaTime.DeltaF, _shakeRotAxis * vec3.UnitY);
+
+                    _shakeRotAxis = _shakeRotAxis.Rotated(shakeSpeed / 3 * deltaTime.DeltaF, vec3.UnitZ);
 
                     if (!_shaking) return;
 
-                    _currentCupPos = CupPos + new vec3(new vec2(Program.InputManager.MousePosition - _shakeCenter) * new vec2(_shakeScale, -_shakeScale), 0);
-                    _lastShakeMomentum = new vec3(new vec2(Program.InputManager.MousePosition - _lastShakePos) * new vec2(_shakeScale, -_shakeScale), 0) / deltaTime.DeltaF;
+                    var v2 = (Program.InputManager.MousePosition - _shakeCenter) / _maxShakeDist;
+                    var signs = new vec2(Math.Sign(v2.x), Math.Sign(v2.y));
+                    v2 = signs * v2;
+                    v2 = _maxShakeMove * new vec2(signs.x * _shakeCurve[v2.x <= 1 ? v2.x : 1], signs.y * _shakeCurve[v2.y <= 1 ? v2.y : 1]);
+                    _currentCupPos = CupPos + new vec3(v2.x, 0, v2.y);
+                    v2 = new vec2(Program.InputManager.MousePosition - _lastShakePos) * _shakeScale;
+                    _lastShakeMomentum = new vec3(v2.x, 0, v2.y) / deltaTime.DeltaF;
                     _lastShakePos = Program.InputManager.MousePosition;
 
                     foreach (var d in Rolling)
@@ -68,6 +95,7 @@ namespace Yahtzee.Game
                     {
                         MoveDiceToCamera();
                         State = RollState.Scoring;
+                        if (Rolling.Count == Dice.Count) { Rolling.Clear(); UpdateOutliners(); }
                         OnRolled?.Invoke(Rolled);
                     }
 
@@ -75,19 +103,19 @@ namespace Yahtzee.Game
 
                 case RollState.Scoring:
 
-                    if (useMouse) CalculateHighlight();
-                    else outliner.Enabled = false;
+                    if (useMouse) UpdateOutliners();
 
                     break;
             }
         }
 
-        private void CalculateHighlight()
+        private void UpdateOutliners()
         {
             var camera = Program.CurrentScene.CurrentCamera;
 
             float dot = -2;
-            EntityDie closest = null;
+            _hoveredDie = null;
+
 
             foreach (var die in Dice)
             {
@@ -95,11 +123,27 @@ namespace Yahtzee.Game
                 if (d < _highlightCutoff) continue;
                 if (d < dot) continue;
                 dot = d;
-                closest = die;
+                _hoveredDie = die;
             }
 
-            outliner.Entity = closest;
-            outliner.Enabled = true;
+            foreach(var d in Dice)
+            {
+                if (d == _hoveredDie) {
+                    d.Outliner.Enabled = true;
+                    d.Outliner.Color = Rolling.Contains(d) ? vec3.Lerp(_hoverColor, _rerollColor, .5f) : _hoverColor;
+                    d.Outliner.OutlineSize = _hoverThickness;
+                } 
+                else if (!Rolling.Contains(d))
+                {
+                    d.Outliner.Enabled = false;
+                }
+                else
+                {
+                    d.Outliner.OutlineSize = _rerollThickness;
+                    d.Outliner.Color = _rerollColor;
+                    d.Outliner.Enabled = true;
+                }
+            }
         }
 
         private void MoveDiceToCamera()
@@ -114,15 +158,16 @@ namespace Yahtzee.Game
                 var d = ds[i];
 
                 d.LerpDuration = .6f + (i * .15f);
-                d.CameraOffset = new vec3(-2.1f + (1.05f * i), -1.2f, -2.5f);
+                d.CameraOffset = new vec3(-2.1f + (1.05f * i), -1.4f, -2.5f);
                 d.StartLerpToCamera();
             }
-            Rolling = Dice.GetRange(0, 3);
         }
 
         public void PrepareRoll()
         {
             if (State != RollState.Scoring) return;
+            if (Rolling.Count == 0) return;
+            if (_currentRolls <= 0) return;
             State = RollState.Preparing;
             _currentCupPos = CupPos;
             _cupShakeCooldown = _cupLerpSpeed;
@@ -165,27 +210,55 @@ namespace Yahtzee.Game
 
             for (int i = 0; i < count; i++)
             {
-                var d = new EntityDie("Dice/D6Red/d6red.obj") { Position = new vec3(-count + i * 2, 3, 0) };
+                var d = new EntityDie(_gl, "Dice/D6Red/d6red.obj") { Position = new vec3(-count + i * 2, 3, 0) };
                 d.Transform.Rotate(2 * (float)r.NextDouble(), new vec3((float)r.NextDouble(), (float)r.NextDouble(), (float)r.NextDouble()).NormalizedSafe);
 
                 Dice.Add(d);
             }
 
-            Rolling = Dice;
+            Rolling = Dice.GetRange(0, count);
             Program.CurrentScene.Entities.AddRange(Dice);
+        }
+
+        public void NewRoll()
+        {
+            _currentRolls = _rollsPerTry;
+            Rolled = new int[] { 0, 0, -3, -2, -1 };
+            Rolling = Dice.GetRange(0, Dice.Count);
+            PrepareRoll();
         }
 
         public void Roll()
         {
             if (State != RollState.Preparing) return;
             State = RollState.Rolling;
+            _currentRolls--;
 
-            var momentum = _lastShakeMomentum; 
+            var momentum = _lastShakeMomentum;
+            var shakeSpeed = _shakeRotSpeed + (_lastShakeMomentum.Length + 1);
+            var rotAxis = (_shakeRotAxis * vec3.UnitY).NormalizedSafe;
 
             foreach (var d in Rolling)
             {
                 d.EnablePhysics();
                 d.RigidBody.Impulse(momentum);
+                d.RigidBody.AngularVelocity += (d.Transform.Orientation * rotAxis).NormalizedSafe * shakeSpeed;
+            }
+        }
+
+        public void MouseButton(bool pressed)
+        {
+            switch (State)
+            {
+                case RollState.Preparing:
+                    Shake(pressed);
+                    break;
+
+                case RollState.Scoring:
+                    if (_hoveredDie == null || pressed) return;
+                    if (Rolling.Contains(_hoveredDie)) Rolling.Remove(_hoveredDie);
+                    else Rolling.Add(_hoveredDie);
+                    break;
             }
         }
         
@@ -205,9 +278,17 @@ namespace Yahtzee.Game
                 Roll();
         }
 
-        public void Draw()
-            => outliner.Draw();
+        public bool CanScore()
+            => State == RollState.Scoring && Rolled != null;
 
+        public void Draw()
+        {
+            if (State == RollState.Scoring)
+            {
+                Dice.FindAll(d => d.Outliner.Enabled && d != _hoveredDie).ForEach(d => d.Outliner.Draw(false));
+                Dice.FindAll(d => d == _hoveredDie).ForEach(d => d.Outliner.Draw(true));
+            }
+        }
         private enum RollState { Rolling, Preparing, Scoring }
     }
 }

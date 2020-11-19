@@ -57,7 +57,7 @@ namespace Yahtzee.Core.Physics
         public mat3 InverseInertiaWorldspace = mat3.Identity;
 
         public float Friction = 1f;
-        public float Restitution = 0f;
+        public float Restitution = 0.1f;
 
         public vec3 ForcesExternal = vec3.Zero;
         public vec3 TorqueExternal = vec3.Zero;
@@ -105,7 +105,7 @@ namespace Yahtzee.Core.Physics
             if (Static || Sleeping) return;
 
             //Apply Gravity
-            Impulse(new vec3(0, -4.81f * Mass, 0) * deltaTime.DeltaF, false);
+            Impulse(new vec3(0, -9.81f * Mass, 0) * deltaTime.DeltaF, false);
         }
 
         public void ApplyInitialForces(Time deltaTime)

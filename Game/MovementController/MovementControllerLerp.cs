@@ -25,6 +25,8 @@ namespace Yahtzee.Game
 
         public bool Lerping = false;
 
+        public event Action OnComplete;
+
         public MovementControllerLerp(Transform old, Transform target, float speed = 1f)
         {
             OldTransform = old;
@@ -35,8 +37,10 @@ namespace Yahtzee.Game
         public void UpdateMovement(Time deltaTime, Entity e)
         {
             if (Lerping)
-                if (LerpProgress < LerpTime) 
+                if (LerpProgress < LerpTime)
                     LerpProgress += LerpTime - LerpProgress > deltaTime.DeltaF ? deltaTime.DeltaF : LerpTime - LerpProgress;
+                else { OnComplete?.Invoke(); Lerping = false; }
+            
 
             e.Transform = Transform.Lerp(OldTransform, TargetTransform, Progress, Curve);
         }

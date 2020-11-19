@@ -82,7 +82,7 @@ namespace Yahtzee.Core.Physics.Constraints
                                             _normal);
 
 
-            float bias = .5f / deltaTime.DeltaF * -_pendepth + restitution * closingVelocity;
+            float bias = .6f / deltaTime.DeltaF * -_pendepth + restitution * closingVelocity;
 
             float lambda = _effectiveMass * -(JV + bias);
 

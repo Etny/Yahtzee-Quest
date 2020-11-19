@@ -39,6 +39,7 @@
     <None Remove="Resource\Shaders\Lighting\lightingShaderPersp.frag" />
     <None Remove="Resource\Shaders\Debug\Line\line.frag" />
     <None Remove="Resource\Shaders\Debug\Line\line.vert" />
+    <None Remove="Resource\Shaders\Other\prox.frag" />
     <None Remove="Resource\Shaders\PostProcess\gammaCorrect.frag" />
     <None Remove="Resource\Shaders\PostProcess\glow.frag" />
     <None Remove="Resource\Shaders\PostProcess\pixelate.frag" />
@@ -142,6 +143,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\Debug\Line\line.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\Other\prox.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\gammaCorrect.frag">

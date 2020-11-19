@@ -47,6 +47,12 @@ namespace Yahtzee.Game.SheetFields
             TextField.Transform.Translation = topLeft + (_sheet.Transform.Scale * (_sheet.smallSize * _offset).ScaleToScreen());
         }
 
+        public void Clear()
+        {
+            if (Locked) return;
+            TextField.Text = "";
+        }
+
         public void Lock()
         {
             if (!Lockable) return;

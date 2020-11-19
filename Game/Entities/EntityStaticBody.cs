@@ -15,6 +15,7 @@ namespace Yahtzee.Game.Entities
         public EntityStaticBody(string modelPath, bool drawn = true) : base(modelPath)
         {
             Drawn = drawn;
+            if (!drawn) DrawInstanced = false;
 
             MovementController = new MovementControllerRigidBody(this);
             RigidBody.Static = true;
