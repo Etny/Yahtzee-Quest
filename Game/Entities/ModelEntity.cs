@@ -14,7 +14,7 @@ namespace Yahtzee.Game.Entities
 
         public Model Model;
         public bool DrawInstanced = true;
-
+        public bool CastShadow = true;
 
         public ModelEntity(string modelPath) : base()
         {
@@ -30,6 +30,7 @@ namespace Yahtzee.Game.Entities
 
         public override void Draw(Shader shader)
         {
+            if (shader.LightingShader && !CastShadow) return;
             shader.SetMat4("models[0]", Transform.ModelMatrix);
             Model.Draw(shader);
         }

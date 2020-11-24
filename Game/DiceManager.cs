@@ -25,12 +25,13 @@ namespace Yahtzee.Game
         private EntityDie _hoveredDie;
 
         private int _rollsPerTry = 3;
-        private int _currentRolls = 3;
+        public int RerollsLeft { get; private set; } = 3;
 
-        private RollState State = RollState.Scoring;
-        private List<EntityDie> Rolling = new List<EntityDie>();
+        public RollState State { get; protected set; } = RollState.Scoring;
+        public List<EntityDie> Rolling = new List<EntityDie>();
         public int[] Rolled;
         public event Action<int[]> OnRolled;
+        public event Action OnPrepareRoll;
 
         public vec3 CupPos = new vec3(0, 1.5f, -2);
         private vec3 _currentCupPos;
@@ -95,7 +96,7 @@ namespace Yahtzee.Game
                     {
                         MoveDiceToCamera();
                         State = RollState.Scoring;
-                        if (Rolling.Count == Dice.Count) { Rolling.Clear(); UpdateOutliners(); }
+                        if (Rolling.Count == Dice.Count || RerollsLeft <= 0) { Rolling.Clear(); UpdateOutliners(); }
                         OnRolled?.Invoke(Rolled);
                     }
 
@@ -166,11 +167,12 @@ namespace Yahtzee.Game
         public void PrepareRoll()
         {
             if (State != RollState.Scoring) return;
-            if (Rolling.Count == 0) return;
-            if (_currentRolls <= 0) return;
+            if (RerollsLeft <= 0) return;
+            if (Rolling.Count == 0) Rolling = Dice.GetRange(0, Dice.Count);
             State = RollState.Preparing;
             _currentCupPos = CupPos;
             _cupShakeCooldown = _cupLerpSpeed;
+            RerollsLeft--;
 
             var boxSize = new vec3(1.2f/2);
             List<BoundingBox> boxes = new List<BoundingBox>();
@@ -200,6 +202,8 @@ namespace Yahtzee.Game
                 _cupOffset[Rolling[i]] = pos; 
                 boxes.Add(box);
             }
+
+            OnPrepareRoll?.Invoke();
         }
 
         public void Populate(int count)
@@ -222,7 +226,7 @@ namespace Yahtzee.Game
 
         public void NewRoll()
         {
-            _currentRolls = _rollsPerTry;
+            RerollsLeft = _rollsPerTry;
             Rolled = new int[] { 0, 0, -3, -2, -1 };
             Rolling = Dice.GetRange(0, Dice.Count);
             PrepareRoll();
@@ -232,7 +236,6 @@ namespace Yahtzee.Game
         {
             if (State != RollState.Preparing) return;
             State = RollState.Rolling;
-            _currentRolls--;
 
             var momentum = _lastShakeMomentum;
             var shakeSpeed = _shakeRotSpeed + (_lastShakeMomentum.Length + 1);
@@ -255,7 +258,7 @@ namespace Yahtzee.Game
                     break;
 
                 case RollState.Scoring:
-                    if (_hoveredDie == null || pressed) return;
+                    if (_hoveredDie == null || pressed || RerollsLeft <= 0) return;
                     if (Rolling.Contains(_hoveredDie)) Rolling.Remove(_hoveredDie);
                     else Rolling.Add(_hoveredDie);
                     break;
@@ -281,6 +284,9 @@ namespace Yahtzee.Game
         public bool CanScore()
             => State == RollState.Scoring && Rolled != null;
 
+        public bool CanReroll()
+            => State == RollState.Scoring && RerollsLeft > 0;
+
         public void Draw()
         {
             if (State == RollState.Scoring)
@@ -289,6 +295,6 @@ namespace Yahtzee.Game
                 Dice.FindAll(d => d == _hoveredDie).ForEach(d => d.Outliner.Draw(true));
             }
         }
-        private enum RollState { Rolling, Preparing, Scoring }
+        public enum RollState { Rolling, Preparing, Scoring }
     }
 }

@@ -6,6 +6,7 @@ out vec4 FragColor;
 uniform sampler2D screen;
 uniform sampler2D image;
 uniform vec2 screenSize;
+uniform vec4 tint = vec4(1);
 
 
 
@@ -25,5 +26,5 @@ void main()
 	}
 
 	vec4 texColor = texture2D(image, TexCoords);
-	FragColor = texColor + ((1.0 - texColor.a) * vec4(color, 1.0));
+	FragColor = (texColor + ((1.0 - texColor.a) * vec4(color, 1.0))) * tint;
 }

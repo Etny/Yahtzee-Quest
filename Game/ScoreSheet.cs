@@ -59,7 +59,7 @@ namespace Yahtzee.Game
                                                  sff.NumFunc(5),
                                                  sff.NumFunc(6),
                                                  sff.TotalOfRange(fields, true, 0, 6),
-                                                 sff.Threshold(sff.TotalOfRange(fields, true, 6, 1), 2, sff.FixedValue(35)),
+                                                 sff.Threshold(sff.TotalOfRange(fields, true, 0, 6), 63, sff.FixedValue(35)),
                                                  sff.TotalOfRange(fields, false, 6, 2),
                                                  sff.OfAKind(3, sff.Sum),
                                                  sff.OfAKind(4, sff.Sum),
@@ -70,7 +70,7 @@ namespace Yahtzee.Game
                                                  sff.OfAKind(5, sff.FixedValue(50)),
                                                  sff.TotalOfRange(fields, true, 9, 6),
                                                  sff.TotalOfFields(fields, false, 8, 16)};
-        private int[] nonLockableIndices = new int[] { 6, 7, 8, 16, 17};
+        private int[] nonLockableIndices = new int[] { 6, 7, 8, 16, 17 };
 
         public Func<bool> CanScore = () => true;
         public event Action OnSelect;
@@ -82,17 +82,17 @@ namespace Yahtzee.Game
 
             var rc = new ImageRenderComponent(layer.Gl, "Resource/Images/UI/Other/scorePaper2.png");
             RenderComponent = rc;
-            imgSize = ((vec2)rc.Image.Size * smallSize).ScaleToScreen() ;
+            imgSize = ((vec2)rc.Image.Size * smallSize).ScaleToScreen();
             Quad = new QuadMesh(imgSize);
             Transform.Translation = new vec2((-layer.UIFrameBuffer.BoundTexture.Size.x / 2) + (Quad.Size.x / 2) + screenPadding, smallSizeHeight);
 
             layer.AddComponent(this);
 
             Font.Size = 30;
-            
+
             for (int i = 0; i < 18; i++)
             {
-                var t = new SheetField(this, layer, Font, fieldFuncs[i], !nonLockableIndices.Contains(i), new vec2(fieldLocs[i*2], -fieldLocs[i*2 +1]));
+                var t = new SheetField(this, layer, Font, fieldFuncs[i], !nonLockableIndices.Contains(i), new vec2(fieldLocs[i * 2], -fieldLocs[i * 2 + 1]));
                 fields.Add(t);
             }
 
@@ -104,23 +104,13 @@ namespace Yahtzee.Game
         {
             if (Transform.Scale != maxScale || !CanScore()) return;
 
-            var mp = Program.InputManager.MousePosition.ToUISpace();
+            var closest = GetHoveredField();
 
-            var closest = fields[0];
-            float dist = (closest.TextField.Transform.Translation - mp).Length;
+            if (closest == null) return;
 
-            foreach (var f in fields)
-            {
-                if ((f.TextField.Transform.Translation - mp).Length >= dist) continue;
-
-                dist = (f.TextField.Transform.Translation - mp).Length;
-                closest = f;
-            }
-
-            OnSelect?.Invoke();
             closest.Lock();
-            ClearFields();
-        } 
+            OnSelect?.Invoke();
+        }
 
         public override void Update(Time deltaTime)
         {
@@ -134,7 +124,7 @@ namespace Yahtzee.Game
                 scaleProgress -= deltaTime.DeltaF;
                 if (scaleProgress < 0) scaleProgress = 0;
             }
-            else return;
+            else goto end;
 
             float ratio = scaleCurve[scaleProgress / scaleTime];
             var newScale = vec2.Lerp(vec2.Ones, maxScale, ratio);
@@ -143,13 +133,48 @@ namespace Yahtzee.Game
             Transform.Translation = new vec2((-Layer.UIFrameBuffer.BoundTexture.Size.x / 2) + ((Transform.Scale * Quad.Size).x / 2) + (screenPadding - (ratio * (screenPadding - fullSizePadding))),
                                                    smallSizeHeight + ((fullSizeHeight - smallSizeHeight) * ratio));
 
-            fields.ForEach(f => f.Update());
+        end:
+
+            var hoveredField = GetHoveredField();
+            fields.ForEach(f => { f.Selected = f == hoveredField; f.Update(deltaTime); });
+
+        }
+
+        private SheetField GetHoveredField()
+        {
+            if (Transform.Scale != maxScale || !CanScore()) return null;
+
+            var mp = Program.InputManager.MousePosition.ToUISpace();
+
+            float maxDist = 60 * Settings.ScreenRatio.x;
+
+            SheetField closest = null;
+            float dist = maxDist + 1;
+
+            foreach (var f in fields)
+            {
+                if ((f.TextField.Transform.Translation - mp).Length >= dist) continue;
+                if ((f.TextField.Transform.Translation - mp).Length > maxDist) continue;
+
+                dist = (f.TextField.Transform.Translation - mp).Length;
+                closest = f;
+            }
+
+            if (closest == null || closest.Locked || !closest.Lockable) return null;
+
+            return closest;
         }
 
         public void ClearFields()
         {
             fields.ForEach(f => { if (f.Lockable) f.Clear(); else f.UpdateText(null); });
         }
+
+        public bool AllFieldsLocked()
+            => !fields.Exists(f => !f.Locked && f.Lockable);
+
+        public int GetTotalScore()
+            => fields.Sum(f => f.Lockable ? f.Value : 0);
 
         public void UpdateRolled(int[] rolled)
         {

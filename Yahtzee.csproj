@@ -12,6 +12,7 @@
     <None Remove="freetype6.dll" />
     <None Remove="Resource\Fonts\arial.ttf" />
     <None Remove="Resource\Fonts\orange_juice_2.ttf" />
+    <None Remove="Resource\Images\UI\Buttons\BlankButton.png" />
     <None Remove="Resource\Images\UI\Buttons\Reroll.png" />
     <None Remove="Resource\Images\UI\Other\scorePaper.png" />
     <None Remove="Resource\Images\UI\Other\scorePaper2.png" />
@@ -28,6 +29,12 @@
     <None Remove="Resource\Models\Dice\D6Red\d6red.obj" />
     <None Remove="Resource\Models\Dice\D6Red\dice.mtl" />
     <None Remove="Resource\Models\Dice\D6Red\dietexture.jpg" />
+    <None Remove="Resource\Models\Scene\Candle\candle.mtl" />
+    <None Remove="Resource\Models\Scene\Candle\candle.obj" />
+    <None Remove="Resource\Models\Scene\Tray\diffuse.png" />
+    <None Remove="Resource\Models\Scene\Tray\specular.png" />
+    <None Remove="Resource\Models\Scene\Tray\tray.mtl" />
+    <None Remove="Resource\Models\Scene\Tray\tray.obj" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vis.frag" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vis.vert" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vispoint.frag" />
@@ -65,6 +72,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Fonts\orange_juice_2.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Images\UI\Buttons\BlankButton.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Images\UI\Buttons\Reroll.png">
@@ -110,6 +120,24 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Models\Dice\D6Red\dietexture.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Candle\candle.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Candle\candle.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Tray\diffuse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Tray\specular.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Tray\tray.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Tray\tray.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\Debug\Visualizer\vis.frag">

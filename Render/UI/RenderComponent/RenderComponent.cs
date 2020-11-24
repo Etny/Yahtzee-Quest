@@ -14,6 +14,7 @@ namespace Yahtzee.Render.UI.RenderComponent
         {
             _shader.SetMat4("model", comp.Transform.ModelMatrixUI);
             _shader.SetVec2("screenSize", comp.Layer.UIFrameBuffer.BoundTexture.Size);
+            _shader.SetFloat("depth", comp.Transform.Depth);
             comp.Quad.Draw(_shader);
         }
 

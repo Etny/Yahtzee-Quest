@@ -20,11 +20,13 @@ namespace Yahtzee.Render.UI
         public TextAlignment Alignment { get; set; } = TextAlignment.Left;
         public Font Font { get; protected set; }
         public int Lines { get; protected set; }
+        
 
         public string Text { get => _text; set => SetText(value); }
         private string _text;
 
         public vec3 Color { get; set; } = vec3.Ones;
+        public float Alpha { get; set; } = 1;
 
         private QuadMesh _quad;
         private Glyph[][] _glyphs;
@@ -91,6 +93,8 @@ namespace Yahtzee.Render.UI
             var scale = Transform.Scale;
             _shader.SetVec2("screenSize", _layer.UIFrameBuffer.BoundTexture.Size);
             _shader.SetVec3("color", Color);
+            _shader.SetFloat("depth", Transform.Depth);
+            _shader.SetFloat("alpha", Alpha);
 
             for (int j = 0; j < Lines; j++)
             {
