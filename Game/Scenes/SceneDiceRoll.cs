@@ -29,6 +29,9 @@ namespace Yahtzee.Game.Scenes
         private Font _buttonFont;
         private ScoreSheet _sheet;
 
+        private PointLight _candleLight;
+        private vec3 _candleLightCenter;
+
         private ButtonComponent _rerollButton;
         private TextComponent _rerollText;
         private TextComponent _rerollsLeftText;
@@ -41,7 +44,9 @@ namespace Yahtzee.Game.Scenes
         {
             base.Init();
 
-            Sun = new DirectionalLight(new vec3(0, -1f, -.3f).NormalizedSafe);
+            Sun = new DirectionalLight(new vec3(0, -.9f, 1f).NormalizedSafe);
+            Sun.Diffuse = new vec3(.15f);
+            Sun.Ambient = new vec3(.02f);
             Sun.SetShadowsEnabled(true);
             Lights.Add(Sun);
 
@@ -75,7 +80,7 @@ namespace Yahtzee.Game.Scenes
             _sheet.OnSelect += onSheetSelect;
             _dice.OnPrepareRoll += _sheet.ClearFields;
 
-            CurrentCamera.Transform.Translation = new vec3(0, 6.5f, 5.5f);
+            CurrentCamera.Transform.Translation = new vec3(0, 7f, 8f);
             CurrentCamera.Transform.RotateX(-45f.AsRad());
 
 
@@ -101,7 +106,7 @@ namespace Yahtzee.Game.Scenes
                 if (wall)
                 {
                     e.RigidBody.Restitution = 7;
-                    var w = new EntityProxWall(Gl, "Basic/Cube.obj", _dice.Dice) { Position = pos, Threshold = 1.7f};
+                    var w = new EntityProxWall(Gl, "Basic/Cube.obj", _dice.Dice) { Position = pos, Threshold = 1.7f };
                     w.Transform.Scale = scale;
                     _proxWalls.Add(w);
                 }
@@ -109,15 +114,43 @@ namespace Yahtzee.Game.Scenes
 
             AddCube(false, false, new vec3(0, -3, 0), new vec3(100, 1, 100));
 
-            AddCube(false, true, new vec3(-65, 0, 0), new vec3(100, 100, 100));
-            AddCube(false, true, new vec3(65, 0, 0), new vec3(100, 100, 100));
+            AddCube(false, true, new vec3(-61.5f, 0, 0), new vec3(100, 100, 100));
+            AddCube(false, true, new vec3(61.5f, 0, 0), new vec3(100, 100, 100));
             AddCube(false, true, new vec3(0, 0, -60), new vec3(100, 100, 100));
             AddCube(false, true, new vec3(0, 65, 0), new vec3(100, 100, 100));
             AddCube(false, true, new vec3(0, 0, 53), new vec3(100, 100, 100));
 
-            var e = new EntityStaticBody("Scene/Tray/tray.obj") { Position = new vec3(0, -2.3f, -3.5f) };
-            e.Transform.Scale = new vec3(4, 1.3f, 1.733f);
-            Entities.Add(e);
+            EntityStaticBody AddModel(string modelName, vec3 pos, vec3 scale, float yRot)
+            {
+                var e = new EntityStaticBody(modelName) { Position = pos };
+                e.Transform.Scale = scale;
+                e.Transform.RotateY(yRot.AsRad());
+                Entities.Add(e);
+                return e;
+            }
+
+            AddModel("Scene/Tray/tray.obj", new vec3(0, -2.3f, -3.5f), new vec3(3, 1.3f, 1.733f), 0);
+            AddModel("Scene/Table/table.obj", new vec3(0, -3, -5), new vec3(3.5f), 0);
+            AddModel("Scene/Window/wall.obj", new vec3(0, 10, -30.2f), new vec3(3.5f), 90);
+            AddModel("Scene/Window/windowframe.obj", new vec3(0, 10, -30), new vec3(3.5f), -90);
+            AddModel("Scene/FullWall/fullWall.obj", new vec3(-30, 0, 0), new vec3(3.5f), 0);
+            AddModel("Scene/FullWall/fullWall.obj", new vec3(30, 0, 0), new vec3(3.5f), -180);
+            AddModel("Scene/Candle/candle.obj", new vec3(8, -4.2f, 5), new vec3(.7f), 0);
+            AddModel("Scene/Moon/plane.obj", new vec3(3, 19, -40), new vec3(2), 0);
+            //AddModel("Scene/Nightsky/plane.obj", new vec3(3, 19, -45), new vec3(10), 0);
+
+            _candleLight = new PointLight(new vec3(8, 10, 5), .7f, .06f, .025f);
+            _candleLight.Diffuse = new vec3(.95f, .5f, .1f);
+            _candleLight.Ambient = new vec3(.05f, 0, 0);
+            _candleLight.SetShadowsEnabled(true);
+            _candleLightCenter = _candleLight.Position;
+            Lights.Add(_candleLight);
+
+            var moonLamp = new SpotLight(new vec3(3, 19, -37), 25f.AsRad(), 30f.AsRad());
+            moonLamp.Direction = new vec3(0, 0, -1);
+            Lights.Add(moonLamp);
+
+            //Lights.Add(new PointLight(CurrentCamera.Position));
         }
 
         public override void Update(Time deltaTime)
@@ -134,7 +167,9 @@ namespace Yahtzee.Game.Scenes
             }
             else _rerollText.Text = "";
 
-            _rerollsLeftText.Text = "Rerolls Left: " + _dice.RerollsLeft; 
+            _rerollsLeftText.Text = "Rerolls Left: " + _dice.RerollsLeft;
+
+            _candleLight.Position = _candleLightCenter + new vec3((float)(Math.Cos(deltaTime.Total)), 0, (float)(Math.Sin(deltaTime.Total)));
         }
 
         protected override void RenderExtras(FrameBuffer frameBuffer)

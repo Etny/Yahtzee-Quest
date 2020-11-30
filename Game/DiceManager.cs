@@ -158,8 +158,9 @@ namespace Yahtzee.Game
             {
                 var d = ds[i];
 
+                d.CastShadow = false;
                 d.LerpDuration = .6f + (i * .15f);
-                d.CameraOffset = new vec3(-2.1f + (1.05f * i), -1.4f, -2.5f);
+                d.CameraOffset = new vec3(-2.1f + (1.05f * i), -1.2f, -2.5f);
                 d.StartLerpToCamera();
             }
         }
@@ -199,6 +200,7 @@ namespace Yahtzee.Game
                 t.Translation = CupPos + pos;
                 t.Orientation = q;
                 Rolling[i].Lerp(t, _cupLerpSpeed);
+                Rolling[i].CastShadow = true;
                 _cupOffset[Rolling[i]] = pos; 
                 boxes.Add(box);
             }

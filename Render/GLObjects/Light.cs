@@ -124,7 +124,7 @@ namespace Yahtzee.Render
             t.Orientation = quat.FromAxisAngle((float)Math.Acos(vec3.Dot(Direction.NormalizedSafe, vec3.UnitZ)), vec3.Cross(Direction, vec3.UnitZ).NormalizedSafe);
 
             mat4 Projection = mat4.Ortho(-20, 20, -20, 20, near, far);
-            mat4 LookAt = mat4.LookAt(Direction * -10, vec3.Zero, t * vec3.UnitY);
+            mat4 LookAt = mat4.LookAt(Direction * -40, vec3.Zero, t * vec3.UnitY);
             LightSpace = Projection * LookAt;
         }
     }

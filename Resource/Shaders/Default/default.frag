@@ -180,7 +180,7 @@ float CalcShadowFromCube(vec3 fragPos, vec3 lightPos, in samplerCube shadowMap)
 	
 	float closest = texture(shadowMap, fragToLight).r * lightFarPlane;
 
-	float bias = 0.01;
+	float bias = 0.15;
 	float shadow = (length(fragToLight) - bias > closest) ? 0 : 1;
 
 	return shadow;

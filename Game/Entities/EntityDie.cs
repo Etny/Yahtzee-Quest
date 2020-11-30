@@ -48,7 +48,6 @@ namespace Yahtzee.Game.Entities
             };
 
             DrawInstanced = false;
-
             //dm = new LineMesh(colors: new vec3[] { new vec3(.7f, .2f, .3f), new vec3(.7f, .2f, .3f) });
         }
 

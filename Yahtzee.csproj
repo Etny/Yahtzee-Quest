@@ -31,10 +31,36 @@
     <None Remove="Resource\Models\Dice\D6Red\dietexture.jpg" />
     <None Remove="Resource\Models\Scene\Candle\candle.mtl" />
     <None Remove="Resource\Models\Scene\Candle\candle.obj" />
+    <None Remove="Resource\Models\Scene\Candle\candleDiffuse.png" />
+    <None Remove="Resource\Models\Scene\FullWall\fullWall.mtl" />
+    <None Remove="Resource\Models\Scene\FullWall\fullWall.obj" />
+    <None Remove="Resource\Models\Scene\FullWall\wallDiff.jpg" />
+    <None Remove="Resource\Models\Scene\FullWall\wallNorm.jpg" />
+    <None Remove="Resource\Models\Scene\FullWall\wallSpecular.jpg" />
+    <None Remove="Resource\Models\Scene\Moon\moonDiff.png" />
+    <None Remove="Resource\Models\Scene\Moon\plane.mtl" />
+    <None Remove="Resource\Models\Scene\Moon\plane.obj" />
+    <None Remove="Resource\Models\Scene\Nightsky\plane.mtl" />
+    <None Remove="Resource\Models\Scene\Nightsky\plane.obj" />
+    <None Remove="Resource\Models\Scene\Nightsky\skyNight.png" />
+    <None Remove="Resource\Models\Scene\Table\diffuse.png" />
+    <None Remove="Resource\Models\Scene\Table\normal.jpg" />
+    <None Remove="Resource\Models\Scene\Table\specular.png" />
+    <None Remove="Resource\Models\Scene\Table\table.mtl" />
+    <None Remove="Resource\Models\Scene\Table\table.obj" />
     <None Remove="Resource\Models\Scene\Tray\diffuse.png" />
     <None Remove="Resource\Models\Scene\Tray\specular.png" />
     <None Remove="Resource\Models\Scene\Tray\tray.mtl" />
     <None Remove="Resource\Models\Scene\Tray\tray.obj" />
+    <None Remove="Resource\Models\Scene\Window\wall.mtl" />
+    <None Remove="Resource\Models\Scene\Window\wall.obj" />
+    <None Remove="Resource\Models\Scene\Window\wallDiff.jpg" />
+    <None Remove="Resource\Models\Scene\Window\wallNorm.jpg" />
+    <None Remove="Resource\Models\Scene\Window\wallNormal.jpg" />
+    <None Remove="Resource\Models\Scene\Window\wallSpecular.jpg" />
+    <None Remove="Resource\Models\Scene\Window\windowDiffuse.png" />
+    <None Remove="Resource\Models\Scene\Window\windowframe.mtl" />
+    <None Remove="Resource\Models\Scene\Window\windowframe.obj" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vis.frag" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vis.vert" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vispoint.frag" />
@@ -128,6 +154,48 @@
     <Content Include="Resource\Models\Scene\Candle\candle.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resource\Models\Scene\Candle\candleDiffuse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\FullWall\fullWall.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\FullWall\fullWall.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\FullWall\wallDiff.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\FullWall\wallNorm.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\FullWall\wallSpecular.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Moon\moonDiff.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Moon\plane.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Moon\plane.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Nightsky\plane.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Nightsky\plane.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Nightsky\skyNight.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Table\table.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Table\table.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resource\Models\Scene\Tray\diffuse.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -138,6 +206,30 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Models\Scene\Tray\tray.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Window\wall.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Window\wall.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Window\wallDiff.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Window\wallNorm.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Window\wallSpecular.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Window\windowDiffuse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Window\windowframe.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Window\windowframe.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\Debug\Visualizer\vis.frag">
@@ -210,6 +302,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\UI\UIDefault.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resource\Models\Scene\Table\diffuse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Table\normal.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Table\specular.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

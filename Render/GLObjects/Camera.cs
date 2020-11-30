@@ -24,7 +24,7 @@ namespace Yahtzee.Render
         private GL gl;
         private uint matricesBuffer;
 
-        public readonly float Fov = 90;
+        public readonly float Fov = 80;
         public readonly float NearZ = .1f;
         public readonly float FarZ = 1000f;
 
@@ -34,10 +34,9 @@ namespace Yahtzee.Render
         public Camera()
         {
             gl = GL.GetApi();
-
             Program.Window.OnResize += OnResize;
-            //Program.Window.OnCursorMove += OnCursorMove;
 
+            //Program.Window.OnCursorMove += OnCursorMove;
             //MovementController = new MovementControllerWASD(2.5f, GetDirection);
 
             Position = new vec3(0, 0, 3);
