@@ -14,7 +14,8 @@ namespace Yahtzee.Game.Scenes
 
         private string[] _models = { "Basic/Cube.obj", "Scene/Tray/tray.obj", "Scene/Table/table.obj", "Scene/Window/wall.obj",
                                      "Scene/Window/windowframe.obj", "Scene/FullWall/fullWall.obj", "Scene/FullWall/fullWall.obj",
-                                     "Scene/Candle/candle.obj", "Scene/Moon/plane.obj", "Tutorial/Tut1/plane.obj", "Tutorial/Tut2/plane.obj"};
+                                     "Scene/Candle/candle.obj", "Scene/Moon/plane.obj", "Tutorial/Tut1/plane.obj", "Tutorial/Tut2/plane.obj",
+                                     "Scene/Flame/flame.obj"};
 
         private TextComponent _progressComponent;
 

@@ -103,7 +103,7 @@ namespace Yahtzee.Main
             string path = Uri.UnescapeDataString(uri.Path);
             string file = Path.Join(Path.GetDirectoryName(path), "settings.txt");
             Console.WriteLine(file + " ||| " + File.Exists(file));
-            int width = 1280, height = 720;
+            int width = 1600, height = 900;
                 
             if(File.Exists(file))
             {

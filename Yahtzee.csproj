@@ -32,6 +32,9 @@
     <None Remove="Resource\Models\Scene\Candle\candle.mtl" />
     <None Remove="Resource\Models\Scene\Candle\candle.obj" />
     <None Remove="Resource\Models\Scene\Candle\candleDiffuse.png" />
+    <None Remove="Resource\Models\Scene\Flame\flame.mtl" />
+    <None Remove="Resource\Models\Scene\Flame\flame.obj" />
+    <None Remove="Resource\Models\Scene\Flame\flameDiff.png" />
     <None Remove="Resource\Models\Scene\FullWall\fullWall.mtl" />
     <None Remove="Resource\Models\Scene\FullWall\fullWall.obj" />
     <None Remove="Resource\Models\Scene\FullWall\wallDiff.jpg" />
@@ -162,6 +165,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Models\Scene\Candle\candleDiffuse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Flame\flame.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Flame\flame.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Scene\Flame\flameDiff.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Models\Scene\FullWall\fullWall.mtl">

@@ -39,6 +39,7 @@ namespace Yahtzee.Game.Scenes
         private ICurve _candleCurve = new BezierCurve(new vec2(.41f, .09f), new vec2(.56f, .88f));
         private vec3 _candleTargetPos;
         private vec3 _candleLightCenter;
+        private ModelEntity _flame;
 
         private ButtonComponent _rerollButton;
         private TextComponent _rerollText;
@@ -53,7 +54,7 @@ namespace Yahtzee.Game.Scenes
             base.Init();
 
             _font = Program.FontRepository.GetFont("orange_juice_2.ttf");
-            _buttonFont = Program.FontRepository.GetFont("arial.ttf", 50 * Program.Settings.ScreenRatio.x);
+            _buttonFont = Program.FontRepository.GetFont("arial.ttf", 50 * Program.Settings.ScreenRatio.x * 1.2f);
             _sheet = new ScoreSheet(UI, _font);
 
             _dice = new DiceManager(Gl);
@@ -74,7 +75,7 @@ namespace Yahtzee.Game.Scenes
 
             _rerollsLeftText = (TextComponent)UI.AddComponent(new TextComponent(UI, _buttonFont, ""));
             _rerollsLeftText.Alignment = TextAlignment.Centered;
-            _rerollsLeftText.Transform.Translation = _rerollButton.Transform.Translation - new vec2(0, 65);
+            _rerollsLeftText.Transform.Translation = _rerollButton.Transform.Translation - new vec2(0, 120).ScaleToScreen();
             _rerollsLeftText.Transform.Scale = new vec2(.6f);
             _rerollsLeftText.Transform.Depth = .9f;
 
@@ -134,7 +135,6 @@ namespace Yahtzee.Game.Scenes
             AddModel("Scene/Candle/candle.obj", new vec3(8, -4.2f, 5), new vec3(.7f), 0);
             AddModel("Scene/Moon/plane.obj", new vec3(3, 19, -40), new vec3(2), 0);
             
-            
             _tut1 =  AddModel("Tutorial/Tut1/plane.obj", new vec3(_dice.CupPos + new vec3(6, 0, 0)), new vec3(3), 0);
             _tut2 = AddModel("Tutorial/Tut2/plane.obj", new vec3(new vec3(-3, 3, 3)), new vec3(3), 0);
             _tut1.Hide = true;
@@ -152,6 +152,8 @@ namespace Yahtzee.Game.Scenes
             _candleParent = new EntityEmpty() { Position = _candleLightCenter };
             Entities.Add(_candleParent);
             Lights.Add(_candleLight);
+            _flame = AddModel("Scene/Flame/flame.obj", new vec3(8, 2f, 5), new vec3(.35f), 0);
+            _flame.CastShadow = false;
 
             var camLight = new PointLight(CurrentCamera.Position) { Constant = .8f, Linear = .7f };
             Lights.Add(camLight);
@@ -208,6 +210,11 @@ namespace Yahtzee.Game.Scenes
                 Transform newTrans = new Transform() { Translation = _candleTargetPos };
                 _candleParent.MovementController = new MovementControllerLerp(_candleParent.Transform, newTrans, .15f) { Curve = _candleCurve, Lerping  = true };
             }
+
+            vec3 diff = (_flame.Transform.Translation - _candleParent.Transform.Translation).NormalizedSafe;
+            vec3 cross = vec3.Cross(vec3.UnitY, diff);
+            quat newQuat = new quat(cross.x, cross.y, cross.z, vec3.Dot(vec3.UnitY, diff));
+            _flame.Transform.Orientation = newQuat;
 
             //_candleLight.Position = _candleLightCenter + new vec3(.3f * (float)(Math.Cos(5 * deltaTime.Total)), 0, .3f * (float)(Math.Sin(3 * deltaTime.Total)));
             //_dice.Dice[0].Position = _candleLight.Position;

@@ -88,7 +88,7 @@ namespace Yahtzee.Game
 
             layer.AddComponent(this);
 
-            Font.Size = 30;
+            Font.Size = 30 * Program.Settings.ScreenRatio.x * 1.5f;
 
             for (int i = 0; i < 18; i++)
             {
