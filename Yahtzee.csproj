@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -61,6 +61,12 @@
     <None Remove="Resource\Models\Scene\Window\windowDiffuse.png" />
     <None Remove="Resource\Models\Scene\Window\windowframe.mtl" />
     <None Remove="Resource\Models\Scene\Window\windowframe.obj" />
+    <None Remove="Resource\Models\Tutorial\Tut1\plane.mtl" />
+    <None Remove="Resource\Models\Tutorial\Tut1\plane.obj" />
+    <None Remove="Resource\Models\Tutorial\Tut1\tutDiff.png" />
+    <None Remove="Resource\Models\Tutorial\Tut2\plane.mtl" />
+    <None Remove="Resource\Models\Tutorial\Tut2\plane.obj" />
+    <None Remove="Resource\Models\Tutorial\Tut2\tutDiff.png" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vis.frag" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vis.vert" />
     <None Remove="Resource\Shaders\Debug\Visualizer\vispoint.frag" />
@@ -79,6 +85,7 @@
     <None Remove="Resource\Shaders\PostProcess\postPro.vert" />
     <None Remove="Resource\Shaders\PostProcess\postProColor.frag" />
     <None Remove="Resource\Shaders\PostProcess\postProDefault.frag" />
+    <None Remove="Resource\Shaders\PostProcess\proTransition.frag" />
     <None Remove="Resource\Shaders\PostProcess\showDepth.frag" />
     <None Remove="Resource\Shaders\UI\UI.vert" />
     <None Remove="Resource\Shaders\UI\UIBlurImage.frag" />
@@ -232,6 +239,24 @@
     <Content Include="Resource\Models\Scene\Window\windowframe.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resource\Models\Tutorial\Tut1\plane.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Tutorial\Tut1\plane.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Tutorial\Tut1\tutDiff.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Tutorial\Tut2\plane.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Tutorial\Tut2\plane.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Models\Tutorial\Tut2\tutDiff.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resource\Shaders\Debug\Visualizer\vis.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -272,6 +297,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\glow.frag">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resource\Shaders\PostProcess\proTransition.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resource\Shaders\PostProcess\showDepth.frag">
@@ -324,6 +352,21 @@
     <PackageReference Include="SharpFont.NetStandard" Version="1.0.2" />
     <PackageReference Include="Silk.NET" Version="1.2.1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

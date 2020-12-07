@@ -40,6 +40,7 @@ namespace Yahtzee.Main
             glfw.WindowHint(WindowHintInt.ContextVersionMajor, 3);
             glfw.WindowHint(WindowHintInt.ContextVersionMinor, 3);
             glfw.WindowHint(WindowHintOpenGlProfile.OpenGlProfile, OpenGlProfile.Core);
+            
 
             window = glfw.CreateWindow(dimensions.Width, dimensions.Height, name, null, null);
 
@@ -52,7 +53,8 @@ namespace Yahtzee.Main
 
 
             glfw.MakeContextCurrent(window);
-            glfw.SetWindowSizeCallback(window, OnWindowResize);
+            glfw.SetWindowSizeLimits(window, dimensions.Width, dimensions.Height, dimensions.Width, dimensions.Height);
+            //glfw.SetWindowSizeCallback(window, OnWindowResize);
             glfw.SetKeyCallback(window, OnWindowButtonPress);
             glfw.SetCursorEnterCallback(window, OnWindowCursorEnter);
             glfw.SetCursorPosCallback(window, OnWindowCursor);

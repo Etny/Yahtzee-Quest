@@ -88,7 +88,7 @@ namespace Yahtzee.Core
         /// <param name="v"></param>
         /// <returns>scaled vector for 16:9 window.</returns>
         public static vec2 ScaleToScreen(this vec2 v)
-            => v * Settings.ScreenRatio;
+            => v * Program.Settings.ScreenRatio;
 
         public static vec2 ScaleToPixels(this vec2 v)
             => v * Program.Window.GetSizeVec();

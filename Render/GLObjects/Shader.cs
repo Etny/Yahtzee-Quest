@@ -21,7 +21,7 @@ namespace Yahtzee.Render
         {
             uint vert = 0, geom = 0, frag = 0;
 
-            if (geometryPath != null && !File.Exists($"Resource/Shaders/{geometryPath}.geom"))
+            if (geometryPath != null && !File.Exists($"/Resource/Shaders/{geometryPath}.geom"))
                 geometryPath = null;
 
             LoadShader(ref vert, ShaderType.VertexShader, $"Resource/Shaders/{vertexPath}.vert");

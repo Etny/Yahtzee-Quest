@@ -154,14 +154,26 @@ namespace Yahtzee.Game
             var ds = (from die in Dice orderby die.GetRolledNumber() select die).ToArray();
             Rolled = (from d in ds select d.GetRolledNumber()).ToArray();
 
+            var camera = Program.CurrentScene.CurrentCamera;
+
             for(int i = 0; i < ds.Length; i++)
             {
                 var d = ds[i];
+                var cameraOffset = new vec3(-2.1f + (1.05f * i), -1.2f, -2.5f);
 
+                Transform targetTransform = d.Transform;
+
+                targetTransform.Translation = camera.Transform * cameraOffset;
+
+                vec3 face = vec3.UnitZ;
+                vec3 rolledFace = d.GetRolledFace();
+                vec3 axis = rolledFace == face || -rolledFace == face ? vec3.UnitY : vec3.Cross(face, rolledFace).NormalizedSafe;
+                quat faceRot = quat.FromAxisAngle(-(float)Math.Acos(Math.Clamp(vec3.Dot(face, rolledFace), -1, 1)), axis);
+                targetTransform.Orientation = faceRot;
+                targetTransform.Orientation = (camera.Transform.Orientation * targetTransform.Orientation).NormalizedSafe;
+
+                d.Lerp(targetTransform, .6f + (i * .15f));
                 d.CastShadow = false;
-                d.LerpDuration = .6f + (i * .15f);
-                d.CameraOffset = new vec3(-2.1f + (1.05f * i), -1.2f, -2.5f);
-                d.StartLerpToCamera();
             }
         }
 

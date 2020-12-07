@@ -25,13 +25,10 @@ namespace Yahtzee.Game.Entities
         public Outliner Outliner;
 
         public ICurve LerpCurve;
-        public float LerpDuration = .6f;
 
         public readonly vec3[] NumberFaces = new vec3[]{vec3.UnitX, vec3.UnitY, vec3.UnitZ,
                                                         -vec3.UnitX, -vec3.UnitY, -vec3.UnitZ};
         public readonly int[] Numbers = new int[] { 6, 2, 3, 5, 4, 1 };
-
-        public vec3 CameraOffset = vec3.Zero;
 
         private int _rolledIndex = 0;
 
@@ -87,25 +84,6 @@ namespace Yahtzee.Game.Entities
         public vec3 GetRolledFace() => NumberFaces[_rolledIndex];
         public int GetRolledNumber() => Numbers[_rolledIndex];
 
-        public void StartLerpToCamera()
-        {
-            DisablePhysics();
-
-            var camera = Program.CurrentScene.CurrentCamera;
-            Transform targetTransform = Transform;
-
-            targetTransform.Translation = camera.Transform * CameraOffset;
-
-            vec3 face = vec3.UnitZ;
-            vec3 rolledFace = GetRolledFace();
-            vec3 axis = rolledFace == face || -rolledFace == face ? vec3.UnitY : vec3.Cross(face, rolledFace).NormalizedSafe;
-            quat faceRot = quat.FromAxisAngle(-(float)Math.Acos(Math.Clamp(vec3.Dot(face, rolledFace), -1, 1)), axis);
-            targetTransform.Orientation = faceRot;
-            targetTransform.Orientation = (camera.Transform.Orientation * targetTransform.Orientation).NormalizedSafe;
-
-            Lerp(targetTransform, LerpDuration);
-        }
-
         public void Lerp(Transform t, float duration)
         {
             DisablePhysics();
@@ -130,20 +108,6 @@ namespace Yahtzee.Game.Entities
             base.Update(deltaTime);
 
             if ((MovementController as MovementControllerLerp) == null) return;
-
-            //var camera = Program.Scene.CurrentCamera;
-            //Transform targetTransform = Transform;
-
-            //targetTransform.Translation = camera.Transform * CameraOffset;
-
-            //vec3 face = vec3.UnitZ;
-            //vec3 rolledFace = GetRolledFace();
-            //vec3 axis = rolledFace == face || -rolledFace == face ? vec3.UnitY : vec3.Cross(face, rolledFace).NormalizedSafe;
-            //quat faceRot = quat.FromAxisAngle(-(float)Math.Acos(Math.Clamp(vec3.Dot(face, rolledFace), -1, 1)), axis);
-            //targetTransform.Orientation = faceRot;
-            //targetTransform.Orientation = (camera.Transform.Orientation * targetTransform.Orientation).NormalizedSafe;
-
-            //Transform = targetTransform;
         }
 
         public override void Draw(Shader shader)

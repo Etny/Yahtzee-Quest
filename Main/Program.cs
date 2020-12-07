@@ -30,8 +30,7 @@ namespace Yahtzee.Main
 
         static void Main(string[] args)
         {
-
-            Settings = new Settings();
+            InitSettings();
 
             Window = new Window();
             if (!Window.OpenWindow("Yahtzee Quest", new Size((int)Settings.CurrentScreenSize.x, (int)Settings.CurrentScreenSize.y)))
@@ -44,12 +43,14 @@ namespace Yahtzee.Main
 
             SetupGL();
 
+            Properties.Resources.ResourceManager.GetStream("postPro.vert");
+
             FontRepository = new FontRepository(gl);
 
             InputManager = new InputManager();
             PostProcessManager = new PostProcessManager();
             PhysicsManager = new PhysicsManager();
-            CurrentScene = new SceneDiceRoll();
+            CurrentScene = new SceneLoading();
             Renderer = new Renderer();
 
             CurrentScene.Init();
@@ -71,7 +72,7 @@ namespace Yahtzee.Main
             CurrentScene = newScene;
             newScene.Init();
 
-            Renderer.InsertRenderable(CurrentScene, 1);
+            Renderer.InsertRenderable(CurrentScene, 0);
             Renderer.InsertRenderable(CurrentScene.UI, 2);
         }
 
@@ -87,12 +88,40 @@ namespace Yahtzee.Main
         }
 
         private static void Tick(Time deltaTime)
-        {
+        { 
             CurrentScene.Update(deltaTime);
 
             Renderer.RenderPipeline();
 
             Window.EndRender();
+        }
+
+        private static void InitSettings()
+        {
+            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+            UriBuilder uri = new UriBuilder(codeBase);
+            string path = Uri.UnescapeDataString(uri.Path);
+            string file = Path.Join(Path.GetDirectoryName(path), "settings.txt");
+            Console.WriteLine(file + " ||| " + File.Exists(file));
+            int width = 1280, height = 720;
+                
+            if(File.Exists(file))
+            {
+                Console.WriteLine("Found file!");
+                string[] lines = File.ReadAllLines(file);
+                
+                foreach(string s in lines)
+                {
+                    string[] ss = s.ToLower().Split(":");
+
+                    if (ss[0] == "width")
+                        width = int.Parse(ss[1]);
+                    else if(ss[0] == "height")
+                        height = int.Parse(ss[1]);
+                }
+            }
+
+            Settings = new Settings(width, height);
         }
 
         private static void SetupGL()

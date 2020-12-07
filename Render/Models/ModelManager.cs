@@ -32,7 +32,7 @@ namespace Yahtzee.Render.Models
 
             foreach (var e in Entities.Values)
             {
-                var l = e.FindAll(m => m.DrawInstanced);
+                var l = e.FindAll(m => m.DrawInstanced && !m.Hide);
                 for (int i = 0; i < l.Count; i += 100)
                 {
                     int amount = l.Count - i <= 100 ? l.Count - i : 100;

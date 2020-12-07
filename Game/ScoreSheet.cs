@@ -146,7 +146,7 @@ namespace Yahtzee.Game
 
             var mp = Program.InputManager.MousePosition.ToUISpace();
 
-            float maxDist = 60 * Settings.ScreenRatio.x;
+            float maxDist = 60 * Program.Settings.ScreenRatio.x;
 
             SheetField closest = null;
             float dist = maxDist + 1;

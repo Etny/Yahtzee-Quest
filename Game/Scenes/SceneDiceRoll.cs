@@ -16,6 +16,7 @@ using Yahtzee.Render;
 using Yahtzee.Render.UI.RenderComponent;
 using Yahtzee.Core.Font;
 using System.Linq;
+using Yahtzee.Core.Curve;
 
 namespace Yahtzee.Game.Scenes
 {
@@ -29,7 +30,14 @@ namespace Yahtzee.Game.Scenes
         private Font _buttonFont;
         private ScoreSheet _sheet;
 
+        private ModelEntity _tut1, _tut2;
+
+        private float _startDelay = 1.5f;
+
         private PointLight _candleLight;
+        private Entity _candleParent;
+        private ICurve _candleCurve = new BezierCurve(new vec2(.41f, .09f), new vec2(.56f, .88f));
+        private vec3 _candleTargetPos;
         private vec3 _candleLightCenter;
 
         private ButtonComponent _rerollButton;
@@ -44,14 +52,8 @@ namespace Yahtzee.Game.Scenes
         {
             base.Init();
 
-            Sun = new DirectionalLight(new vec3(0, -.9f, 1f).NormalizedSafe);
-            Sun.Diffuse = new vec3(.15f);
-            Sun.Ambient = new vec3(.02f);
-            Sun.SetShadowsEnabled(true);
-            Lights.Add(Sun);
-
             _font = Program.FontRepository.GetFont("orange_juice_2.ttf");
-            _buttonFont = Program.FontRepository.GetFont("arial.ttf", 50 * Settings.ScreenRatio.x);
+            _buttonFont = Program.FontRepository.GetFont("arial.ttf", 50 * Program.Settings.ScreenRatio.x);
             _sheet = new ScoreSheet(UI, _font);
 
             _dice = new DiceManager(Gl);
@@ -78,21 +80,15 @@ namespace Yahtzee.Game.Scenes
 
             _sheet.CanScore = _dice.CanScore;
             _sheet.OnSelect += onSheetSelect;
+            _dice.OnPrepareRoll += OnPrepare;
             _dice.OnPrepareRoll += _sheet.ClearFields;
+            _dice.OnRolled += OnRolled;
 
             CurrentCamera.Transform.Translation = new vec3(0, 7f, 8f);
-            CurrentCamera.Transform.RotateX(-45f.AsRad());
-
 
             CreateLevel();
-        }
 
-        private void onSheetSelect()
-        {
-            if (_sheet.AllFieldsLocked())
-                Program.SwitchScene(new SceneFinalScore(_sheet.GetTotalScore()));
-            else
-                _dice.NewRoll();
+            _dice.PrepareRoll();
         }
 
         private void CreateLevel()
@@ -120,9 +116,9 @@ namespace Yahtzee.Game.Scenes
             AddCube(false, true, new vec3(0, 65, 0), new vec3(100, 100, 100));
             AddCube(false, true, new vec3(0, 0, 53), new vec3(100, 100, 100));
 
-            EntityStaticBody AddModel(string modelName, vec3 pos, vec3 scale, float yRot)
+            ModelEntity AddModel(string modelName, vec3 pos, vec3 scale, float yRot)
             {
-                var e = new EntityStaticBody(modelName) { Position = pos };
+                var e = new ModelEntity(modelName) { Position = pos };
                 e.Transform.Scale = scale;
                 e.Transform.RotateY(yRot.AsRad());
                 Entities.Add(e);
@@ -137,25 +133,60 @@ namespace Yahtzee.Game.Scenes
             AddModel("Scene/FullWall/fullWall.obj", new vec3(30, 0, 0), new vec3(3.5f), -180);
             AddModel("Scene/Candle/candle.obj", new vec3(8, -4.2f, 5), new vec3(.7f), 0);
             AddModel("Scene/Moon/plane.obj", new vec3(3, 19, -40), new vec3(2), 0);
+            
+            
+            _tut1 =  AddModel("Tutorial/Tut1/plane.obj", new vec3(_dice.CupPos + new vec3(6, 0, 0)), new vec3(3), 0);
+            _tut2 = AddModel("Tutorial/Tut2/plane.obj", new vec3(new vec3(-3, 3, 3)), new vec3(3), 0);
+            _tut1.Hide = true;
+            _tut2.Hide = true;
+
             //AddModel("Scene/Nightsky/plane.obj", new vec3(3, 19, -45), new vec3(10), 0);
 
-            _candleLight = new PointLight(new vec3(8, 10, 5), .7f, .06f, .025f);
-            _candleLight.Diffuse = new vec3(.95f, .5f, .1f);
-            _candleLight.Ambient = new vec3(.05f, 0, 0);
+            _candleLight = new PointLight(new vec3(8, 4f, 5), .5f, .06f, .015f);
+            _candleLight.Diffuse = new vec3(.85f, .53f, .1f);
+            _candleLight.Specular = new vec3(.85f, .53f, .1f);
+            _candleLight.Ambient = new vec3(.08f, .04f, .04f);
             _candleLight.SetShadowsEnabled(true);
             _candleLightCenter = _candleLight.Position;
+            _candleTargetPos = _candleLightCenter;
+            _candleParent = new EntityEmpty() { Position = _candleLightCenter };
+            Entities.Add(_candleParent);
             Lights.Add(_candleLight);
+
+            var camLight = new PointLight(CurrentCamera.Position) { Constant = .8f, Linear = .7f };
+            Lights.Add(camLight);
+                
+            Sun = new DirectionalLight(new vec3(0, -.85f, 1f).NormalizedSafe);
+            Sun.Diffuse = new vec3(.05f);
+            Sun.Specular = new vec3(1f);
+            Sun.Ambient = new vec3(0f);
+            Sun.SetShadowsEnabled(true);
+            Lights.Add(Sun);
 
             var moonLamp = new SpotLight(new vec3(3, 19, -37), 25f.AsRad(), 30f.AsRad());
             moonLamp.Direction = new vec3(0, 0, -1);
             Lights.Add(moonLamp);
 
-            //Lights.Add(new PointLight(CurrentCamera.Position));
         }
 
         public override void Update(Time deltaTime)
         {
             base.Update(deltaTime);
+
+            if(_startDelay > 0)
+            {
+                _startDelay -= deltaTime.DeltaF;
+                if(_startDelay <= 0)
+                {
+
+                    Transform targetTrans = CurrentCamera.Transform;
+                    targetTrans.RotateX(-45f.AsRad());
+                    CurrentCamera.MovementController = new MovementControllerLerp(CurrentCamera.Transform, targetTrans, 1.2f)
+                    { Curve = new BezierCurve(new vec2(.5f, 0), new vec2(.5f, 1)), Lerping = true };
+                    _tut1.Hide = false;
+
+                }
+            }
 
             _dice.Update(deltaTime, !_sheet.Hovered);
 
@@ -169,7 +200,17 @@ namespace Yahtzee.Game.Scenes
 
             _rerollsLeftText.Text = "Rerolls Left: " + _dice.RerollsLeft;
 
-            _candleLight.Position = _candleLightCenter + new vec3((float)(Math.Cos(deltaTime.Total)), 0, (float)(Math.Sin(deltaTime.Total)));
+            _candleLight.Position = _candleParent.Position;
+
+            if (_candleParent.MovementController == null || ((MovementControllerLerp)_candleParent.MovementController).Progress >= 1) {
+                var r = new Random();
+                _candleTargetPos = _candleLightCenter + new vec3(((float)r.NextDouble() * .34f) - .17f, 0, ((float)r.NextDouble() * .34f) - .17f);
+                Transform newTrans = new Transform() { Translation = _candleTargetPos };
+                _candleParent.MovementController = new MovementControllerLerp(_candleParent.Transform, newTrans, .15f) { Curve = _candleCurve, Lerping  = true };
+            }
+
+            //_candleLight.Position = _candleLightCenter + new vec3(.3f * (float)(Math.Cos(5 * deltaTime.Total)), 0, .3f * (float)(Math.Sin(3 * deltaTime.Total)));
+            //_dice.Dice[0].Position = _candleLight.Position;
         }
 
         protected override void RenderExtras(FrameBuffer frameBuffer)
@@ -177,6 +218,29 @@ namespace Yahtzee.Game.Scenes
             _dice.Draw();
             _proxWalls.ForEach(p => p.Draw(null));
         }
+
+        private void OnRolled(int[] unused)
+        {
+            if (Entities.Contains(_tut2) && _tut2.Hide)
+            {
+                _tut2.Transform.Orientation = (CurrentCamera.Transform.Orientation * _tut2.Transform.Orientation).NormalizedSafe;
+
+                _tut2.Hide = false;
+            }
+        }
+        private void OnPrepare()
+        {
+            if (_tut2 != null && !_tut2.Hide) { _tut2.Hide = true; Entities.Remove(_tut2); }
+        }
+
+        private void onSheetSelect()
+        {
+            if (_sheet.AllFieldsLocked())
+                Program.SwitchScene(new SceneFinalScore(_sheet.GetTotalScore()));
+            else
+                _dice.NewRoll();
+        }
+
 
 
         protected override void OnButton(Keys key, InputAction action, KeyModifiers mods)
@@ -197,6 +261,7 @@ namespace Yahtzee.Game.Scenes
             if(button == MouseButton.Left && action != InputAction.Repeat)
             {
                 _dice.MouseButton(action == InputAction.Press);
+                if (!_tut1.Hide && action == InputAction.Release) _tut1.Hide = true;
             }
         }
 

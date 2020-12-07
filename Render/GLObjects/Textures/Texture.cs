@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using Yahtzee.Main;
 
 namespace Yahtzee.Render.Textures
 {
@@ -34,6 +35,19 @@ namespace Yahtzee.Render.Textures
 
             Size = new uvec2(width, height);
         }
+
+
+        
+
+
+        public static Texture Copy(GL gl, FrameBuffer r)
+        {
+            Texture t = new Texture(r.BoundTexture.Size.x, r.BoundTexture.Size.y);
+            
+
+            return t;
+        }
+    
 
         ~Texture() => Dispose();
 
