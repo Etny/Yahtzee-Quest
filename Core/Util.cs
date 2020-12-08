@@ -4,6 +4,8 @@ using Silk.NET.Vulkan;
 using SixLabors;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Yahtzee.Main;
@@ -44,6 +46,12 @@ namespace Yahtzee.Core
         public static float ToDeg(double rad)
             => (float)(rad / Math.PI) * 180;
 
+
+        public static string AbsolutePath(string path)
+        {
+            string super = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase.Replace("file://", ""));
+            return Path.Combine(super.Substring(Path.GetPathRoot(super).Length), path);
+        }
         public static void GLClear()
             => GL.GetApi().Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit));
 

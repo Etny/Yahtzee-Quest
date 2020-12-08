@@ -27,7 +27,7 @@ namespace Yahtzee.Core.Font
         {
             _gl = gl;
             _lib = lib;
-            _face = new Face(_lib, fontName);
+            _face = new Face(_lib, Util.AbsolutePath(fontName));
 
             Size = 30;
         }

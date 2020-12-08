@@ -112,7 +112,7 @@ namespace Yahtzee.Main
                 
                 foreach(string s in lines)
                 {
-                    string[] ss = s.ToLower().Split(":");
+                    string[] ss = s.Replace("\n","").ToLower().Split(":");
                     if (ss.Length != 2) continue;
 
                     switch (ss[0])
@@ -123,10 +123,12 @@ namespace Yahtzee.Main
                         case "height":
                             height = int.Parse(ss[1]);
                             break;
-                        case "shadowSize":
+                        case "shadowsize":
                             sSize = int.Parse(ss[1]);
                             break;
-
+                        default:
+                            Console.WriteLine($"Can't parse setting \'{s}\'");
+                            break;
                     }
                 }
             }

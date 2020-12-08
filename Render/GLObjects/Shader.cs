@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Reflection;
 using System.Text;
-
+using Yahtzee.Core;
 
 namespace Yahtzee.Render
 {
@@ -25,7 +26,7 @@ namespace Yahtzee.Render
                 geometryPath = null;
 
             LoadShader(ref vert, ShaderType.VertexShader, $"Resource/Shaders/{vertexPath}.vert");
-            if(geometryPath != null) LoadShader(ref geom, ShaderType.GeometryShader, $"Resource/Shaders/{geometryPath}.geom");
+            if (geometryPath != null) LoadShader(ref geom, ShaderType.GeometryShader, $"Resource/Shaders/{geometryPath}.geom");
             LoadShader(ref frag, ShaderType.FragmentShader, $"Resource/Shaders/{fragmentPath}.frag");
 
             ID = gl.CreateProgram();
@@ -50,7 +51,7 @@ namespace Yahtzee.Render
         private void LoadShader(ref uint shader, ShaderType type, string path)
         {
             shader = gl.CreateShader(type);
-            gl.ShaderSource(shader, File.ReadAllText(path));
+            gl.ShaderSource(shader, File.ReadAllText(Util.AbsolutePath(path)));
             gl.CompileShader(shader);
 
             string log = gl.GetShaderInfoLog(shader);

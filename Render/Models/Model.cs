@@ -8,6 +8,7 @@ using GlmSharp;
 using Yahtzee.Render.Textures;
 using Yahtzee.Game;
 using Yahtzee.Core.Physics;
+using Yahtzee.Core;
 
 namespace Yahtzee.Render.Models
 {
@@ -45,7 +46,7 @@ namespace Yahtzee.Render.Models
         {
             var assimp = new ai.AssimpContext();
 
-            ai.Scene scene = assimp.ImportFile(path, ai.PostProcessSteps.Triangulate | ai.PostProcessSteps.CalculateTangentSpace);
+            ai.Scene scene = assimp.ImportFile(Util.AbsolutePath(path), ai.PostProcessSteps.Triangulate | ai.PostProcessSteps.CalculateTangentSpace);
 
             if (scene == null || scene.RootNode == null || scene.SceneFlags.HasFlag(ai.SceneFlags.Incomplete))
             {
@@ -64,7 +65,7 @@ namespace Yahtzee.Render.Models
         {
             var assimp = new ai.AssimpContext();
 
-            ai.Scene scene = assimp.ImportFile(path, ai.PostProcessSteps.DropNormals);
+            ai.Scene scene = assimp.ImportFile(Util.AbsolutePath(path), ai.PostProcessSteps.DropNormals);
 
             if (scene == null || scene.RootNode == null || scene.SceneFlags.HasFlag(ai.SceneFlags.Incomplete))
             {

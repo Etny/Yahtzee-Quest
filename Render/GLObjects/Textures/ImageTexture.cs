@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using Yahtzee.Core;
 
 namespace Yahtzee.Render.Textures
 {
@@ -54,7 +55,7 @@ namespace Yahtzee.Render.Textures
 
         private unsafe void LoadTexture(string path)
         {
-            Image<Rgba32> img = (Image<Rgba32>)Image.Load(path);
+            Image<Rgba32> img = (Image<Rgba32>)Image.Load(Util.AbsolutePath(path));
             img.Mutate(x => x.Flip(FlipMode.Vertical));
 
             Size = new GlmSharp.uvec2((uint)img.Width, (uint)img.Height);
