@@ -101,9 +101,9 @@ namespace Yahtzee.Main
             string codeBase = Assembly.GetExecutingAssembly().CodeBase;
             UriBuilder uri = new UriBuilder(codeBase);
             string path = Uri.UnescapeDataString(uri.Path);
-            string file = Path.Join(Path.GetDirectoryName(path), "settings.txt");
+            string file = Path.Join(Path.GetDirectoryName(Path.GetDirectoryName(path)), "settings.txt");
             Console.WriteLine(file + " ||| " + File.Exists(file));
-            int width = 1600, height = 900;
+            int width = 1600, height = 900, sSize = 512;
                 
             if(File.Exists(file))
             {
@@ -113,15 +113,25 @@ namespace Yahtzee.Main
                 foreach(string s in lines)
                 {
                     string[] ss = s.ToLower().Split(":");
+                    if (ss.Length != 2) continue;
 
-                    if (ss[0] == "width")
-                        width = int.Parse(ss[1]);
-                    else if(ss[0] == "height")
-                        height = int.Parse(ss[1]);
+                    switch (ss[0])
+                    {
+                        case "width":
+                            width = int.Parse(ss[1]);
+                            break;
+                        case "height":
+                            height = int.Parse(ss[1]);
+                            break;
+                        case "shadowSize":
+                            sSize = int.Parse(ss[1]);
+                            break;
+
+                    }
                 }
             }
 
-            Settings = new Settings(width, height);
+            Settings = new Settings(width, height, sSize);
         }
 
         private static void SetupGL()

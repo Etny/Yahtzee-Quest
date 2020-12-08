@@ -142,7 +142,7 @@ namespace Yahtzee.Game.Scenes
 
             //AddModel("Scene/Nightsky/plane.obj", new vec3(3, 19, -45), new vec3(10), 0);
 
-            _candleLight = new PointLight(new vec3(8, 4f, 5), .5f, .06f, .015f);
+            _candleLight = new PointLight(new vec3(8, 3.5f, 5), .5f, .06f, .015f);
             _candleLight.Diffuse = new vec3(.85f, .53f, .1f);
             _candleLight.Specular = new vec3(.85f, .53f, .1f);
             _candleLight.Ambient = new vec3(.08f, .04f, .04f);
@@ -175,7 +175,10 @@ namespace Yahtzee.Game.Scenes
         {
             base.Update(deltaTime);
 
-            if(_startDelay > 0)
+            if (_sheet.AllFieldsLocked())
+                Program.SwitchScene(new SceneFinalScore(_sheet.GetTotalScore()));
+
+            if (_startDelay > 0)
             {
                 _startDelay -= deltaTime.DeltaF;
                 if(_startDelay <= 0)
@@ -190,7 +193,7 @@ namespace Yahtzee.Game.Scenes
                 }
             }
 
-            _dice.Update(deltaTime, !_sheet.Hovered);
+            _dice.Update(deltaTime, !_rerollButton.Hovered && !_sheet.Hovered );
 
             if (_dice.CanReroll())
             {
@@ -242,10 +245,7 @@ namespace Yahtzee.Game.Scenes
 
         private void onSheetSelect()
         {
-            if (_sheet.AllFieldsLocked())
-                Program.SwitchScene(new SceneFinalScore(_sheet.GetTotalScore()));
-            else
-                _dice.NewRoll();
+            _dice.NewRoll();
         }
 
 
@@ -265,7 +265,7 @@ namespace Yahtzee.Game.Scenes
 
         protected override void OnMouseButton(MouseButton button, InputAction action, KeyModifiers mods)
         {
-            if(button == MouseButton.Left && action != InputAction.Repeat)
+            if(button == MouseButton.Left && action != InputAction.Repeat && !_rerollButton.Hovered && !_sheet.Hovered)
             {
                 _dice.MouseButton(action == InputAction.Press);
                 if (!_tut1.Hide && action == InputAction.Release) _tut1.Hide = true;

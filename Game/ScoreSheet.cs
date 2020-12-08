@@ -78,6 +78,7 @@ namespace Yahtzee.Game
         public ScoreSheet(UILayer layer, Font font) : base(layer)
         {
             Font = font;
+            fields.Clear();
             maxScale = new vec2(fullSize / smallSize);
 
             var rc = new ImageRenderComponent(layer.Gl, "Resource/Images/UI/Other/scorePaper2.png");
@@ -174,7 +175,7 @@ namespace Yahtzee.Game
             => !fields.Exists(f => !f.Locked && f.Lockable);
 
         public int GetTotalScore()
-            => fields.Sum(f => f.Lockable ? f.Value : 0);
+            => fields.Sum(f => (f.Lockable && f.Locked) ? f.Value : 0);
 
         public void UpdateRolled(int[] rolled)
         {

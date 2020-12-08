@@ -36,7 +36,7 @@ namespace Yahtzee.Core.Physics
             return result;
         }
 
-#if DEBUG
+
         // Used for debugging
         public int GJK_Step(RigidBody m1, RigidBody m2, List<SupportPoint> simplex, ref vec3 Direction, ref int counter)
         {
@@ -58,7 +58,6 @@ namespace Yahtzee.Core.Physics
             if (counter >= 4) counter = 1;
             return 0;
         }
-#endif
 
         public SupportPoint SumSupport(CollisionResult result, vec3 Dir)
             => SumSupport(result.Body1, result.Body2, Dir);
@@ -85,7 +84,6 @@ namespace Yahtzee.Core.Physics
         }
 
 
-#if DEBUG
         // Used for debugging
         public int SingleSupportIndex(RigidBody b1, vec3 Dir)
         {
@@ -106,7 +104,6 @@ namespace Yahtzee.Core.Physics
 
             return index;
         }
-#endif
 
 
         private bool DoSimplex(List<SupportPoint> simplex)

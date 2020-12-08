@@ -132,7 +132,6 @@ namespace Yahtzee.Core.Physics
 
 
 
-#if DEBUG
         //Used for debugging
         public vec3 GetPenetrationDepthStep(CollisionResult result, ref List<Triangle> tris, ref List<vec3> removed, ref Triangle closestTri, ref SupportPoint newPoint, ref int counter)
         {
@@ -215,7 +214,6 @@ namespace Yahtzee.Core.Physics
 
             return vec3.NaN;
         }
-#endif
 
         public class Triangle
         {
